@@ -59,6 +59,56 @@ class WC_Product extends \WC_Product {
 	}
 
 	/**
+	 * Check if product is purchasable.
+	 *
+	 * @return bool
+	 */
+	public function is_purchasable() {
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		return apply_filters( 'woocommerce_is_purchasable', true, $this );
+	}
+
+	/**
+	 * SlotNova products are virtual service bookings.
+	 *
+	 * @return bool
+	 */
+	public function is_virtual() {
+		return true;
+	}
+
+	/**
+	 * Get product price fallback.
+	 *
+	 * @param string $context Context view or edit.
+	 * @return string|float
+	 */
+	public function get_price( $context = 'view' ) {
+		$price = parent::get_price( $context );
+		if ( '' === $price || null === $price || false === $price ) {
+			$saved_services = get_post_meta( $this->get_id(), '_slotnova_product_services', true );
+			if ( is_array( $saved_services ) && ! empty( $saved_services ) ) {
+				$prices = array();
+				foreach ( $saved_services as $saved ) {
+					if ( isset( $saved['price'] ) && '' !== $saved['price'] && null !== $saved['price'] && floatval( $saved['price'] ) > 0 ) {
+						$prices[] = floatval( $saved['price'] );
+					} elseif ( isset( $saved['term_id'] ) ) {
+						$term_price = get_term_meta( $saved['term_id'], 'slotnova_service_price', true );
+						if ( '' !== $term_price && false !== $term_price && floatval( $term_price ) > 0 ) {
+							$prices[] = floatval( $term_price );
+						}
+					}
+				}
+				if ( ! empty( $prices ) ) {
+					return min( $prices );
+				}
+			}
+			return '0';
+		}
+		return $price;
+	}
+
+	/**
 	 * Get price HTML for SlotNova product (single value or range).
 	 *
 	 * @param string $price Existing price string.
