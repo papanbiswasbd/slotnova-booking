@@ -63,7 +63,7 @@
 .slotnova-hero-banner div.updated,
 .slotnova-hero-banner div.error,
 .slotnova-hero-banner .is-dismissible {
-	display: none !important;
+	display: none;
 }
 
 /* ==========================================================================
@@ -163,11 +163,11 @@
 }
 
 .slotnova-hero-title {
-	font-size: 26px !important;
-	font-weight: 700 !important;
-	color: #ffffff !important;
-	margin: 0 0 6px 0 !important;
-	line-height: 1.25 !important;
+	font-size: 26px;
+	font-weight: 700;
+	color: #ffffff;
+	margin: 0 0 6px 0;
+	line-height: 1.25;
 	letter-spacing: -0.5px;
 }
 
@@ -190,7 +190,7 @@
 .slotnova-inline-form {
 	display: inline-flex;
 	align-items: center;
-	margin: 0 !important;
+	margin: 0;
 }
 
 .slotnova-select-wrapper {
@@ -200,36 +200,36 @@
 }
 
 .slotnova-filter-select {
-	height: 42px !important;
-	line-height: 42px !important;
-	appearance: none !important;
-	-webkit-appearance: none !important;
-	background: rgba(255, 255, 255, 0.12) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>') no-repeat right 14px center !important;
-	color: #ffffff !important;
-	border: 1px solid rgba(255, 255, 255, 0.22) !important;
-	padding: 0 38px 0 16px !important;
-	border-radius: 10px !important;
-	font-size: 13.5px !important;
-	font-weight: 600 !important;
-	cursor: pointer !important;
-	backdrop-filter: blur(12px) !important;
-	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-	outline: none !important;
+	height: 42px;
+	line-height: 42px;
+	appearance: none;
+	-webkit-appearance: none;
+	background: rgba(255, 255, 255, 0.12) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>') no-repeat right 14px center;
+	color: #ffffff;
+	border: 1px solid rgba(255, 255, 255, 0.22);
+	padding: 0 38px 0 16px;
+	border-radius: 10px;
+	font-size: 13.5px;
+	font-weight: 600;
+	cursor: pointer;
+	backdrop-filter: blur(12px);
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	outline: none;
 }
 
 .slotnova-filter-select option {
-	background: #1e1b4b !important;
-	color: #ffffff !important;
-	padding: 10px !important;
-	font-weight: 500 !important;
+	background: #1e1b4b;
+	color: #ffffff;
+	padding: 10px;
+	font-weight: 500;
 }
 
 .slotnova-filter-select:hover,
 .slotnova-filter-select:focus {
-	background-color: rgba(255, 255, 255, 0.2) !important;
-	border-color: rgba(255, 255, 255, 0.45) !important;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+	background-color: rgba(255, 255, 255, 0.2);
+	border-color: rgba(255, 255, 255, 0.45);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .slotnova-btn {
@@ -245,7 +245,7 @@
 	cursor: pointer;
 	border: none;
 	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-	text-decoration: none !important;
+	text-decoration: none;
 	white-space: nowrap;
 	box-sizing: border-box;
 }
@@ -259,33 +259,33 @@
 }
 
 .slotnova-btn-primary {
-	background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
-	color: #ffffff !important;
-	box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4) !important;
-	border: 1px solid rgba(255, 255, 255, 0.15) !important;
+	background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+	color: #ffffff;
+	box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+	border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .slotnova-btn-primary:hover {
-	background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+	background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
 	transform: translateY(-2px);
-	box-shadow: 0 6px 20px rgba(79, 70, 229, 0.55) !important;
-	color: #ffffff !important;
+	box-shadow: 0 6px 20px rgba(79, 70, 229, 0.55);
+	color: #ffffff;
 }
 
 .slotnova-btn-glass {
-	background: rgba(255, 255, 255, 0.12) !important;
-	color: #ffffff !important;
-	border: 1px solid rgba(255, 255, 255, 0.22) !important;
-	backdrop-filter: blur(12px) !important;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+	background: rgba(255, 255, 255, 0.12);
+	color: #ffffff;
+	border: 1px solid rgba(255, 255, 255, 0.22);
+	backdrop-filter: blur(12px);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .slotnova-btn-glass:hover {
-	background: rgba(255, 255, 255, 0.22) !important;
-	border-color: rgba(255, 255, 255, 0.45) !important;
+	background: rgba(255, 255, 255, 0.22);
+	border-color: rgba(255, 255, 255, 0.45);
 	transform: translateY(-2px);
-	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18) !important;
-	color: #ffffff !important;
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+	color: #ffffff;
 }
 
 /* ==========================================================================
@@ -370,10 +370,10 @@
 }
 
 .slotnova-stat-card-title {
-	margin: 0 !important;
-	color: var(--sn-text-muted) !important;
-	font-size: 13px !important;
-	font-weight: 600 !important;
+	margin: 0;
+	color: var(--sn-text-muted);
+	font-size: 13px;
+	font-weight: 600;
 	letter-spacing: 0.2px;
 }
 
@@ -506,10 +506,10 @@
 }
 
 .slotnova-chart-title {
-	margin: 0 0 4px 0 !important;
-	font-size: 17px !important;
-	font-weight: 700 !important;
-	color: var(--sn-text-main) !important;
+	margin: 0 0 4px 0;
+	font-size: 17px;
+	font-weight: 700;
+	color: var(--sn-text-main);
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -601,10 +601,10 @@
 }
 
 .slotnova-card-header h3 {
-	margin: 0 !important;
-	font-size: 15px !important;
-	font-weight: 700 !important;
-	color: var(--sn-text-main) !important;
+	margin: 0;
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--sn-text-main);
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -899,10 +899,10 @@
 
 /* Popularity Insights Card */
 .slotnova-breakdown-heading {
-	margin: 0 0 12px 0 !important;
-	font-size: 13px !important;
-	font-weight: 700 !important;
-	color: var(--sn-text-muted) !important;
+	margin: 0 0 12px 0;
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--sn-text-muted);
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
 	display: flex;
@@ -1058,10 +1058,10 @@
 }
 
 .slotnova-modal-header h2 {
-	margin: 0 !important;
-	font-size: 18px !important;
-	font-weight: 700 !important;
-	color: var(--sn-text-main) !important;
+	margin: 0;
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--sn-text-main);
 }
 
 .slotnova-modal-close {
@@ -1128,7 +1128,7 @@
 }
 
 .slotnova-is-hidden {
-	display: none !important;
+	display: none;
 }
 
 /* ==========================================================================
@@ -1139,7 +1139,7 @@
 	align-items: center;
 	background: #f1f5f9;
 	padding: 5px;
-	border-radius: 9999px !important;
+	border-radius: 9999px;
 	border: 1px solid #e2e8f0;
 	margin-bottom: 24px;
 	gap: 6px;
@@ -1153,14 +1153,14 @@
 	justify-content: center;
 	gap: 8px;
 	padding: 0 22px;
-	border-radius: 9999px !important;
+	border-radius: 9999px;
 	font-size: 13.5px;
 	font-weight: 600;
-	color: #64748b !important;
-	text-decoration: none !important;
+	color: #64748b;
+	text-decoration: none;
 	transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-	border: none !important;
-	outline: none !important;
+	border: none;
+	outline: none;
 }
 
 .slotnova-tab-pill .dashicons {
@@ -1174,23 +1174,23 @@
 
 .slotnova-tab-pill.active,
 .slotnova-tab-pill.nav-tab-active {
-	background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
-	color: #ffffff !important;
-	box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35) !important;
+	background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+	color: #ffffff;
+	box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
 }
 
 .slotnova-tab-pill.active .dashicons,
 .slotnova-tab-pill.nav-tab-active .dashicons {
-	color: #ffffff !important;
+	color: #ffffff;
 }
 
 .slotnova-tab-pill:hover:not(.active):not(.nav-tab-active) {
-	color: #0f172a !important;
-	background: rgba(255, 255, 255, 0.8) !important;
+	color: #0f172a;
+	background: rgba(255, 255, 255, 0.8);
 }
 
 .slotnova-tab-pill:hover:not(.active):not(.nav-tab-active) .dashicons {
-	color: #4f46e5 !important;
+	color: #4f46e5;
 }
 
 .slotnova-tab-pill:hover:not(.active) {
@@ -1235,42 +1235,42 @@
 
 .slotnova-input-styled {
 	width: 100%;
-	height: 40px !important;
-	padding: 0 14px 0 38px !important;
-	border-radius: var(--sn-radius-md) !important;
-	border: 1px solid var(--sn-border) !important;
-	font-size: 13.5px !important;
-	background: #ffffff !important;
-	color: var(--sn-text-main) !important;
-	transition: var(--sn-transition) !important;
+	height: 40px;
+	padding: 0 14px 0 38px;
+	border-radius: var(--sn-radius-md);
+	border: 1px solid var(--sn-border);
+	font-size: 13.5px;
+	background: #ffffff;
+	color: var(--sn-text-main);
+	transition: var(--sn-transition);
 }
 
 .slotnova-input-styled:focus {
-	outline: none !important;
-	border-color: var(--sn-primary) !important;
-	box-shadow: 0 0 0 3px var(--sn-primary-light) !important;
+	outline: none;
+	border-color: var(--sn-primary);
+	box-shadow: 0 0 0 3px var(--sn-primary-light);
 }
 
 .slotnova-select-styled {
-	height: 40px !important;
-	line-height: 40px !important;
-	padding: 0 32px 0 14px !important;
-	border-radius: var(--sn-radius-md) !important;
-	border: 1px solid var(--sn-border) !important;
-	font-size: 13.5px !important;
-	font-weight: 500 !important;
-	background: #ffffff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%2364748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>') no-repeat right 12px center !important;
-	appearance: none !important;
-	-webkit-appearance: none !important;
-	color: var(--sn-text-main) !important;
+	height: 40px;
+	line-height: 40px;
+	padding: 0 32px 0 14px;
+	border-radius: var(--sn-radius-md);
+	border: 1px solid var(--sn-border);
+	font-size: 13.5px;
+	font-weight: 500;
+	background: #ffffff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%2364748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>') no-repeat right 12px center;
+	appearance: none;
+	-webkit-appearance: none;
+	color: var(--sn-text-main);
 	cursor: pointer;
 	min-width: 140px;
 }
 
 .slotnova-select-styled:focus {
-	outline: none !important;
-	border-color: var(--sn-primary) !important;
-	box-shadow: 0 0 0 3px var(--sn-primary-light) !important;
+	outline: none;
+	border-color: var(--sn-primary);
+	box-shadow: 0 0 0 3px var(--sn-primary-light);
 }
 
 .slotnova-filter-actions-group {
@@ -1289,14 +1289,14 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	text-decoration: none !important;
+	text-decoration: none;
 	transition: var(--sn-transition);
 	border: none;
 }
 
 .slotnova-btn-action-primary {
 	background: var(--sn-primary);
-	color: #ffffff !important;
+	color: #ffffff;
 }
 
 .slotnova-btn-action-primary:hover {
@@ -1305,12 +1305,12 @@
 
 .slotnova-btn-action-reset {
 	background: #f1f5f9;
-	color: var(--sn-text-muted) !important;
+	color: var(--sn-text-muted);
 }
 
 .slotnova-btn-action-reset:hover {
 	background: #e2e8f0;
-	color: var(--sn-text-main) !important;
+	color: var(--sn-text-main);
 }
 
 /* Modern Data Table Card */
@@ -1363,16 +1363,16 @@
 	padding: 4px 10px;
 	border-radius: var(--sn-radius-md);
 	background: var(--sn-primary-light);
-	color: var(--sn-primary) !important;
+	color: var(--sn-primary);
 	font-weight: 700;
-	text-decoration: none !important;
+	text-decoration: none;
 	font-size: 13px;
 	transition: var(--sn-transition);
 }
 
 .slotnova-order-pill:hover {
 	background: var(--sn-primary);
-	color: #ffffff !important;
+	color: #ffffff;
 }
 
 .slotnova-customer-cell {
@@ -1470,7 +1470,7 @@
 	padding: 0 14px;
 	border-radius: 8px;
 	background: rgba(99, 102, 241, 0.08);
-	color: #4f46e5 !important;
+	color: #4f46e5;
 	font-size: 12.5px;
 	font-weight: 600;
 	border: 1px solid rgba(99, 102, 241, 0.2);
@@ -1478,7 +1478,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 5px;
-	text-decoration: none !important;
+	text-decoration: none;
 	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1492,7 +1492,7 @@
 
 .slotnova-btn-action-view:hover {
 	background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-	color: #ffffff !important;
+	color: #ffffff;
 	border-color: transparent;
 	box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
 	transform: translateY(-1px);
@@ -1507,12 +1507,12 @@
 	height: 32px;
 	border-radius: 8px;
 	background: #f1f5f9;
-	color: #64748b !important;
+	color: #64748b;
 	border: 1px solid #e2e8f0;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	text-decoration: none !important;
+	text-decoration: none;
 	transition: all 0.2s ease;
 }
 
@@ -1526,7 +1526,7 @@
 .slotnova-btn-action-icon:hover {
 	background: #0f172a;
 	border-color: #0f172a;
-	color: #ffffff !important;
+	color: #ffffff;
 	transform: translateY(-1px);
 }
 
@@ -1535,7 +1535,7 @@
 }
 
 .slotnova-empty-table-cell {
-	padding: 50px 20px !important;
+	padding: 50px 20px;
 	text-align: center;
 }
 
@@ -1543,12 +1543,12 @@
    8. Booking Details Modal Styling (Classic & Professional Style)
    ========================================================================== */
 .slotnova-details-modal-content {
-	max-width: 620px !important;
-	border-radius: 16px !important;
+	max-width: 620px;
+	border-radius: 16px;
 	overflow: hidden;
 	background: #ffffff;
-	box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.25) !important;
-	border: 1px solid var(--sn-border) !important;
+	box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.25);
+	border: 1px solid var(--sn-border);
 }
 
 .slotnova-classic-modal-header {
@@ -1561,30 +1561,30 @@
 }
 
 .slotnova-classic-modal-header h2 {
-	margin: 0 !important;
-	font-size: 18px !important;
-	font-weight: 700 !important;
-	color: #0f172a !important;
+	margin: 0;
+	font-size: 18px;
+	font-weight: 700;
+	color: #0f172a;
 	display: flex;
 	align-items: center;
 	gap: 10px;
 }
 
 .slotnova-modal-close {
-	background: transparent !important;
-	border: none !important;
-	font-size: 24px !important;
-	line-height: 1 !important;
-	color: #94a3b8 !important;
-	cursor: pointer !important;
-	padding: 4px 8px !important;
-	border-radius: 6px !important;
-	transition: all 0.2s ease !important;
+	background: transparent;
+	border: none;
+	font-size: 24px;
+	line-height: 1;
+	color: #94a3b8;
+	cursor: pointer;
+	padding: 4px 8px;
+	border-radius: 6px;
+	transition: all 0.2s ease;
 }
 
 .slotnova-modal-close:hover {
-	color: #ef4444 !important;
-	background: #fef2f2 !important;
+	color: #ef4444;
+	background: #fef2f2;
 }
 
 .slotnova-details-modal-body {
@@ -1619,10 +1619,10 @@
 }
 
 .slotnova-details-hero-text h3 {
-	margin: 0 0 4px 0 !important;
-	font-size: 18px !important;
-	font-weight: 700 !important;
-	color: #0f172a !important;
+	margin: 0 0 4px 0;
+	font-size: 18px;
+	font-weight: 700;
+	color: #0f172a;
 }
 
 .slotnova-details-grid {
@@ -1674,10 +1674,10 @@
 }
 
 .slotnova-contact-heading {
-	margin: 0 0 12px 0 !important;
-	font-size: 12.5px !important;
-	font-weight: 700 !important;
-	color: #475569 !important;
+	margin: 0 0 12px 0;
+	font-size: 12.5px;
+	font-weight: 700;
+	color: #475569;
 	text-transform: uppercase;
 	letter-spacing: 0.3px;
 	display: flex;
@@ -1749,81 +1749,81 @@
 }
 
 .slotnova-btn-modal-cancel {
-	height: 42px !important;
-	line-height: 40px !important;
-	padding: 0 22px !important;
-	border-radius: 10px !important;
-	background: #f1f5f9 !important;
-	color: #475569 !important;
-	font-size: 13.5px !important;
-	font-weight: 600 !important;
-	border: 1px solid #cbd5e1 !important;
-	cursor: pointer !important;
-	display: inline-flex !important;
-	align-items: center !important;
-	justify-content: center !important;
-	text-decoration: none !important;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
-	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+	height: 42px;
+	line-height: 40px;
+	padding: 0 22px;
+	border-radius: 10px;
+	background: #f1f5f9;
+	color: #475569;
+	font-size: 13.5px;
+	font-weight: 600;
+	border: 1px solid #cbd5e1;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	text-decoration: none;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .slotnova-btn-modal-cancel:hover {
-	background: #e2e8f0 !important;
-	color: #0f172a !important;
-	border-color: #94a3b8 !important;
+	background: #e2e8f0;
+	color: #0f172a;
+	border-color: #94a3b8;
 }
 
 .slotnova-btn-modal-primary {
-	height: 42px !important;
-	line-height: 40px !important;
-	padding: 0 22px !important;
-	border-radius: 10px !important;
-	background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
-	color: #ffffff !important;
-	font-size: 13.5px !important;
-	font-weight: 600 !important;
-	border: none !important;
-	cursor: pointer !important;
-	display: inline-flex !important;
-	align-items: center !important;
-	justify-content: center !important;
-	gap: 8px !important;
-	text-decoration: none !important;
-	box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35) !important;
-	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+	height: 42px;
+	line-height: 40px;
+	padding: 0 22px;
+	border-radius: 10px;
+	background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+	color: #ffffff;
+	font-size: 13.5px;
+	font-weight: 600;
+	border: none;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	text-decoration: none;
+	box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .slotnova-btn-modal-primary .dashicons {
-	font-size: 16px !important;
-	width: 16px !important;
-	height: 16px !important;
-	line-height: 16px !important;
-	color: #ffffff !important;
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	line-height: 16px;
+	color: #ffffff;
 }
 
 .slotnova-btn-modal-primary:hover {
-	background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
-	color: #ffffff !important;
-	box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45) !important;
-	transform: translateY(-1px) !important;
+	background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+	color: #ffffff;
+	box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45);
+	transform: translateY(-1px);
 }
 
 /* -------------------------------------------------------------------------
  * Manual Booking Modal UI/UX Upgrade
  * ------------------------------------------------------------------------- */
 .slotnova-manual-modal-content {
-	max-width: 680px !important;
-	width: 90% !important;
-	border-radius: 16px !important;
-	overflow: hidden !important;
-	border: 1px solid #e2e8f0 !important;
-	box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25) !important;
+	max-width: 680px;
+	width: 90%;
+	border-radius: 16px;
+	overflow: hidden;
+	border: 1px solid #e2e8f0;
+	box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
 }
 
 .slotnova-manual-modal-body {
-	max-height: 72vh !important;
-	overflow-y: auto !important;
-	padding: 24px !important;
+	max-height: 72vh;
+	overflow-y: auto;
+	padding: 24px;
 }
 
 .slotnova-modal-section {
@@ -1835,41 +1835,41 @@
 }
 
 .slotnova-section-title {
-	margin: 0 0 16px 0 !important;
-	font-size: 13px !important;
-	font-weight: 700 !important;
+	margin: 0 0 16px 0;
+	font-size: 13px;
+	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
-	color: #475569 !important;
+	color: #475569;
 	display: flex;
 	align-items: center;
 	gap: 6px;
 }
 
 .slotnova-section-title .dashicons {
-	color: #4f46e5 !important;
-	font-size: 16px !important;
-	width: 16px !important;
-	height: 16px !important;
+	color: #4f46e5;
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
 }
 
 .slotnova-input-styled,
 .slotnova-select-styled {
-	width: 100% !important;
-	padding: 9px 12px !important;
-	border: 1px solid #cbd5e1 !important;
-	border-radius: 8px !important;
-	font-size: 13px !important;
-	color: #1e293b !important;
-	background: #ffffff !important;
-	transition: all 0.2s ease !important;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
-	box-sizing: border-box !important;
+	width: 100%;
+	padding: 9px 12px;
+	border: 1px solid #cbd5e1;
+	border-radius: 8px;
+	font-size: 13px;
+	color: #1e293b;
+	background: #ffffff;
+	transition: all 0.2s ease;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+	box-sizing: border-box;
 }
 
 .slotnova-input-styled:focus,
 .slotnova-select-styled:focus {
-	border-color: #6366f1 !important;
-	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
-	outline: none !important;
+	border-color: #6366f1;
+	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+	outline: none;
 }
