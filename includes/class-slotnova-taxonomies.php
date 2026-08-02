@@ -39,6 +39,21 @@ class Taxonomies {
 
 		// Enqueue media script on taxonomy pages
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_media_scripts' ) );
+
+		// Remove Services and Employees columns from WooCommerce Products list table
+		add_filter( 'manage_edit-product_columns', array( $this, 'remove_product_columns' ), 999 );
+	}
+
+	/**
+	 * Remove Services and Employees columns from Products table.
+	 *
+	 * @param array $columns Existing columns.
+	 * @return array
+	 */
+	public function remove_product_columns( $columns ) {
+		unset( $columns['taxonomy-slotnova_service'] );
+		unset( $columns['taxonomy-slotnova_employee'] );
+		return $columns;
 	}
 
 	/**
@@ -66,7 +81,7 @@ class Taxonomies {
 			'hierarchical'      => true,
 			'labels'            => $labels_service,
 			'show_ui'           => true,
-			'show_admin_column' => true,
+			'show_admin_column' => false,
 			'query_var'         => true,
 			'meta_box_cb'       => false,
 			'rewrite'           => array( 'slug' => 'slotnova-service' ),
@@ -93,7 +108,7 @@ class Taxonomies {
 			'hierarchical'      => false,
 			'labels'            => $labels_employee,
 			'show_ui'           => true,
-			'show_admin_column' => true,
+			'show_admin_column' => false,
 			'query_var'         => true,
 			'meta_box_cb'       => false,
 			'rewrite'           => array( 'slug' => 'slotnova-employee' ),
