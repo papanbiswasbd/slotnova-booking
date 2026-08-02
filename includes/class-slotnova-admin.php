@@ -1060,74 +1060,7 @@ class Admin {
 				</div>
 			</div>
 
-			<!-- Manual Booking Modal -->
-			<div id="slotnova-manual-booking-modal" class="slotnova-modal-overlay slotnova-is-hidden">
-				<div class="slotnova-modal-content">
-					<div class="slotnova-modal-header">
-						<h2><?php esc_html_e( 'Add Manual Booking', 'slotnova-booking' ); ?></h2>
-						<button type="button" class="slotnova-modal-close">&times;</button>
-					</div>
-					<form id="slotnova-manual-booking-form">
-						<div class="slotnova-modal-body">
-							<div class="slotnova-form-row">
-								<div class="slotnova-form-group">
-									<label for="mb_customer_name"><?php esc_html_e( 'Customer Name *', 'slotnova-booking' ); ?></label>
-									<input type="text" id="mb_customer_name" name="customer_name" required placeholder="<?php esc_attr_e( 'e.g. John Doe', 'slotnova-booking' ); ?>" />
-								</div>
-								<div class="slotnova-form-group">
-									<label for="mb_customer_email"><?php esc_html_e( 'Email Address', 'slotnova-booking' ); ?></label>
-									<input type="email" id="mb_customer_email" name="customer_email" placeholder="<?php esc_attr_e( 'e.g. john@example.com', 'slotnova-booking' ); ?>" />
-								</div>
-							</div>
-
-							<div class="slotnova-form-row">
-								<div class="slotnova-form-group">
-									<label for="mb_customer_phone"><?php esc_html_e( 'Phone Number', 'slotnova-booking' ); ?></label>
-									<input type="text" id="mb_customer_phone" name="customer_phone" placeholder="<?php esc_attr_e( 'e.g. +1 234 567 890', 'slotnova-booking' ); ?>" />
-								</div>
-								<div class="slotnova-form-group">
-									<label for="mb_booking_date"><?php esc_html_e( 'Booking Date *', 'slotnova-booking' ); ?></label>
-									<input type="date" id="mb_booking_date" name="booking_date" required value="<?php echo esc_attr( wp_date( 'Y-m-d' ) ); ?>" />
-								</div>
-							</div>
-
-							<div class="slotnova-form-row">
-								<div class="slotnova-form-group">
-									<label for="mb_service_name"><?php esc_html_e( 'Service', 'slotnova-booking' ); ?></label>
-									<select id="mb_service_name" name="service_name">
-										<option value=""><?php esc_html_e( 'Select Service...', 'slotnova-booking' ); ?></option>
-										<?php if ( ! is_wp_error( $all_services ) && ! empty( $all_services ) ) : ?>
-											<?php foreach ( $all_services as $svc ) : ?>
-												<option value="<?php echo esc_attr( $svc->name ); ?>"><?php echo esc_html( $svc->name ); ?></option>
-											<?php endforeach; ?>
-										<?php endif; ?>
-									</select>
-								</div>
-								<div class="slotnova-form-group">
-									<label for="mb_employee_name"><?php esc_html_e( 'Assigned Employee', 'slotnova-booking' ); ?></label>
-									<select id="mb_employee_name" name="employee_name">
-										<option value=""><?php esc_html_e( 'Select Employee...', 'slotnova-booking' ); ?></option>
-										<?php if ( ! is_wp_error( $all_employees ) && ! empty( $all_employees ) ) : ?>
-											<?php foreach ( $all_employees as $emp ) : ?>
-												<option value="<?php echo esc_attr( $emp->name ); ?>"><?php echo esc_html( $emp->name ); ?></option>
-											<?php endforeach; ?>
-										<?php endif; ?>
-									</select>
-								</div>
-							</div>
-
-							<div class="slotnova-form-group">
-								<label for="mb_booking_time"><?php esc_html_e( 'Time Slot', 'slotnova-booking' ); ?></label>
-								<input type="time" id="mb_booking_time" name="booking_time" value="10:00" />
-							</div>
-						</div>
-						<div class="slotnova-modal-footer">
-							<button type="button" class="button slotnova-modal-close"><?php esc_html_e( 'Cancel', 'slotnova-booking' ); ?></button>
-							<button type="submit" class="button button-primary"><?php esc_html_e( 'Create Booking', 'slotnova-booking' ); ?></button>
-						</div>
-					</form>
-				</div>
-			</div>
+			<?php $this->render_manual_booking_modal(); ?>
 
 		</div>
 		<?php
@@ -1500,6 +1433,88 @@ class Admin {
 						</a>
 					</div>
 				</div>
+			</div>
+
+			<?php $this->render_manual_booking_modal(); ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render Manual Booking Modal.
+	 *
+	 * @return void
+	 */
+	private function render_manual_booking_modal() {
+		$all_services  = get_terms( array( 'taxonomy' => 'slotnova_service', 'hide_empty' => false ) );
+		$all_employees = get_terms( array( 'taxonomy' => 'slotnova_employee', 'hide_empty' => false ) );
+		?>
+		<!-- Manual Booking Modal -->
+		<div id="slotnova-manual-booking-modal" class="slotnova-modal-overlay slotnova-is-hidden">
+			<div class="slotnova-modal-content">
+				<div class="slotnova-modal-header">
+					<h2><?php esc_html_e( 'Add Manual Booking', 'slotnova-booking' ); ?></h2>
+					<button type="button" class="slotnova-modal-close">&times;</button>
+				</div>
+				<form id="slotnova-manual-booking-form">
+					<div class="slotnova-modal-body">
+						<div class="slotnova-form-row">
+							<div class="slotnova-form-group">
+								<label for="mb_customer_name"><?php esc_html_e( 'Customer Name *', 'slotnova-booking' ); ?></label>
+								<input type="text" id="mb_customer_name" name="customer_name" required placeholder="<?php esc_attr_e( 'e.g. John Doe', 'slotnova-booking' ); ?>" />
+							</div>
+							<div class="slotnova-form-group">
+								<label for="mb_customer_email"><?php esc_html_e( 'Email Address', 'slotnova-booking' ); ?></label>
+								<input type="email" id="mb_customer_email" name="customer_email" placeholder="<?php esc_attr_e( 'e.g. john@example.com', 'slotnova-booking' ); ?>" />
+							</div>
+						</div>
+
+						<div class="slotnova-form-row">
+							<div class="slotnova-form-group">
+								<label for="mb_customer_phone"><?php esc_html_e( 'Phone Number', 'slotnova-booking' ); ?></label>
+								<input type="text" id="mb_customer_phone" name="customer_phone" placeholder="<?php esc_attr_e( 'e.g. +1 234 567 890', 'slotnova-booking' ); ?>" />
+							</div>
+							<div class="slotnova-form-group">
+								<label for="mb_booking_date"><?php esc_html_e( 'Booking Date *', 'slotnova-booking' ); ?></label>
+								<input type="date" id="mb_booking_date" name="booking_date" required value="<?php echo esc_attr( wp_date( 'Y-m-d' ) ); ?>" />
+							</div>
+						</div>
+
+						<div class="slotnova-form-row">
+							<div class="slotnova-form-group">
+								<label for="mb_service_name"><?php esc_html_e( 'Service', 'slotnova-booking' ); ?></label>
+								<select id="mb_service_name" name="service_name">
+									<option value=""><?php esc_html_e( 'Select Service...', 'slotnova-booking' ); ?></option>
+									<?php if ( ! is_wp_error( $all_services ) && ! empty( $all_services ) ) : ?>
+										<?php foreach ( $all_services as $svc ) : ?>
+											<option value="<?php echo esc_attr( $svc->name ); ?>"><?php echo esc_html( $svc->name ); ?></option>
+										<?php endforeach; ?>
+									<?php endif; ?>
+								</select>
+							</div>
+							<div class="slotnova-form-group">
+								<label for="mb_employee_name"><?php esc_html_e( 'Assigned Employee', 'slotnova-booking' ); ?></label>
+								<select id="mb_employee_name" name="employee_name">
+									<option value=""><?php esc_html_e( 'Select Employee...', 'slotnova-booking' ); ?></option>
+									<?php if ( ! is_wp_error( $all_employees ) && ! empty( $all_employees ) ) : ?>
+										<?php foreach ( $all_employees as $emp ) : ?>
+											<option value="<?php echo esc_attr( $emp->name ); ?>"><?php echo esc_html( $emp->name ); ?></option>
+										<?php endforeach; ?>
+									<?php endif; ?>
+								</select>
+							</div>
+						</div>
+
+						<div class="slotnova-form-group">
+							<label for="mb_booking_time"><?php esc_html_e( 'Time Slot', 'slotnova-booking' ); ?></label>
+							<input type="time" id="mb_booking_time" name="booking_time" value="10:00" />
+						</div>
+					</div>
+					<div class="slotnova-modal-footer">
+						<button type="button" class="button slotnova-modal-close"><?php esc_html_e( 'Cancel', 'slotnova-booking' ); ?></button>
+						<button type="submit" class="button button-primary"><?php esc_html_e( 'Create Booking', 'slotnova-booking' ); ?></button>
+					</div>
+				</form>
 			</div>
 		</div>
 		<?php
