@@ -159,34 +159,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 					if (summaryTime) summaryTime.textContent = '-';
 
-					if (shouldShowTimeSlots()) {
-						if (timeSlotsWrapper) timeSlotsWrapper.classList.remove('slotnova-is-hidden');
-						fetchBookedSlots(dateStr);
-					} else {
-						if (timeSlotsWrapper) timeSlotsWrapper.classList.add('slotnova-is-hidden');
+					// Reveal time slots grid and fetch availability for selected date
+					if (timeSlotsWrapper) {
+						timeSlotsWrapper.classList.remove('slotnova-is-hidden');
 					}
+					fetchBookedSlots(dateStr);
 
 					checkSummaryVisibility();
 				}
 			}
 		});
-
-		function shouldShowTimeSlots() {
-			var serviceInput = document.getElementById('slotnova_service');
-			var employeeInput = document.getElementById('slotnova_employee');
-			var dInput = document.getElementById('slotnova_booking_date');
-
-			if (serviceInput && !serviceInput.value) {
-				return false;
-			}
-			if (employeeInput && !employeeInput.value) {
-				return false;
-			}
-			if (!dInput || !dInput.value) {
-				return false;
-			}
-			return true;
-		}
 	}
 
 	function fetchBookedSlots(dateStr) {
@@ -466,21 +448,11 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 
 					// Re-evaluate time slot availability for the selected Service or Employee
-					var sInput = document.getElementById('slotnova_service');
-					var eInput = document.getElementById('slotnova_employee');
 					var dInput = document.getElementById('slotnova_booking_date');
-					var isReady = true;
-
-					if (sInput && !sInput.value) isReady = false;
-					if (eInput && !eInput.value) isReady = false;
-					if (!dInput || !dInput.value) isReady = false;
-
-					var tWrapper = document.querySelector('.slotnova-time-slots-wrapper');
-					if (isReady) {
+					if (dInput && dInput.value) {
+						var tWrapper = document.querySelector('.slotnova-time-slots-wrapper');
 						if (tWrapper) tWrapper.classList.remove('slotnova-is-hidden');
 						fetchBookedSlots(dInput.value);
-					} else {
-						if (tWrapper) tWrapper.classList.add('slotnova-is-hidden');
 					}
 
 					checkSummaryVisibility();
