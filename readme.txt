@@ -1,6 +1,6 @@
 === SlotNova Booking for WooCommerce ===
 Contributors: papanbiswasbd
-Tags: woocommerce, booking, spa, appointments, reservations, salon
+Tags: booking, spa, appointments, reservations, salon
 Requires at least: 5.3
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -54,11 +54,11 @@ You can explore the live booking experience here: [Massage Packages Demo](https:
 
 SlotNova Booking exposes standard WordPress action and filter hooks:
 
-* `slotnova_booking()` - Global accessor function returning `\SlotNova\Booking\Plugin`.
-* `slotnova_get_booked_slots` - Filter array of booked slots for a given product and date.
-* `slotnova_validate_booking_data` - Filter validation status before adding a booking to the cart.
-* `slotnova_save_booking_data_to_order` - Action triggered when saving booking metadata to an order item.
-* `slotnova_before_booking_form` / `slotnova_after_booking_form` - Actions for inserting custom form content.
+* `slotnova_booking()` – Global accessor function returning `\SlotNova\Booking\Plugin`.
+* `slotnova_get_booked_slots` – Filter array of booked slots for a given product and date.
+* `slotnova_validate_booking_data` – Filter validation status before adding a booking to the cart.
+* `slotnova_save_booking_data_to_order` – Action triggered when saving booking metadata to an order item.
+* `slotnova_before_booking_form` / `slotnova_after_booking_form` – Actions for inserting custom form content.
 
 == Changelog ==
 
