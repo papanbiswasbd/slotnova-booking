@@ -632,6 +632,44 @@
 	transform: translateY(0);
 }
 
+/* Animations & Smooth Reveal UX */
+@keyframes slotnovaSlideDown {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes slotnovaPulse {
+	0% { opacity: 0.55; transform: scale(0.995); }
+	50% { opacity: 0.85; transform: scale(1); }
+	100% { opacity: 0.55; transform: scale(0.995); }
+}
+
+.slotnova-time-slots-wrapper {
+	display: block;
+	width: 100%;
+	clear: both;
+}
+
+.slotnova-time-slots-wrapper:not(.slotnova-is-hidden) {
+	display: block !important;
+	animation: slotnovaSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+#slotnova-summary:not(.slotnova-is-hidden) {
+	animation: slotnovaSlideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.slotnova-time-pills-grid.loading {
+	animation: slotnovaPulse 0.9s ease-in-out infinite;
+	pointer-events: none;
+}
+
 /* Utility Hidden Class */
 .slotnova-is-hidden {
 	display: none !important;

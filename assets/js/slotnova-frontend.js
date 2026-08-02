@@ -151,8 +151,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (summaryDate) summaryDate.textContent = dateStr;
 
 					// Clear selected time slot on date change
-					if (timeInput) {
-						timeInput.value = '';
+					var tInput = document.getElementById('slotnova_booking_time');
+					if (tInput) {
+						tInput.value = '';
 					}
 					var activePill = document.querySelector('.slotnova-time-pill.active');
 					if (activePill) activePill.classList.remove('active');
@@ -160,8 +161,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (summaryTime) summaryTime.textContent = '-';
 
 					// Reveal time slots grid and fetch availability for selected date
-					if (timeSlotsWrapper) {
-						timeSlotsWrapper.classList.remove('slotnova-is-hidden');
+					var tSlotsWrapper = document.querySelector('.slotnova-time-slots-wrapper');
+					if (tSlotsWrapper) {
+						tSlotsWrapper.classList.remove('slotnova-is-hidden');
+						tSlotsWrapper.style.display = 'block';
 					}
 					fetchBookedSlots(dateStr);
 
@@ -172,10 +175,24 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	function fetchBookedSlots(dateStr) {
-		var bookingForm = document.querySelector('.slotnova-form');
-		var productId = bookingForm ? bookingForm.getAttribute('data-product-id') : 0;
+		var tSlotsWrapper = document.querySelector('.slotnova-time-slots-wrapper');
+		if (tSlotsWrapper) {
+			tSlotsWrapper.classList.remove('slotnova-is-hidden');
+			tSlotsWrapper.style.display = 'block';
+		}
 
-		if (!productId || !dateStr || typeof slotnova_params === 'undefined' || !slotnova_params.ajax_url) {
+		var bookingForm = document.querySelector('.slotnova-form') || document.querySelector('form.cart') || document.querySelector('[data-product-id]');
+		var productId = bookingForm ? bookingForm.getAttribute('data-product-id') : 0;
+		if (!productId) {
+			var addBtn = document.querySelector('button[name="add-to-cart"]');
+			if (addBtn) productId = addBtn.value;
+		}
+		if (!productId) {
+			var valInput = document.querySelector('input[name="add-to-cart"]');
+			if (valInput) productId = valInput.value;
+		}
+
+		if (!dateStr || typeof slotnova_params === 'undefined' || !slotnova_params.ajax_url) {
 			return;
 		}
 
@@ -212,6 +229,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		});
 
+		var pillsGrid = document.getElementById('slotnova_time_pills');
+		if (pillsGrid) pillsGrid.classList.add('loading');
+
 		var formData = new FormData();
 		formData.append('action', 'slotnova_get_booked_slots');
 		formData.append('product_id', productId);
@@ -226,6 +246,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		})
 		.then(function(res) { return res.json(); })
 		.then(function(res) {
+			if (pillsGrid) pillsGrid.classList.remove('loading');
 			var booked = (res.success && res.data && res.data.booked_slots) ? res.data.booked_slots : [];
 
 			timePills.forEach(function(pill) {
@@ -265,6 +286,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 		})
 		.catch(function(err) {
+			if (pillsGrid) pillsGrid.classList.remove('loading');
 			console.error('Error fetching booked slots:', err);
 		});
 	}
@@ -473,7 +495,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	function checkSummaryVisibility() {
 		if (!summaryBox) return;
 		var serviceInput = document.getElementById('slotnova_service');
-		if (serviceInput && serviceInput.value) {
+		var dateInput = document.getElementById('slotnova_booking_date');
+		if (serviceInput && serviceInput.value && dateInput && dateInput.value) {
 			summaryBox.classList.remove('slotnova-is-hidden');
 		} else {
 			summaryBox.classList.add('slotnova-is-hidden');

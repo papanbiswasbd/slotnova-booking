@@ -138,11 +138,11 @@ class Frontend {
 		$service_id  = isset( $_POST['service_id'] ) ? intval( $_POST['service_id'] ) : 0;
 		$employee_id = isset( $_POST['employee_id'] ) ? intval( $_POST['employee_id'] ) : 0;
 
-		if ( empty( $raw_date ) || false === strtotime( $raw_date ) ) {
+		$target_date = slotnova_parse_date( $raw_date );
+		if ( ! $target_date ) {
 			wp_send_json_error( array( 'message' => 'Invalid parameters.' ) );
 		}
 
-		$target_date  = date( 'Y-m-d', strtotime( $raw_date ) );
 		$booked_slots = $this->get_booked_slots_for_date( $product_id, $target_date, $service_id, $employee_id );
 
 		wp_send_json_success( array(
