@@ -243,7 +243,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			timePills.forEach(function(pill) {
 				var slotVal = pill.getAttribute('data-value');
-				var isBooked = (booked.indexOf(slotVal) !== -1);
+				var slot24 = timeTo24h(slotVal);
+				var isBooked = false;
+
+				for (var b = 0; b < booked.length; b++) {
+					if (timeTo24h(booked[b]) === slot24) {
+						isBooked = true;
+						break;
+					}
+				}
 				
 				var isPassed = false;
 				if (isToday && siteTime) {

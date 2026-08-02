@@ -160,9 +160,9 @@ class Frontend {
 				}
 
 				$item_raw_date = $item->get_meta( 'Date' );
-				$item_time     = trim( (string) $item->get_meta( 'Time' ) );
+				$item_raw_time = trim( (string) $item->get_meta( 'Time' ) );
 
-				if ( empty( $item_raw_date ) || empty( $item_time ) || false === strtotime( $item_raw_date ) ) {
+				if ( empty( $item_raw_date ) || empty( $item_raw_time ) || false === strtotime( $item_raw_date ) || false === strtotime( $item_raw_time ) ) {
 					continue;
 				}
 
@@ -171,39 +171,45 @@ class Frontend {
 					continue;
 				}
 
+				$item_time = date( 'h:i A', strtotime( $item_raw_time ) );
+
 				$item_service_id  = (int) $item->get_meta( '_slotnova_service_id' );
 				$item_employee_id = (int) $item->get_meta( '_slotnova_employee_id' );
 				$item_service     = trim( (string) $item->get_meta( 'Service' ) );
 				$item_employee    = trim( (string) $item->get_meta( 'Employee' ) );
 
-				$is_match = true;
+				$is_match = false;
 
-				// Service matching
-				if ( $service_id > 0 ) {
-					if ( $item_service_id > 0 ) {
-						if ( $item_service_id !== $service_id ) {
-							$is_match = false;
-						}
-					} elseif ( '' !== $item_service ) {
-						$svc_term = get_term( $service_id, 'slotnova_service' );
-						if ( ! $svc_term || is_wp_error( $svc_term ) || $svc_term->name !== $item_service ) {
-							$is_match = false;
-						}
-					}
-				}
-
-				// Employee matching
-				if ( $is_match && $employee_id > 0 ) {
+				// Employee matching: If an employee is selected, check if this order is for that employee
+				if ( $employee_id > 0 ) {
 					if ( $item_employee_id > 0 ) {
-						if ( $item_employee_id !== $employee_id ) {
-							$is_match = false;
+						if ( $item_employee_id === $employee_id ) {
+							$is_match = true;
 						}
 					} elseif ( '' !== $item_employee ) {
 						$emp_term = get_term( $employee_id, 'slotnova_employee' );
-						if ( ! $emp_term || is_wp_error( $emp_term ) || $emp_term->name !== $item_employee ) {
-							$is_match = false;
+						if ( $emp_term && ! is_wp_error( $emp_term ) && strtolower( $emp_term->name ) === strtolower( $item_employee ) ) {
+							$is_match = true;
 						}
+					} else {
+						$is_match = true;
 					}
+				} elseif ( $service_id > 0 ) {
+					// Service matching: If no employee selected, check if order is for this service
+					if ( $item_service_id > 0 ) {
+						if ( $item_service_id === $service_id ) {
+							$is_match = true;
+						}
+					} elseif ( '' !== $item_service ) {
+						$svc_term = get_term( $service_id, 'slotnova_service' );
+						if ( $svc_term && ! is_wp_error( $svc_term ) && strtolower( $svc_term->name ) === strtolower( $item_service ) ) {
+							$is_match = true;
+						}
+					} else {
+						$is_match = true;
+					}
+				} else {
+					$is_match = true;
 				}
 
 				if ( $is_match && ! in_array( $item_time, $booked_slots, true ) ) {
@@ -221,9 +227,9 @@ class Frontend {
 				}
 
 				$cart_raw_date = isset( $cart_item['slotnova_booking']['date'] ) ? $cart_item['slotnova_booking']['date'] : '';
-				$cart_time     = isset( $cart_item['slotnova_booking']['time'] ) ? trim( (string) $cart_item['slotnova_booking']['time'] ) : '';
+				$cart_raw_time = isset( $cart_item['slotnova_booking']['time'] ) ? trim( (string) $cart_item['slotnova_booking']['time'] ) : '';
 
-				if ( empty( $cart_raw_date ) || empty( $cart_time ) || false === strtotime( $cart_raw_date ) ) {
+				if ( empty( $cart_raw_date ) || empty( $cart_raw_time ) || false === strtotime( $cart_raw_date ) || false === strtotime( $cart_raw_time ) ) {
 					continue;
 				}
 
@@ -232,16 +238,23 @@ class Frontend {
 					continue;
 				}
 
+				$cart_time = date( 'h:i A', strtotime( $cart_raw_time ) );
+
 				$cart_svc = isset( $cart_item['slotnova_booking']['service_id'] ) ? (int) $cart_item['slotnova_booking']['service_id'] : 0;
 				$cart_emp = isset( $cart_item['slotnova_booking']['employee_id'] ) ? (int) $cart_item['slotnova_booking']['employee_id'] : 0;
 
-				$is_match = true;
+				$is_match = false;
 
-				if ( $service_id > 0 && $cart_svc > 0 && $cart_svc !== $service_id ) {
-					$is_match = false;
-				}
-				if ( $is_match && $employee_id > 0 && $cart_emp > 0 && $cart_emp !== $employee_id ) {
-					$is_match = false;
+				if ( $employee_id > 0 ) {
+					if ( $cart_emp === $employee_id || 0 === $cart_emp ) {
+						$is_match = true;
+					}
+				} elseif ( $service_id > 0 ) {
+					if ( $cart_svc === $service_id || 0 === $cart_svc ) {
+						$is_match = true;
+					}
+				} else {
+					$is_match = true;
 				}
 
 				if ( $is_match && ! in_array( $cart_time, $booked_slots, true ) ) {
