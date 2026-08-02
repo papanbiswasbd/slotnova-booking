@@ -62,7 +62,7 @@ class Taxonomies {
 			'menu_name'         => __( 'Services', 'slotnova-booking' ),
 		);
 
-		$args_service = array(
+		$args_service = apply_filters( 'slotnova_register_service_taxonomy_args', array(
 			'hierarchical'      => true,
 			'labels'            => $labels_service,
 			'show_ui'           => true,
@@ -70,7 +70,7 @@ class Taxonomies {
 			'query_var'         => true,
 			'meta_box_cb'       => false,
 			'rewrite'           => array( 'slug' => 'slotnova-service' ),
-		);
+		) );
 
 		register_taxonomy( 'slotnova_service', array( 'product' ), $args_service );
 
@@ -89,7 +89,7 @@ class Taxonomies {
 			'menu_name'         => __( 'Employees', 'slotnova-booking' ),
 		);
 
-		$args_employee = array(
+		$args_employee = apply_filters( 'slotnova_register_employee_taxonomy_args', array(
 			'hierarchical'      => false,
 			'labels'            => $labels_employee,
 			'show_ui'           => true,
@@ -97,7 +97,7 @@ class Taxonomies {
 			'query_var'         => true,
 			'meta_box_cb'       => false,
 			'rewrite'           => array( 'slug' => 'slotnova-employee' ),
-		);
+		) );
 
 		register_taxonomy( 'slotnova_employee', array( 'product' ), $args_employee );
 	}
@@ -148,6 +148,7 @@ class Taxonomies {
 			</div>
 			<?php
 		}
+		do_action( 'slotnova_taxonomy_add_form_fields', $taxonomy );
 	}
 
 	/**
@@ -189,6 +190,7 @@ class Taxonomies {
 			</tr>
 			<?php
 		}
+		do_action( 'slotnova_taxonomy_edit_form_fields', $term );
 	}
 
 	/**
@@ -218,5 +220,7 @@ class Taxonomies {
 				update_term_meta( $term_id, 'slotnova_service_price', 0 );
 			}
 		}
+
+		do_action( 'slotnova_save_taxonomy_meta', $term_id, $_POST );
 	}
 }

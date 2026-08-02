@@ -187,10 +187,26 @@ class Admin {
 			$customer_phone = sanitize_text_field( wp_unslash( $_POST['customer_phone'] ) );
 		}
 
+		$service_id    = isset( $_POST['service_id'] ) ? absint( $_POST['service_id'] ) : 0;
+		$employee_id   = isset( $_POST['employee_id'] ) ? absint( $_POST['employee_id'] ) : 0;
 		$service_name  = isset( $_POST['service_name'] ) ? sanitize_text_field( wp_unslash( $_POST['service_name'] ) ) : '';
 		$employee_name = isset( $_POST['employee_name'] ) ? sanitize_text_field( wp_unslash( $_POST['employee_name'] ) ) : '';
 		$booking_date  = isset( $_POST['booking_date'] ) ? sanitize_text_field( wp_unslash( $_POST['booking_date'] ) ) : '';
 		$booking_time  = isset( $_POST['booking_time'] ) ? sanitize_text_field( wp_unslash( $_POST['booking_time'] ) ) : '';
+
+		if ( $service_id > 0 && empty( $service_name ) ) {
+			$svc_term = get_term( $service_id, 'slotnova_service' );
+			if ( $svc_term && ! is_wp_error( $svc_term ) ) {
+				$service_name = $svc_term->name;
+			}
+		}
+
+		if ( $employee_id > 0 && empty( $employee_name ) ) {
+			$emp_term = get_term( $employee_id, 'slotnova_employee' );
+			if ( $emp_term && ! is_wp_error( $emp_term ) ) {
+				$employee_name = $emp_term->name;
+			}
+		}
 
 		if ( empty( $first_name ) ) {
 			wp_send_json_error( array( 'message' => __( 'Please enter the customer first name.', 'slotnova-booking' ) ) );
@@ -221,6 +237,27 @@ class Admin {
 			}
 		}
 
+		$svc_price = 0;
+		if ( $product_id ) {
+			$saved_services = get_post_meta( $product_id, '_slotnova_product_services', true );
+			if ( is_array( $saved_services ) ) {
+				foreach ( $saved_services as $saved ) {
+					if ( (int) $saved['term_id'] === $service_id && isset( $saved['price'] ) && '' !== $saved['price'] && floatval( $saved['price'] ) > 0 ) {
+						$svc_price = floatval( $saved['price'] );
+						break;
+					}
+				}
+			}
+		}
+
+		if ( $svc_price <= 0 && $service_id ) {
+			$svc_price = floatval( get_term_meta( $service_id, 'slotnova_service_price', true ) );
+		}
+
+		if ( $svc_price <= 0 && $product ) {
+			$svc_price = floatval( $product->get_price() );
+		}
+
 		$order = wc_create_order();
 		if ( is_wp_error( $order ) ) {
 			wp_send_json_error( array( 'message' => $order->get_error_message() ) );
@@ -228,11 +265,15 @@ class Admin {
 
 		$item_id = 0;
 		if ( $product ) {
-			$item_id = $order->add_product( $product, 1 );
+			$item_id = $order->add_product( $product, 1, array(
+				'subtotal' => $svc_price,
+				'total'    => $svc_price,
+			) );
 		} else {
 			$item = new \WC_Order_Item_Fee();
 			$item->set_name( ! empty( $service_name ) ? $service_name : __( 'Manual SlotNova Booking', 'slotnova-booking' ) );
-			$item->set_total( 0 );
+			$item->set_subtotal( $svc_price );
+			$item->set_total( $svc_price );
 			$order->add_item( $item );
 			$item_id = $item->get_id();
 		}
@@ -250,9 +291,23 @@ class Admin {
 				if ( ! empty( $booking_time ) ) {
 					$order_item->add_meta_data( 'Time', $booking_time );
 				}
+				if ( $service_id ) {
+					$order_item->add_meta_data( '_slotnova_service_id', $service_id );
+				}
+				if ( $employee_id ) {
+					$order_item->add_meta_data( '_slotnova_employee_id', $employee_id );
+				}
+
+				if ( $svc_price > 0 ) {
+					$order_item->set_subtotal( $svc_price );
+					$order_item->set_total( $svc_price );
+				}
+
 				$order_item->save();
 			}
 		}
+
+		do_action( 'slotnova_before_manual_booking_created', $_POST );
 
 		$address = array(
 			'first_name' => $first_name,
@@ -267,9 +322,17 @@ class Admin {
 		);
 
 		$order->set_address( $address, 'billing' );
-		$order->set_status( 'processing', __( 'Manual booking created via SlotNova Dashboard.', 'slotnova-booking' ) );
+		$status = apply_filters( 'slotnova_manual_booking_order_status', 'pending', $_POST );
+		$order->set_status( $status, __( 'Manual booking created via SlotNova Dashboard.', 'slotnova-booking' ) );
 		$order->calculate_totals();
+
+		if ( $svc_price > 0 ) {
+			$order->set_total( $svc_price );
+		}
+
 		$order->save();
+
+		do_action( 'slotnova_after_manual_booking_created', $order->get_id(), $order, $_POST );
 
 		wp_send_json_success( array(
 			'message'  => __( 'Manual booking created successfully!', 'slotnova-booking' ),
@@ -314,6 +377,13 @@ class Admin {
 		register_setting( 'slotnova_settings_group', 'slotnova_weekly_off_days', array( 'sanitize_callback' => array( $this, 'sanitize_array' ) ) );
 		register_setting( 'slotnova_settings_group', 'slotnova_specific_off_days', array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
 		register_setting( 'slotnova_settings_group', 'slotnova_enable_time_slots', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+
+		// Style & Color settings
+		register_setting( 'slotnova_settings_group', 'slotnova_primary_color', array( 'sanitize_callback' => 'sanitize_hex_color' ) );
+		register_setting( 'slotnova_settings_group', 'slotnova_accent_color', array( 'sanitize_callback' => 'sanitize_hex_color' ) );
+		register_setting( 'slotnova_settings_group', 'slotnova_bg_color', array( 'sanitize_callback' => 'sanitize_hex_color' ) );
+		register_setting( 'slotnova_settings_group', 'slotnova_text_color', array( 'sanitize_callback' => 'sanitize_hex_color' ) );
+		register_setting( 'slotnova_settings_group', 'slotnova_border_radius', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 	}
 
 	/**
@@ -378,19 +448,31 @@ class Admin {
 
 		$admin_js_deps = array( 'jquery' );
 
+		if ( $is_slotnova_page || $is_product_page ) {
+			wp_enqueue_style( 'slotnova-flatpickr-css', SLOTNOVA_BOOKING_URL . 'assets/css/flatpickr-light.css', array(), '4.6.13' );
+			wp_enqueue_script( 'slotnova-flatpickr-js', SLOTNOVA_BOOKING_URL . 'assets/js/flatpickr.min.js', array(), '4.6.13', true );
+			$admin_js_deps[] = 'slotnova-flatpickr-js';
+		}
+
 		if ( strpos( $hook, 'slotnova-calendar' ) !== false ) {
 			wp_enqueue_script( 'slotnova-fullcalendar-js', SLOTNOVA_BOOKING_URL . 'assets/js/fullcalendar.min.js', array(), '6.1.15', true );
 			$admin_js_deps[] = 'slotnova-fullcalendar-js';
 		}
 
 		// Always enqueue core admin CSS and JS on relevant pages
-		wp_enqueue_style( 'slotnova-admin-css', SLOTNOVA_BOOKING_URL . 'assets/css/slotnova-admin.css', array(), SLOTNOVA_BOOKING_VERSION );
+		wp_enqueue_style( 'slotnova-admin-css', SLOTNOVA_BOOKING_URL . 'assets/css/slotnova-admin.css', array( 'slotnova-flatpickr-css' ), SLOTNOVA_BOOKING_VERSION );
 		wp_enqueue_script( 'slotnova-admin-js', SLOTNOVA_BOOKING_URL . 'assets/js/slotnova-admin.js', $admin_js_deps, SLOTNOVA_BOOKING_VERSION, true );
 
 		$localized_data = array(
-			'ajax_url' => admin_url( 'admin-ajax.php' ),
-			'nonce'    => wp_create_nonce( 'slotnova_admin_nonce' ),
-			'i18n'     => array(
+			'ajax_url'          => admin_url( 'admin-ajax.php' ),
+			'nonce'             => wp_create_nonce( 'slotnova_admin_nonce' ),
+			'currency_symbol'   => get_woocommerce_currency_symbol(),
+			'free_text'         => __( 'Free', 'slotnova-booking' ),
+			'booked_text'       => __( 'Booked', 'slotnova-booking' ),
+			'passed_text'       => __( 'Time Passed', 'slotnova-booking' ),
+			'site_current_date' => wp_date( 'Y-m-d' ),
+			'site_current_time' => wp_date( 'H:i' ),
+			'i18n'              => array(
 				'select_service'  => __( 'Select Service...', 'slotnova-booking' ),
 				'select_employee' => __( 'Select Employee...', 'slotnova-booking' ),
 				'remove'          => __( 'Remove', 'slotnova-booking' ),
@@ -460,6 +542,11 @@ class Admin {
 			wp_enqueue_script( 'slotnova-flatpickr-js', SLOTNOVA_BOOKING_URL . 'assets/js/flatpickr.min.js', array(), '4.6.13', true );
 		}
 
+		if ( strpos( $hook, 'slotnova-settings' ) !== false ) {
+			wp_enqueue_style( 'wp-color-picker' );
+			wp_enqueue_script( 'wp-color-picker' );
+		}
+
 		if ( $is_product_page ) {
 			wp_enqueue_script( 'jquery-ui-sortable' );
 
@@ -487,6 +574,7 @@ class Admin {
 			$localized_data['all_employees']          = $employee_options;
 		}
 
+		$localized_data = apply_filters( 'slotnova_admin_localized_data', $localized_data, $hook );
 		wp_localize_script( 'slotnova-admin-js', 'slotnova_admin_data', $localized_data );
 	}
 
@@ -705,7 +793,7 @@ class Admin {
 			}
 		}
 
-		return array(
+		$metrics = array(
 			'total_bookings'    => $total_bookings,
 			'total_revenue'     => $total_revenue,
 			'upcoming_bookings' => $upcoming_bookings,
@@ -722,6 +810,8 @@ class Admin {
 			'chart_values'      => array_values( $chart_bookings ),
 			'chart_revenue'     => array_values( $chart_revenue ),
 		);
+
+		return apply_filters( 'slotnova_dashboard_metrics', $metrics, $filter );
 	}
 
 	/**
@@ -1189,10 +1279,12 @@ class Admin {
 			}
 		}
 
-		return array(
+		$result = array(
 			'list'   => $list_data,
 			'events' => $calendar_events,
 		);
+
+		return apply_filters( 'slotnova_calendar_events', $result, $search, $service_filter, $employee_filter, $status_filter );
 	}
 
 	/**
@@ -1476,6 +1568,26 @@ class Admin {
 	private function render_manual_booking_modal() {
 		$all_services  = get_terms( array( 'taxonomy' => 'slotnova_service', 'hide_empty' => false ) );
 		$all_employees = get_terms( array( 'taxonomy' => 'slotnova_employee', 'hide_empty' => false ) );
+
+		$opening      = get_option( 'slotnova_opening_time', '09:00' );
+		$closing      = get_option( 'slotnova_closing_time', '17:00' );
+		$duration_val = get_option( 'slotnova_slot_duration', '60' );
+		$duration     = (int) $duration_val;
+		if ( $duration < 5 ) {
+			$duration = 60;
+		}
+
+		$weekly_off = get_option( 'slotnova_weekly_off_days', array() );
+		if ( ! is_array( $weekly_off ) ) {
+			$weekly_off = array();
+		}
+		$specific_off     = get_option( 'slotnova_specific_off_days', '' );
+		$all_off_days_arr = $weekly_off;
+		if ( ! empty( $specific_off ) ) {
+			$specific_off_arr = array_map( 'trim', explode( ',', $specific_off ) );
+			$all_off_days_arr = array_merge( $all_off_days_arr, $specific_off_arr );
+		}
+		$combined_off_days = implode( ',', $all_off_days_arr );
 		?>
 		<!-- Manual Booking Modal -->
 		<div id="slotnova-manual-booking-modal" class="slotnova-modal-overlay slotnova-is-hidden">
@@ -1549,39 +1661,137 @@ class Admin {
 								<span class="dashicons dashicons-calendar-alt"></span>
 								<?php esc_html_e( 'Appointment & Booking Schedule', 'slotnova-booking' ); ?>
 							</h4>
-							<div class="slotnova-form-row">
-								<div class="slotnova-form-group">
-									<label for="mb_service_name"><?php esc_html_e( 'Service', 'slotnova-booking' ); ?></label>
-									<select id="mb_service_name" name="service_name" class="slotnova-select-styled">
-										<option value=""><?php esc_html_e( 'Select Service...', 'slotnova-booking' ); ?></option>
-										<?php if ( ! is_wp_error( $all_services ) && ! empty( $all_services ) ) : ?>
-											<?php foreach ( $all_services as $svc ) : ?>
-												<option value="<?php echo esc_attr( $svc->name ); ?>"><?php echo esc_html( $svc->name ); ?></option>
-											<?php endforeach; ?>
-										<?php endif; ?>
-									</select>
+
+							<!-- Service Custom Dropdown -->
+							<div class="slotnova-form-group slotnova-custom-select-wrapper">
+								<label><?php esc_html_e( 'Select Service', 'slotnova-booking' ); ?></label>
+								<div class="slotnova-custom-select" id="mb_service_dropdown">
+									<div class="slotnova-select-trigger">
+										<input type="text" class="slotnova-select-search-input" placeholder="<?php esc_attr_e( 'Choose a service...', 'slotnova-booking' ); ?>" autocomplete="off" />
+										<div class="slotnova-select-arrow"></div>
+									</div>
+									<div class="slotnova-select-options">
+										<div class="slotnova-select-options-list">
+											<?php if ( ! is_wp_error( $all_services ) && ! empty( $all_services ) ) : ?>
+												<?php foreach ( $all_services as $svc ) :
+													$price         = get_term_meta( $svc->term_id, 'slotnova_service_price', true );
+													$price_val     = floatval( $price );
+													$price_display = ( $price_val > 0 ) ? wc_price( $price_val ) : __( 'Free', 'slotnova-booking' );
+													$image_id      = get_term_meta( $svc->term_id, 'slotnova_image_id', true );
+													$image_url     = $image_id ? wp_get_attachment_image_url( $image_id, 'thumbnail' ) : '';
+													?>
+													<div class="slotnova-select-option" data-value="<?php echo esc_attr( $svc->term_id ); ?>" data-name="<?php echo esc_attr( $svc->name ); ?>" data-price="<?php echo esc_attr( $price_val ); ?>">
+														<?php if ( $image_url ) : ?>
+															<img src="<?php echo esc_url( $image_url ); ?>" alt="" class="slotnova-option-img">
+														<?php else : ?>
+															<div class="slotnova-option-img-placeholder"></div>
+														<?php endif; ?>
+														<div class="slotnova-option-details">
+															<span class="slotnova-option-name"><?php echo esc_html( $svc->name ); ?></span>
+															<span class="slotnova-option-price"><?php echo esc_html( wp_strip_all_tags( $price_display ) ); ?></span>
+														</div>
+													</div>
+												<?php endforeach; ?>
+											<?php endif; ?>
+										</div>
+										<div class="slotnova-select-no-results slotnova-is-hidden"><?php esc_html_e( 'No results found', 'slotnova-booking' ); ?></div>
+									</div>
 								</div>
-								<div class="slotnova-form-group">
-									<label for="mb_employee_name"><?php esc_html_e( 'Assigned Staff / Employee', 'slotnova-booking' ); ?></label>
-									<select id="mb_employee_name" name="employee_name" class="slotnova-select-styled">
-										<option value=""><?php esc_html_e( 'Select Employee...', 'slotnova-booking' ); ?></option>
-										<?php if ( ! is_wp_error( $all_employees ) && ! empty( $all_employees ) ) : ?>
-											<?php foreach ( $all_employees as $emp ) : ?>
-												<option value="<?php echo esc_attr( $emp->name ); ?>"><?php echo esc_html( $emp->name ); ?></option>
-											<?php endforeach; ?>
-										<?php endif; ?>
-									</select>
-								</div>
+								<input type="hidden" name="service_id" id="mb_service_id" />
+								<input type="hidden" name="service_name" id="mb_service_name" />
 							</div>
 
-							<div class="slotnova-form-row">
-								<div class="slotnova-form-group">
-									<label for="mb_booking_date"><?php esc_html_e( 'Booking Date *', 'slotnova-booking' ); ?></label>
-									<input type="date" id="mb_booking_date" name="booking_date" required value="<?php echo esc_attr( wp_date( 'Y-m-d' ) ); ?>" class="slotnova-input-styled" />
+							<!-- Employee Custom Dropdown -->
+							<div class="slotnova-form-group slotnova-custom-select-wrapper">
+								<label><?php esc_html_e( 'Select Staff / Employee', 'slotnova-booking' ); ?></label>
+								<div class="slotnova-custom-select" id="mb_employee_dropdown">
+									<div class="slotnova-select-trigger">
+										<input type="text" class="slotnova-select-search-input" placeholder="<?php esc_attr_e( 'Choose an employee...', 'slotnova-booking' ); ?>" autocomplete="off" />
+										<div class="slotnova-select-arrow"></div>
+									</div>
+									<div class="slotnova-select-options">
+										<div class="slotnova-select-options-list">
+											<?php if ( ! is_wp_error( $all_employees ) && ! empty( $all_employees ) ) : ?>
+												<?php foreach ( $all_employees as $emp ) :
+													$image_id  = get_term_meta( $emp->term_id, 'slotnova_image_id', true );
+													$image_url = $image_id ? wp_get_attachment_image_url( $image_id, 'thumbnail' ) : '';
+													?>
+													<div class="slotnova-select-option" data-value="<?php echo esc_attr( $emp->term_id ); ?>" data-name="<?php echo esc_attr( $emp->name ); ?>">
+														<?php if ( $image_url ) : ?>
+															<img src="<?php echo esc_url( $image_url ); ?>" alt="" class="slotnova-option-img">
+														<?php else : ?>
+															<div class="slotnova-option-img-placeholder"></div>
+														<?php endif; ?>
+														<div class="slotnova-option-details">
+															<span class="slotnova-option-name"><?php echo esc_html( $emp->name ); ?></span>
+														</div>
+													</div>
+												<?php endforeach; ?>
+											<?php endif; ?>
+										</div>
+										<div class="slotnova-select-no-results slotnova-is-hidden"><?php esc_html_e( 'No results found', 'slotnova-booking' ); ?></div>
+									</div>
 								</div>
-								<div class="slotnova-form-group">
-									<label for="mb_booking_time"><?php esc_html_e( 'Time Slot', 'slotnova-booking' ); ?></label>
-									<input type="time" id="mb_booking_time" name="booking_time" value="10:00" class="slotnova-input-styled" />
+								<input type="hidden" name="employee_id" id="mb_employee_id" />
+								<input type="hidden" name="employee_name" id="mb_employee_name" />
+							</div>
+
+							<!-- Booking Date Inline Flatpickr -->
+							<div class="slotnova-form-group">
+								<label for="mb_booking_date"><?php esc_html_e( 'Select Date', 'slotnova-booking' ); ?></label>
+								<input type="text" name="booking_date" id="mb_booking_date" required class="slotnova-is-hidden" data-off-days="<?php echo esc_attr( $combined_off_days ); ?>" data-opening-time="<?php echo esc_attr( $opening ); ?>" data-closing-time="<?php echo esc_attr( $closing ); ?>">
+							</div>
+
+							<!-- Time Slot Selection Pills Grid -->
+							<div class="slotnova-form-group mb-time-slots-wrapper slotnova-is-hidden">
+								<label><?php esc_html_e( 'Select Time Slot', 'slotnova-booking' ); ?></label>
+								<div class="slotnova-time-pills-grid" id="mb_time_pills">
+									<?php
+									$start_time = strtotime( $opening );
+									$end_time   = strtotime( $closing );
+									if ( $start_time && $end_time && $start_time < $end_time ) {
+										$current_time = $start_time;
+										while ( $current_time + ( $duration * 60 ) <= $end_time ) {
+											$slot_label = wp_date( 'h:i A', $current_time );
+											echo '<button type="button" class="slotnova-time-pill" data-value="' . esc_attr( $slot_label ) . '">' . esc_html( $slot_label ) . '</button>';
+											$current_time += ( $duration * 60 );
+										}
+									}
+									?>
+								</div>
+								<input type="hidden" name="booking_time" id="mb_booking_time" required>
+							</div>
+
+							<!-- Booking Summary Box -->
+							<div id="mb-slotnova-summary" class="slotnova-summary-box">
+								<div class="slotnova-summary-header">
+									<span class="slotnova-summary-icon">
+										<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+									</span>
+									<h4 class="slotnova-summary-title"><?php esc_html_e( 'Booking Summary', 'slotnova-booking' ); ?></h4>
+								</div>
+								<div class="slotnova-summary-body">
+									<div class="slotnova-summary-row">
+										<span class="slotnova-summary-label"><?php esc_html_e( 'Service', 'slotnova-booking' ); ?></span>
+										<span class="slotnova-summary-value" id="mb-summary-service-name">-</span>
+									</div>
+									<div class="slotnova-summary-row" id="mb-summary-employee-row">
+										<span class="slotnova-summary-label"><?php esc_html_e( 'Employee', 'slotnova-booking' ); ?></span>
+										<span class="slotnova-summary-value" id="mb-summary-employee-name">-</span>
+									</div>
+									<div class="slotnova-summary-row">
+										<span class="slotnova-summary-label"><?php esc_html_e( 'Date', 'slotnova-booking' ); ?></span>
+										<span class="slotnova-summary-value" id="mb-summary-booking-date">-</span>
+									</div>
+									<div class="slotnova-summary-row" id="mb-summary-time-row">
+										<span class="slotnova-summary-label"><?php esc_html_e( 'Time', 'slotnova-booking' ); ?></span>
+										<span class="slotnova-summary-value" id="mb-summary-booking-time">-</span>
+									</div>
+									<div class="slotnova-summary-divider"></div>
+									<div class="slotnova-summary-row slotnova-summary-total">
+										<span class="slotnova-summary-label"><?php esc_html_e( 'Total Amount', 'slotnova-booking' ); ?></span>
+										<span class="slotnova-summary-value" id="mb-summary-service-price">-</span>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -1696,6 +1906,53 @@ class Admin {
 					</tr>
 				</table>
 
+				<h2><?php esc_html_e( 'Style & Theme Controls', 'slotnova-booking' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Customize colors and visual styling of your booking forms.', 'slotnova-booking' ); ?></p>
+				<table class="form-table">
+					<tr valign="top">
+						<th scope="row"><?php esc_html_e( 'Primary Theme Color', 'slotnova-booking' ); ?></th>
+						<td>
+							<input type="text" name="slotnova_primary_color" value="<?php echo esc_attr( get_option( 'slotnova_primary_color', '#2271b1' ) ); ?>" class="slotnova-color-picker" data-default-color="#2271b1" />
+							<p class="description"><?php esc_html_e( 'Primary accent color for active buttons, time pills, focus borders, and calendar selections.', 'slotnova-booking' ); ?></p>
+						</td>
+					</tr>
+					<tr valign="top">
+						<th scope="row"><?php esc_html_e( 'Hover / Accent Color', 'slotnova-booking' ); ?></th>
+						<td>
+							<input type="text" name="slotnova_accent_color" value="<?php echo esc_attr( get_option( 'slotnova_accent_color', '#135e96' ) ); ?>" class="slotnova-color-picker" data-default-color="#135e96" />
+							<p class="description"><?php esc_html_e( 'Hover state color for interactive buttons and pills.', 'slotnova-booking' ); ?></p>
+						</td>
+					</tr>
+					<tr valign="top">
+						<th scope="row"><?php esc_html_e( 'Card & Container Background', 'slotnova-booking' ); ?></th>
+						<td>
+							<input type="text" name="slotnova_bg_color" value="<?php echo esc_attr( get_option( 'slotnova_bg_color', '#ffffff' ) ); ?>" class="slotnova-color-picker" data-default-color="#ffffff" />
+							<p class="description"><?php esc_html_e( 'Background color for booking summary cards and dropdown popups.', 'slotnova-booking' ); ?></p>
+						</td>
+					</tr>
+					<tr valign="top">
+						<th scope="row"><?php esc_html_e( 'Text & Title Color', 'slotnova-booking' ); ?></th>
+						<td>
+							<input type="text" name="slotnova_text_color" value="<?php echo esc_attr( get_option( 'slotnova_text_color', '#0f172a' ) ); ?>" class="slotnova-color-picker" data-default-color="#0f172a" />
+							<p class="description"><?php esc_html_e( 'Color for text labels, service names, and section titles.', 'slotnova-booking' ); ?></p>
+						</td>
+					</tr>
+					<tr valign="top">
+						<th scope="row"><?php esc_html_e( 'Corner Rounding (Border Radius)', 'slotnova-booking' ); ?></th>
+						<td>
+							<?php $radius = get_option( 'slotnova_border_radius', '12px' ); ?>
+							<select name="slotnova_border_radius">
+								<option value="6px" <?php selected( $radius, '6px' ); ?>><?php esc_html_e( 'Compact (6px)', 'slotnova-booking' ); ?></option>
+								<option value="8px" <?php selected( $radius, '8px' ); ?>><?php esc_html_e( 'Medium (8px)', 'slotnova-booking' ); ?></option>
+								<option value="12px" <?php selected( $radius, '12px' ); ?>><?php esc_html_e( 'Rounded (12px)', 'slotnova-booking' ); ?></option>
+								<option value="16px" <?php selected( $radius, '16px' ); ?>><?php esc_html_e( 'Extra Rounded (16px)', 'slotnova-booking' ); ?></option>
+								<option value="24px" <?php selected( $radius, '24px' ); ?>><?php esc_html_e( 'Pill (24px)', 'slotnova-booking' ); ?></option>
+							</select>
+							<p class="description"><?php esc_html_e( 'Controls the roundness of buttons, summary cards, and dropdown triggers.', 'slotnova-booking' ); ?></p>
+						</td>
+					</tr>
+				</table>
+
 				<?php submit_button(); ?>
 			</form>
 		</div>
@@ -1759,7 +2016,7 @@ class Admin {
 					</tbody>
 				</table>
 				<p>
-					<button type="button" class="button button-primary" id="slotnova-add-service"><?php esc_html_e( 'Add Service', 'slotnova-booking' ); ?></button>
+					<button type="button" class="button button-primary" id="slotnova-add-service"><span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add Service', 'slotnova-booking' ); ?></button>
 				</p>
 			</div>
 
@@ -1801,7 +2058,7 @@ class Admin {
 					</tbody>
 				</table>
 				<p>
-					<button type="button" class="button button-primary" id="slotnova-add-employee"><?php esc_html_e( 'Add Employee', 'slotnova-booking' ); ?></button>
+					<button type="button" class="button button-primary" id="slotnova-add-employee"><span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add Employee', 'slotnova-booking' ); ?></button>
 				</p>
 			</div>
 		</div>
@@ -1889,6 +2146,7 @@ class Admin {
 				) );
 				?>
 			</div>
+			<?php do_action( 'slotnova_product_data_tab_content', $post ); ?>
 		</div>
 		<?php
 	}
@@ -1992,5 +2250,7 @@ class Admin {
 				update_post_meta( $post_id, '_price', $min_price );
 			}
 		}
+
+		do_action( 'slotnova_save_product_tab_data', $post_id, $_POST );
 	}
 }

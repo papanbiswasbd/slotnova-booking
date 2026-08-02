@@ -8,6 +8,11 @@
 jQuery(document).ready(function($) {
 	'use strict';
 
+	// Initialize WP Color Picker on Settings page
+	if ($('.slotnova-color-picker').length && $.fn.wpColorPicker) {
+		$('.slotnova-color-picker').wpColorPicker();
+	}
+
 	/* -------------------------------------------------------------------------
 	 * 1. Dashboard Chart (Chart.js Dual Datasets & Gradient Fills)
 	 * ------------------------------------------------------------------------- */
@@ -130,13 +135,391 @@ jQuery(document).ready(function($) {
 	});
 
 	/* -------------------------------------------------------------------------
-	 * 3. Smart Actions: Add Manual Booking Modal
+	 * 3. Smart Actions: Add Manual Booking Modal & Schedule Controls
 	 * ------------------------------------------------------------------------- */
 	var $modal = $('#slotnova-manual-booking-modal');
+
+	function mbTimeTo24h(timeStr) {
+		if (!timeStr) return '';
+		var str = timeStr.trim();
+		var parts = str.split(' ');
+		if (parts.length < 2) return str;
+		var timeParts = parts[0].split(':');
+		var hours = parseInt(timeParts[0], 10);
+		var minutes = parseInt(timeParts[1], 10);
+		var ampm = parts[1].toUpperCase();
+
+		if (ampm === 'PM' && hours < 12) hours += 12;
+		if (ampm === 'AM' && hours === 12) hours = 0;
+
+		var hStr = hours < 10 ? '0' + hours : '' + hours;
+		var mStr = minutes < 10 ? '0' + minutes : '' + minutes;
+		return hStr + ':' + mStr;
+	}
+
+	function mbNormalizeTo24h(timeStr) {
+		if (!timeStr) return '';
+		var str = timeStr.trim();
+		if (str.indexOf('AM') !== -1 || str.indexOf('PM') !== -1) {
+			return mbTimeTo24h(str);
+		}
+		var parts = str.split(':');
+		if (parts.length >= 2) {
+			var h = parseInt(parts[0], 10);
+			var m = parseInt(parts[1], 10);
+			var hStr = h < 10 ? '0' + h : '' + h;
+			var mStr = m < 10 ? '0' + m : '' + m;
+			return hStr + ':' + mStr;
+		}
+		return str;
+	}
+
+	function mbIsDateDisabled(dateObj, disableArr) {
+		for (var i = 0; i < disableArr.length; i++) {
+			var dRule = disableArr[i];
+			if (typeof dRule === 'function' && dRule(dateObj)) {
+				return true;
+			}
+			if (typeof dRule === 'string') {
+				var y = dateObj.getFullYear();
+				var m = ('0' + (dateObj.getMonth() + 1)).slice(-2);
+				var d = ('0' + dateObj.getDate()).slice(-2);
+				if ((y + '-' + m + '-' + d) === dRule) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	function mbGetFirstAvailableDate(startDateObj, closingTime, disableArr) {
+		var checkDate = new Date(startDateObj.getTime());
+		var siteDate = (typeof slotnova_admin_data !== 'undefined' && slotnova_admin_data.site_current_date) ? slotnova_admin_data.site_current_date : '';
+		var siteTime = (typeof slotnova_admin_data !== 'undefined' && slotnova_admin_data.site_current_time) ? slotnova_admin_data.site_current_time : '';
+		var todayYMD = siteDate || checkDate.toISOString().split('T')[0];
+
+		var closing24h = mbNormalizeTo24h(closingTime);
+		var siteTime24h = mbNormalizeTo24h(siteTime);
+
+		var isTodayPastClosing = false;
+		if (closing24h && siteTime24h && siteTime24h >= closing24h) {
+			isTodayPastClosing = true;
+		}
+
+		for (var dayOffset = 0; dayOffset < 90; dayOffset++) {
+			var y = checkDate.getFullYear();
+			var m = ('0' + (checkDate.getMonth() + 1)).slice(-2);
+			var d = ('0' + checkDate.getDate()).slice(-2);
+			var currentYMD = y + '-' + m + '-' + d;
+
+			var isOff = mbIsDateDisabled(checkDate, disableArr);
+
+			if (!isOff) {
+				if (currentYMD === todayYMD) {
+					if (!isTodayPastClosing) {
+						return currentYMD;
+					}
+				} else {
+					return currentYMD;
+				}
+			}
+			checkDate.setDate(checkDate.getDate() + 1);
+		}
+		return todayYMD;
+	}
+
+	function initManualBookingFlatpickr() {
+		var dateInput = document.getElementById('mb_booking_date');
+		if (!dateInput || typeof flatpickr === 'undefined') return;
+
+		if (dateInput._flatpickr) {
+			return;
+		}
+
+		var offDaysRaw = dateInput.getAttribute('data-off-days');
+		var closingTime = dateInput.getAttribute('data-closing-time');
+		var siteDate = (typeof slotnova_admin_data !== 'undefined' && slotnova_admin_data.site_current_date) ? slotnova_admin_data.site_current_date : '';
+		var siteTime = (typeof slotnova_admin_data !== 'undefined' && slotnova_admin_data.site_current_time) ? slotnova_admin_data.site_current_time : '';
+
+		var disableArr = [];
+		if (offDaysRaw) {
+			var offDays = offDaysRaw.split(',').map(function(item) { return item.trim(); });
+			var dayNameToNum = { 'sunday': 0, 'monday': 1, 'tuesday': 2, 'wednesday': 3, 'thursday': 4, 'friday': 5, 'saturday': 6 };
+
+			offDays.forEach(function(day) {
+				var lowerDay = day.toLowerCase();
+				if (dayNameToNum.hasOwnProperty(lowerDay)) {
+					var dayNum = dayNameToNum[lowerDay];
+					disableArr.push(function(date) { return date.getDay() === dayNum; });
+				} else if (day) {
+					disableArr.push(day);
+				}
+			});
+		}
+
+		var closing24h = mbNormalizeTo24h(closingTime);
+		var siteTime24h = mbNormalizeTo24h(siteTime);
+		if (closing24h && siteTime24h && siteTime24h >= closing24h && siteDate) {
+			if (disableArr.indexOf(siteDate) === -1) {
+				disableArr.push(siteDate);
+			}
+		}
+
+		var initialDateYMD = mbGetFirstAvailableDate(new Date(), closingTime, disableArr);
+
+		flatpickr(dateInput, {
+			dateFormat: 'Y-m-d',
+			minDate: 'today',
+			defaultDate: initialDateYMD,
+			inline: true,
+			disable: disableArr,
+			onChange: function(selectedDates, dateStr) {
+				if (dateStr) {
+					$('.mb-time-slots-wrapper').removeClass('slotnova-is-hidden');
+					$('#mb-summary-booking-date').text(dateStr);
+					$('#mb_booking_time').val('');
+					$('#mb_time_pills .slotnova-time-pill').removeClass('active');
+					$('#mb-summary-booking-time').text('-');
+
+					fetchMBBookedSlots(dateStr);
+					checkMBSummaryVisibility();
+				}
+			}
+		});
+
+		if (initialDateYMD) {
+			$('.mb-time-slots-wrapper').removeClass('slotnova-is-hidden');
+			$('#mb-summary-booking-date').text(initialDateYMD);
+			dateInput.value = initialDateYMD;
+			fetchMBBookedSlots(initialDateYMD);
+		}
+	}
+
+	function fetchMBBookedSlots(dateStr) {
+		if (!dateStr || typeof slotnova_admin_data === 'undefined' || !slotnova_admin_data.ajax_url) {
+			return;
+		}
+
+		var serviceId = $('#mb_service_id').val() || '';
+		var employeeId = $('#mb_employee_id').val() || '';
+		var siteDate = slotnova_admin_data.site_current_date || '';
+		var siteTime = slotnova_admin_data.site_current_time || '';
+		var timePills = document.querySelectorAll('#mb_time_pills .slotnova-time-pill');
+
+		var postData = {
+			action: 'slotnova_get_booked_slots',
+			date: dateStr,
+			service_id: serviceId,
+			employee_id: employeeId,
+			nonce: slotnova_admin_data.nonce
+		};
+
+		$.post(slotnova_admin_data.ajax_url, postData, function(res) {
+			var booked = (res.success && res.data && res.data.booked_slots) ? res.data.booked_slots : [];
+			var bookedLabel = slotnova_admin_data.booked_text || 'Booked';
+			var passedLabel = slotnova_admin_data.passed_text || 'Time Passed';
+			var isToday = (dateStr === siteDate);
+
+			timePills.forEach(function(pill) {
+				var slotVal = pill.getAttribute('data-value');
+				var isBooked = (booked.indexOf(slotVal) !== -1);
+				var isPassed = false;
+
+				if (isToday && siteTime) {
+					var slot24h = mbTimeTo24h(slotVal);
+					if (slot24h && slot24h <= siteTime) {
+						isPassed = true;
+					}
+				}
+
+				if (isBooked || isPassed) {
+					pill.classList.add('disabled');
+					pill.disabled = true;
+					pill.setAttribute('title', isPassed ? passedLabel : bookedLabel);
+					if (pill.classList.contains('active')) {
+						pill.classList.remove('active');
+						$('#mb_booking_time').val('');
+						$('#mb-summary-booking-time').text('-');
+					}
+				} else {
+					pill.classList.remove('disabled');
+					pill.disabled = false;
+					pill.removeAttribute('title');
+				}
+			});
+		});
+	}
+
+	function checkMBSummaryVisibility() {
+		$('#mb-slotnova-summary').removeClass('slotnova-is-hidden');
+	}
+
+	// Time Slot Pill Click Handler inside Manual Booking modal
+	$(document).on('click', '#mb_time_pills .slotnova-time-pill', function(e) {
+		e.preventDefault();
+		if ($(this).is(':disabled') || $(this).hasClass('disabled')) {
+			return false;
+		}
+
+		$('#mb_time_pills .slotnova-time-pill').removeClass('active');
+		$(this).addClass('active');
+
+		var value = $(this).attr('data-value');
+		$('#mb_booking_time').val(value);
+		$('#mb-summary-booking-time').text(value);
+
+		checkMBSummaryVisibility();
+	});
+
+	// Custom Dropdowns in Manual Booking Modal
+	function filterMBOptions($dropdown, query) {
+		query = query.trim().toLowerCase();
+		var $options = $dropdown.find('.slotnova-select-option');
+		var $noResults = $dropdown.find('.slotnova-select-no-results');
+		var visibleCount = 0;
+
+		$options.each(function() {
+			var name = ($(this).attr('data-name') || $(this).text() || '').toLowerCase();
+			if (!query || name.indexOf(query) !== -1) {
+				$(this).show();
+				visibleCount++;
+			} else {
+				$(this).hide();
+			}
+		});
+
+		if (visibleCount === 0) {
+			$noResults.removeClass('slotnova-is-hidden');
+		} else {
+			$noResults.addClass('slotnova-is-hidden');
+		}
+	}
+
+	function openMBDropdown($dropdown) {
+		var $options = $dropdown.find('.slotnova-select-options');
+		var $trigger = $dropdown.find('.slotnova-select-trigger');
+		var $input = $dropdown.find('.slotnova-select-search-input');
+
+		$('#slotnova-manual-booking-modal .slotnova-select-options').not($options).removeClass('open');
+		$('#slotnova-manual-booking-modal .slotnova-select-trigger').not($trigger).removeClass('active');
+
+		$dropdown.find('.slotnova-select-option').show();
+		$dropdown.find('.slotnova-select-no-results').addClass('slotnova-is-hidden');
+
+		$options.addClass('open');
+		$trigger.addClass('active');
+
+		if ($input.length) {
+			$input.trigger('select');
+		}
+	}
+
+	$(document).on('click', '#slotnova-manual-booking-modal .slotnova-custom-select .slotnova-select-trigger', function(e) {
+		e.stopPropagation();
+		var $dropdown = $(this).closest('.slotnova-custom-select');
+		var $options = $dropdown.find('.slotnova-select-options');
+
+		if (!$options.hasClass('open')) {
+			openMBDropdown($dropdown);
+		}
+	});
+
+	$(document).on('focus', '#slotnova-manual-booking-modal .slotnova-select-search-input', function(e) {
+		e.stopPropagation();
+		var $dropdown = $(this).closest('.slotnova-custom-select');
+		var $options = $dropdown.find('.slotnova-select-options');
+
+		if (!$options.hasClass('open')) {
+			openMBDropdown($dropdown);
+		} else {
+			$(this).trigger('select');
+		}
+	});
+
+	$(document).on('input', '#slotnova-manual-booking-modal .slotnova-select-search-input', function(e) {
+		e.stopPropagation();
+		var $dropdown = $(this).closest('.slotnova-custom-select');
+		var $options = $dropdown.find('.slotnova-select-options');
+
+		if (!$options.hasClass('open')) {
+			openMBDropdown($dropdown);
+		}
+		filterMBOptions($dropdown, $(this).val());
+	});
+
+	$(document).on('click', '#slotnova-manual-booking-modal .slotnova-select-option', function(e) {
+		e.stopPropagation();
+		var $opt = $(this);
+		var $dropdown = $opt.closest('.slotnova-custom-select');
+		var $trigger = $dropdown.find('.slotnova-select-trigger');
+		var $searchInput = $dropdown.find('.slotnova-select-search-input');
+		var $options = $dropdown.find('.slotnova-select-options');
+
+		var value = $opt.attr('data-value');
+		var name = $opt.attr('data-name');
+		var priceVal = parseFloat($opt.attr('data-price'));
+
+		var isService = $dropdown.attr('id') === 'mb_service_dropdown';
+		var isEmployee = $dropdown.attr('id') === 'mb_employee_dropdown';
+
+		var displayName = name;
+
+		if (isService) {
+			$('#mb_service_id').val(value);
+			$('#mb_service_name').val(name);
+			$('#mb-summary-service-name').text(name || '-');
+			var symbol = (typeof slotnova_admin_data !== 'undefined' && slotnova_admin_data.currency_symbol) ? slotnova_admin_data.currency_symbol : '$';
+			if (!isNaN(priceVal)) {
+				if (priceVal > 0) {
+					$('#mb-summary-service-price').text(symbol + priceVal.toFixed(2));
+					displayName = name + ' (' + symbol + priceVal.toFixed(2) + ')';
+				} else if (priceVal === 0) {
+					var freeTxt = (typeof slotnova_admin_data !== 'undefined' && slotnova_admin_data.free_text) ? slotnova_admin_data.free_text : 'Free';
+					$('#mb-summary-service-price').text(freeTxt);
+					displayName = name + ' (' + freeTxt + ')';
+				}
+			}
+		}
+
+		if (isEmployee) {
+			$('#mb_employee_id').val(value);
+			$('#mb_employee_name').val(name);
+			$('#mb-summary-employee-name').text(name || '-');
+			if (value) {
+				$('#mb-summary-employee-row').removeClass('slotnova-is-hidden');
+			} else {
+				$('#mb-summary-employee-row').addClass('slotnova-is-hidden');
+			}
+		}
+
+		if ($searchInput.length) {
+			$searchInput.val(displayName).attr('data-selected-name', displayName);
+		}
+		$options.removeClass('open');
+		$trigger.removeClass('active');
+
+		var dateVal = $('#mb_booking_date').val();
+		if (dateVal) {
+			fetchMBBookedSlots(dateVal);
+		}
+		checkMBSummaryVisibility();
+	});
+
+	$(document).on('click', function() {
+		$('#slotnova-manual-booking-modal .slotnova-select-options').removeClass('open');
+		$('#slotnova-manual-booking-modal .slotnova-select-trigger').removeClass('active');
+		$('#slotnova-manual-booking-modal .slotnova-select-search-input').each(function() {
+			var selName = $(this).attr('data-selected-name') || '';
+			$(this).val(selName);
+		});
+	});
 
 	$(document).on('click', '#slotnova-open-manual-booking-modal', function(e) {
 		e.preventDefault();
 		$modal.removeClass('slotnova-is-hidden').show();
+		setTimeout(function() {
+			initManualBookingFlatpickr();
+		}, 100);
 	});
 
 	$(document).on('click', '.slotnova-modal-close, .slotnova-btn-cancel', function(e) {
@@ -155,6 +538,25 @@ jQuery(document).ready(function($) {
 		if (typeof slotnova_admin_data === 'undefined') return;
 
 		var $form = $(this);
+		var serviceVal = $('#mb_service_id').val() || $('#mb_service_name').val();
+		var dateVal = $('#mb_booking_date').val();
+		var timeVal = $('#mb_booking_time').val();
+
+		if (!serviceVal) {
+			alert('Please select a service before creating a booking.');
+			return false;
+		}
+
+		if (!dateVal) {
+			alert('Please select a booking date.');
+			return false;
+		}
+
+		if (!timeVal) {
+			alert('Please select a time slot.');
+			return false;
+		}
+
 		var $submitBtn = $form.find('button[type="submit"]');
 		var originalText = $submitBtn.text();
 

@@ -26,6 +26,7 @@ class Cart {
 		add_filter( 'woocommerce_add_to_cart_validation', array( $this, 'validate_booking_data' ), 10, 3 );
 		add_filter( 'woocommerce_add_cart_item_data', array( $this, 'add_booking_data_to_cart' ), 10, 3 );
 		add_action( 'woocommerce_before_calculate_totals', array( $this, 'update_cart_item_price' ), 10, 1 );
+		add_filter( 'woocommerce_cart_item_price', array( $this, 'filter_cart_item_price_html' ), 10, 3 );
 		add_filter( 'woocommerce_get_item_data', array( $this, 'display_booking_data_in_cart' ), 10, 2 );
 		add_action( 'woocommerce_checkout_create_order_line_item', array( $this, 'save_booking_data_to_order' ), 10, 4 );
 	}
@@ -90,7 +91,7 @@ class Cart {
 			return false;
 		}
 
-		return $passed;
+		return apply_filters( 'slotnova_validate_booking_data', $passed, $product_id, $quantity );
 	}
 
 	/**
@@ -192,17 +193,26 @@ class Cart {
 			if ( is_array( $saved_services ) ) {
 				foreach ( $saved_services as $saved ) {
 					if ( (int) $saved['term_id'] === $service_id ) {
-						if ( isset( $saved['price'] ) && '' !== $saved['price'] && null !== $saved['price'] ) {
+						if ( isset( $saved['price'] ) && '' !== $saved['price'] && null !== $saved['price'] && floatval( $saved['price'] ) > 0 ) {
 							$price = floatval( $saved['price'] );
-						} else {
-							$price = floatval( get_term_meta( $service_id, 'slotnova_service_price', true ) );
 						}
 						break;
 					}
 				}
 			}
 
-			$cart_item_data['slotnova_booking'] = array(
+			if ( $price <= 0 ) {
+				$price = floatval( get_term_meta( $service_id, 'slotnova_service_price', true ) );
+			}
+
+			if ( $price <= 0 ) {
+				$product = wc_get_product( $product_id );
+				if ( $product ) {
+					$price = floatval( $product->get_price() );
+				}
+			}
+
+			$booking_meta = array(
 				'service_id'    => $service_id,
 				'service_name'  => $service_name,
 				'employee_id'   => $employee_id,
@@ -211,6 +221,10 @@ class Cart {
 				'time'          => $booking_time,
 				'price'         => $price,
 			);
+
+			$cart_item_data['slotnova_booking'] = apply_filters( 'slotnova_cart_item_booking_data', $booking_meta, $product_id, $variation_id );
+
+			do_action( 'slotnova_before_add_to_cart', $product_id, $cart_item_data['slotnova_booking'] );
 		}
 		return $cart_item_data;
 	}
@@ -226,15 +240,28 @@ class Cart {
 			return;
 		}
 
-		if ( did_action( 'woocommerce_before_calculate_totals' ) >= 2 ) {
-			return;
-		}
-
 		foreach ( $cart->get_cart() as $cart_item ) {
-			if ( isset( $cart_item['slotnova_booking']['price'] ) ) {
-				$cart_item['data']->set_price( $cart_item['slotnova_booking']['price'] );
+			if ( isset( $cart_item['slotnova_booking']['price'] ) && floatval( $cart_item['slotnova_booking']['price'] ) >= 0 ) {
+				$price = apply_filters( 'slotnova_cart_item_price', floatval( $cart_item['slotnova_booking']['price'] ), $cart_item );
+				$cart_item['data']->set_price( $price );
 			}
 		}
+	}
+
+	/**
+	 * Filter cart item price HTML to display selected service price in mini-cart and cart widgets.
+	 *
+	 * @param string $price_html Existing price HTML.
+	 * @param array  $cart_item Cart item data.
+	 * @param string $cart_item_key Cart item key.
+	 * @return string
+	 */
+	public function filter_cart_item_price_html( $price_html, $cart_item, $cart_item_key ) {
+		if ( isset( $cart_item['slotnova_booking']['price'] ) && floatval( $cart_item['slotnova_booking']['price'] ) >= 0 ) {
+			$price = floatval( $cart_item['slotnova_booking']['price'] );
+			return wc_price( $price );
+		}
+		return $price_html;
 	}
 
 	/**
@@ -282,7 +309,7 @@ class Cart {
 				}
 			}
 		}
-		return $item_data;
+		return apply_filters( 'slotnova_display_item_data_in_cart', $item_data, $cart_item );
 	}
 
 	/**
@@ -328,6 +355,8 @@ class Cart {
 					$item->add_meta_data( __( 'Time', 'slotnova-booking' ), $booking['time'] );
 				}
 			}
+
+			do_action( 'slotnova_save_booking_data_to_order', $item, $cart_item_key, $values, $order );
 		}
 	}
 }

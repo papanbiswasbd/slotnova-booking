@@ -38,6 +38,34 @@ final class Plugin {
 	private static $instance = null;
 
 	/**
+	 * Taxonomies component.
+	 *
+	 * @var Taxonomies
+	 */
+	public $taxonomies;
+
+	/**
+	 * Frontend component.
+	 *
+	 * @var Frontend
+	 */
+	public $frontend;
+
+	/**
+	 * Cart component.
+	 *
+	 * @var Cart
+	 */
+	public $cart;
+
+	/**
+	 * Admin component.
+	 *
+	 * @var Admin|null
+	 */
+	public $admin;
+
+	/**
 	 * Main Plugin Instance.
 	 *
 	 * @return Plugin
@@ -55,12 +83,14 @@ final class Plugin {
 	public function __construct() {
 		$this->includes();
 		$this->init_hooks();
+		do_action( 'slotnova_booking_loaded', $this );
 	}
 
 	/**
 	 * Include required files.
 	 */
 	private function includes() {
+		require_once SLOTNOVA_BOOKING_PATH . 'includes/slotnova-core-functions.php';
 		require_once SLOTNOVA_BOOKING_PATH . 'includes/class-wc-product-slotnova.php';
 		require_once SLOTNOVA_BOOKING_PATH . 'includes/class-slotnova-taxonomies.php';
 		require_once SLOTNOVA_BOOKING_PATH . 'includes/class-slotnova-frontend.php';
@@ -75,13 +105,15 @@ final class Plugin {
 	 * Initialize hooks and instantiate components.
 	 */
 	private function init_hooks() {
-		new Taxonomies();
-		new Frontend();
-		new Cart();
+		$this->taxonomies = new Taxonomies();
+		$this->frontend   = new Frontend();
+		$this->cart       = new Cart();
 
 		if ( is_admin() ) {
-			new Admin();
+			$this->admin = new Admin();
 		}
+
+		do_action( 'slotnova_booking_init', $this );
 	}
 }
 

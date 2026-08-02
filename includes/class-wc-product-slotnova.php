@@ -57,6 +57,18 @@ class WC_Product extends \WC_Product {
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		return apply_filters( 'woocommerce_product_single_add_to_cart_text', __( 'Book Now', 'slotnova-booking' ), $this );
 	}
+
+	/**
+	 * Get price HTML for SlotNova product (single value or range).
+	 *
+	 * @param string $price Existing price string.
+	 * @return string
+	 */
+	public function get_price_html( $price = '' ) {
+		$price_html = Plugin::instance()->frontend->get_slotnova_product_price_html( $this );
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		return apply_filters( 'woocommerce_get_price_html', $price_html, $this );
+	}
 }
 
 if ( ! class_exists( 'WC_Product_Slotnova' ) ) {

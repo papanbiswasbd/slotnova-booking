@@ -287,26 +287,95 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	dropdowns.forEach(function(dropdown) {
 		var trigger = dropdown.querySelector('.slotnova-select-trigger');
+		var searchInput = dropdown.querySelector('.slotnova-select-search-input');
 		var optionsContainer = dropdown.querySelector('.slotnova-select-options');
 		var hiddenInput = dropdown.parentElement.querySelector('input[type="hidden"]');
+		var noResults = dropdown.querySelector('.slotnova-select-no-results');
 
 		var isServiceDropdown = hiddenInput && hiddenInput.id === 'slotnova_service';
 		var isEmployeeDropdown = hiddenInput && hiddenInput.id === 'slotnova_employee';
+		var selectedName = '';
+
+		function showAllOptions() {
+			var options = optionsContainer.querySelectorAll('.slotnova-select-option');
+			options.forEach(function(opt) { opt.style.display = ''; });
+			if (noResults) noResults.classList.add('slotnova-is-hidden');
+		}
+
+		function filterOptions(query) {
+			query = query.trim().toLowerCase();
+			var options = optionsContainer.querySelectorAll('.slotnova-select-option');
+			var visibleCount = 0;
+
+			options.forEach(function(option) {
+				var name = (option.getAttribute('data-name') || option.textContent || '').toLowerCase();
+				if (!query || name.indexOf(query) !== -1) {
+					option.style.display = '';
+					visibleCount++;
+				} else {
+					option.style.display = 'none';
+				}
+			});
+
+			if (noResults) {
+				if (visibleCount === 0) {
+					noResults.classList.remove('slotnova-is-hidden');
+				} else {
+					noResults.classList.add('slotnova-is-hidden');
+				}
+			}
+		}
+
+		function openDropdown() {
+			// Close all other dropdowns
+			document.querySelectorAll('.slotnova-select-options').forEach(function(other) {
+				if (other !== optionsContainer) other.classList.remove('open');
+			});
+			document.querySelectorAll('.slotnova-select-trigger').forEach(function(other) {
+				if (other !== trigger) other.classList.remove('active');
+			});
+
+			showAllOptions();
+			optionsContainer.classList.add('open');
+			trigger.classList.add('active');
+			if (searchInput) searchInput.select();
+		}
+
+		function closeDropdown() {
+			optionsContainer.classList.remove('open');
+			trigger.classList.remove('active');
+			if (searchInput) {
+				searchInput.value = selectedName;
+			}
+			showAllOptions();
+		}
 
 		if (trigger && optionsContainer) {
 			trigger.addEventListener('click', function(e) {
 				e.stopPropagation();
-				// Close all other dropdowns
-				document.querySelectorAll('.slotnova-select-options').forEach(function(other) {
-					if (other !== optionsContainer) other.classList.remove('open');
-				});
-				document.querySelectorAll('.slotnova-select-trigger').forEach(function(other) {
-					if (other !== trigger) other.classList.remove('active');
+				if (!optionsContainer.classList.contains('open')) {
+					openDropdown();
+				}
+			});
+
+			if (searchInput) {
+				searchInput.addEventListener('focus', function(e) {
+					e.stopPropagation();
+					if (!optionsContainer.classList.contains('open')) {
+						openDropdown();
+					} else {
+						this.select();
+					}
 				});
 
-				optionsContainer.classList.toggle('open');
-				trigger.classList.toggle('active');
-			});
+				searchInput.addEventListener('input', function(e) {
+					e.stopPropagation();
+					if (!optionsContainer.classList.contains('open')) {
+						openDropdown();
+					}
+					filterOptions(this.value);
+				});
+			}
 
 			var options = optionsContainer.querySelectorAll('.slotnova-select-option');
 			options.forEach(function(option) {
@@ -315,25 +384,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 					var value = this.getAttribute('data-value');
 					var name = this.getAttribute('data-name');
+					var displayName = name;
 
-					// Update hidden input
-					if (hiddenInput) {
-						hiddenInput.value = value;
-					}
-
-					// Update visible trigger content
-					var triggerContent = trigger.querySelector('.slotnova-select-trigger-content');
-					if (triggerContent) {
-						triggerContent.innerHTML = this.innerHTML;
-					}
-
-					// Close dropdown
-					optionsContainer.classList.remove('open');
-					trigger.classList.remove('active');
-
-					// Handle Service Selection Summary
+					// Handle Service Selection Summary & Display Price in Trigger
 					if (isServiceDropdown) {
 						var priceVal = parseFloat(this.getAttribute('data-price'));
+						var priceText = '';
+						if (!isNaN(priceVal)) {
+							if (priceVal > 0) {
+								var symbol = (typeof slotnova_params !== 'undefined') ? slotnova_params.currency_symbol : '$';
+								priceText = ' (' + symbol + priceVal.toFixed(2) + ')';
+							} else if (priceVal === 0) {
+								priceText = ' (' + ((typeof slotnova_params !== 'undefined') ? slotnova_params.free_text : 'Free') + ')';
+							}
+						}
+						displayName = name + priceText;
+
 						if (summaryName) summaryName.textContent = name || '-';
 						if (summaryPrice) {
 							if (priceVal > 0) {
@@ -344,6 +410,19 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					}
+
+					selectedName = displayName;
+
+					// Update hidden input and trigger search input
+					if (hiddenInput) {
+						hiddenInput.value = value;
+					}
+					if (searchInput) {
+						searchInput.value = displayName;
+					}
+
+					// Close dropdown
+					closeDropdown();
 
 					// Handle Employee Selection Summary
 					if (isEmployeeDropdown) {
@@ -366,6 +445,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				});
 			});
 		}
+	});
+
+	document.addEventListener('click', function() {
+		document.querySelectorAll('.slotnova-select-options').forEach(function(opt) {
+			opt.classList.remove('open');
+		});
+		document.querySelectorAll('.slotnova-select-trigger').forEach(function(trig) {
+			trig.classList.remove('active');
+		});
 	});
 
 	function checkSummaryVisibility() {
