@@ -140,8 +140,15 @@
 }
 
 @keyframes slotnovaFadeIn {
-	from { opacity: 0; transform: translateY(-6px); }
-	to { opacity: 1; transform: translateY(0); }
+	from {
+		opacity: 0;
+		transform: translateY(-6px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 .slotnova-select-option {
@@ -550,6 +557,7 @@
 	transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 	pointer-events: none;
 	z-index: 99999;
+	text-transform: initial;
 }
 
 .slotnova-time-pill.disabled[data-tooltip]::after {
@@ -689,6 +697,7 @@
 		opacity: 0;
 		transform: translateY(-10px);
 	}
+
 	to {
 		opacity: 1;
 		transform: translateY(0);
@@ -696,9 +705,20 @@
 }
 
 @keyframes slotnovaPulse {
-	0% { opacity: 0.55; transform: scale(0.995); }
-	50% { opacity: 0.85; transform: scale(1); }
-	100% { opacity: 0.55; transform: scale(0.995); }
+	0% {
+		opacity: 0.55;
+		transform: scale(0.995);
+	}
+
+	50% {
+		opacity: 0.85;
+		transform: scale(1);
+	}
+
+	100% {
+		opacity: 0.55;
+		transform: scale(0.995);
+	}
 }
 
 .slotnova-time-slots-wrapper {
