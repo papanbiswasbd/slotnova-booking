@@ -20,26 +20,26 @@
 	--sn-danger-light: #fee2e2;
 	--sn-purple: #8b5cf6;
 	--sn-purple-light: #ede9fe;
-	
+
 	--sn-bg-card: #ffffff;
 	--sn-bg-page: #f8fafc;
 	--sn-border: #e2e8f0;
 	--sn-border-focus: #818cf8;
-	
+
 	--sn-text-main: #0f172a;
 	--sn-text-muted: #64748b;
 	--sn-text-light: #94a3b8;
-	
+
 	--sn-radius-sm: 6px;
 	--sn-radius-md: 10px;
 	--sn-radius-lg: 16px;
 	--sn-radius-full: 9999px;
-	
+
 	--sn-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
 	--sn-shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
 	--sn-shadow-lg: 0 12px 32px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
 	--sn-shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
-	
+
 	--sn-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -51,12 +51,12 @@
 }
 
 /* Hide WP Default Notices on Dashboard Wrapper & Inside Banner */
-.slotnova-dashboard-wrap > .notice,
-.slotnova-dashboard-wrap > .updated,
-.slotnova-dashboard-wrap > .error,
-.slotnova-dashboard-wrap > .is-dismissible,
-.slotnova-dashboard-wrap > div.updated,
-.slotnova-dashboard-wrap > div.error,
+.slotnova-dashboard-wrap>.notice,
+.slotnova-dashboard-wrap>.updated,
+.slotnova-dashboard-wrap>.error,
+.slotnova-dashboard-wrap>.is-dismissible,
+.slotnova-dashboard-wrap>div.updated,
+.slotnova-dashboard-wrap>div.error,
 .slotnova-hero-banner .notice,
 .slotnova-hero-banner .updated,
 .slotnova-hero-banner .error,
@@ -140,10 +140,12 @@
 		transform: scale(0.95);
 		box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
 	}
+
 	70% {
 		transform: scale(1);
 		box-shadow: 0 0 0 8px rgba(52, 211, 153, 0);
 	}
+
 	100% {
 		transform: scale(0.95);
 		box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
@@ -384,10 +386,25 @@
 	border-radius: var(--sn-radius-full);
 }
 
-.slotnova-tag-blue { background: #e0e7ff; color: #4338ca; }
-.slotnova-tag-green { background: #d1fae5; color: #047857; }
-.slotnova-tag-yellow { background: #fef3c7; color: #b45309; }
-.slotnova-tag-purple { background: #ede9fe; color: #6d28d9; }
+.slotnova-tag-blue {
+	background: #e0e7ff;
+	color: #4338ca;
+}
+
+.slotnova-tag-green {
+	background: #d1fae5;
+	color: #047857;
+}
+
+.slotnova-tag-yellow {
+	background: #fef3c7;
+	color: #b45309;
+}
+
+.slotnova-tag-purple {
+	background: #ede9fe;
+	color: #6d28d9;
+}
 
 .slotnova-stat-card-value {
 	font-size: 26px;
@@ -554,8 +571,13 @@
 	border-radius: 50%;
 }
 
-.dot-blue { background-color: #6366f1; }
-.dot-green { background-color: #10b981; }
+.dot-blue {
+	background-color: #6366f1;
+}
+
+.dot-green {
+	background-color: #10b981;
+}
 
 .slotnova-chart-toggle-btn.active {
 	background: #ffffff;
@@ -892,10 +914,25 @@
 	letter-spacing: 0.2px;
 }
 
-.slotnova-badge.status-completed { background: #d1fae5; color: #047857; }
-.slotnova-badge.status-processing { background: #e0e7ff; color: #4338ca; }
-.slotnova-badge.status-on-hold { background: #fef3c7; color: #b45309; }
-.slotnova-badge.status-cancelled { background: #fee2e2; color: #b91c1c; }
+.slotnova-badge.status-completed {
+	background: #d1fae5;
+	color: #047857;
+}
+
+.slotnova-badge.status-processing {
+	background: #e0e7ff;
+	color: #4338ca;
+}
+
+.slotnova-badge.status-on-hold {
+	background: #fef3c7;
+	color: #b45309;
+}
+
+.slotnova-badge.status-cancelled {
+	background: #fee2e2;
+	color: #b91c1c;
+}
 
 /* Popularity Insights Card */
 .slotnova-breakdown-heading {
@@ -953,9 +990,20 @@
 	flex-shrink: 0;
 }
 
-.rank-1 { background: #fef3c7; color: #b45309; }
-.rank-2 { background: #e0e7ff; color: #4338ca; }
-.rank-3 { background: #f1f5f9; color: #475569; }
+.rank-1 {
+	background: #fef3c7;
+	color: #b45309;
+}
+
+.rank-2 {
+	background: #e0e7ff;
+	color: #4338ca;
+}
+
+.rank-3 {
+	background: #f1f5f9;
+	color: #475569;
+}
 
 .slotnova-ranking-details {
 	display: flex;
@@ -982,8 +1030,13 @@
 	font-style: italic;
 }
 
-.slotnova-mb-25 { margin-bottom: 25px; }
-.slotnova-mt-20 { margin-top: 20px; }
+.slotnova-mb-25 {
+	margin-bottom: 25px;
+}
+
+.slotnova-mt-20 {
+	margin-top: 20px;
+}
 
 .slotnova-empty-state {
 	text-align: center;
@@ -1042,6 +1095,7 @@
 		opacity: 0;
 		transform: scale(0.96) translateY(-10px);
 	}
+
 	to {
 		opacity: 1;
 		transform: scale(1) translateY(0);
@@ -1109,6 +1163,7 @@
 	font-size: 13.5px;
 	width: 100%;
 	transition: var(--sn-transition);
+	line-height: 1;
 }
 
 .slotnova-form-group input:focus,
@@ -1537,6 +1592,33 @@
 .slotnova-empty-table-cell {
 	padding: 50px 20px;
 	text-align: center;
+}
+
+/* FullCalendar Container & Buttons Border Radius */
+.slotnova-calendar-container {
+	background: var(--sn-bg-card);
+	border-radius: var(--sn-radius-lg);
+	border: 1px solid var(--sn-border);
+	box-shadow: var(--sn-shadow-md);
+	padding: 24px;
+	overflow: hidden;
+	margin-top: 20px;
+}
+
+.fc .fc-button {
+	border-radius: var(--sn-radius-md);
+	padding: 8px 14px;
+	font-weight: 600;
+	font-size: 13px;
+}
+
+.fc .fc-button-group {
+	border-radius: var(--sn-radius-md);
+	overflow: hidden;
+}
+
+.fc-theme-standard td, .fc-theme-standard th {
+	border-color: var(--sn-border);
 }
 
 /* ==========================================================================
