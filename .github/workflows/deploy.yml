@@ -28,8 +28,11 @@ jobs:
             .ftpquota
             .ftp-deploy-sync-state.json
 
-      - name: Cleanup hidden files on remote server
+      - name: Cleanup hidden files and removed markdown docs on remote server
         if: always()
         run: |
+          curl -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" -Q "DELE DEVELOPERS.md" "ftp://${{ secrets.FTP_SERVER }}:21/" || true
+          curl -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" -Q "DELE docs/DEVELOPERS.md" "ftp://${{ secrets.FTP_SERVER }}:21/" || true
+          curl -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" -Q "RMD docs" "ftp://${{ secrets.FTP_SERVER }}:21/" || true
           curl -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" -Q "DELE .ftpquota" "ftp://${{ secrets.FTP_SERVER }}:21/" || true
           curl -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" -Q "DELE .ftp-deploy-sync-state.json" "ftp://${{ secrets.FTP_SERVER }}:21/" || true
