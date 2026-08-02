@@ -25,3 +25,11 @@ jobs:
             **/.git*
             **/.git*/**
             **/.github/**
+            .ftpquota
+            .ftp-deploy-sync-state.json
+
+      - name: Cleanup hidden files on remote server
+        if: always()
+        run: |
+          curl -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" -Q "DELE .ftpquota" "ftp://${{ secrets.FTP_SERVER }}:21/" || true
+          curl -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" -Q "DELE .ftp-deploy-sync-state.json" "ftp://${{ secrets.FTP_SERVER }}:21/" || true
