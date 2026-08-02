@@ -521,7 +521,58 @@
 	opacity: 0.65;
 	text-decoration: line-through;
 	box-shadow: none;
+	pointer-events: auto !important;
+	position: relative;
+}
+
+/* Tooltip Popover UI for Disabled Time Slots */
+.slotnova-time-pill.disabled[data-tooltip]::before {
+	content: attr(data-tooltip);
+	position: absolute;
+	bottom: calc(100% + 10px);
+	left: 50%;
+	transform: translateX(-50%) translateY(4px);
+	background: #0f172a;
+	color: #ffffff;
+	padding: 8px 12px;
+	border-radius: 8px;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1.35;
+	white-space: normal;
+	width: max-content;
+	max-width: 220px;
+	text-align: center;
+	text-decoration: none !important;
+	box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+	opacity: 0;
+	visibility: hidden;
+	transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 	pointer-events: none;
+	z-index: 99999;
+}
+
+.slotnova-time-pill.disabled[data-tooltip]::after {
+	content: '';
+	position: absolute;
+	bottom: calc(100% + 4px);
+	left: 50%;
+	transform: translateX(-50%) translateY(4px);
+	border-width: 6px 6px 0 6px;
+	border-style: solid;
+	border-color: #0f172a transparent transparent transparent;
+	opacity: 0;
+	visibility: hidden;
+	transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+	pointer-events: none;
+	z-index: 99999;
+}
+
+.slotnova-time-pill.disabled[data-tooltip]:hover::before,
+.slotnova-time-pill.disabled[data-tooltip]:hover::after {
+	opacity: 1;
+	visibility: visible;
+	transform: translateX(-50%) translateY(0);
 }
 
 /* Receipt Style Booking Summary Card */

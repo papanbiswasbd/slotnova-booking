@@ -207,6 +207,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		var isToday = (dateStr === siteDate);
 		var passedLabel = (typeof slotnova_params !== 'undefined' && slotnova_params.passed_text) ? slotnova_params.passed_text : 'Time Passed';
 		var bookedLabel = (typeof slotnova_params !== 'undefined' && slotnova_params.booked_text) ? slotnova_params.booked_text : 'Booked';
+		var passedHint  = (typeof slotnova_params !== 'undefined' && slotnova_params.passed_hint) ? slotnova_params.passed_hint : 'This time slot has already passed for today. Please select another date or time.';
+		var bookedHint  = (typeof slotnova_params !== 'undefined' && slotnova_params.booked_hint) ? slotnova_params.booked_hint : 'This time slot is already booked. Please try selecting a different date, employee, or service.';
 
 		// INSTANT UI RESET: Un-disable all time slots immediately upon changing date/service/employee
 		timePills.forEach(function(pill) {
@@ -222,10 +224,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				pill.classList.add('disabled');
 				pill.disabled = true;
 				pill.setAttribute('title', passedLabel);
+				pill.setAttribute('data-tooltip', passedHint);
 			} else {
 				pill.classList.remove('disabled');
 				pill.disabled = false;
 				pill.removeAttribute('title');
+				pill.removeAttribute('data-tooltip');
 			}
 		});
 
@@ -272,7 +276,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (isBooked || isPassed) {
 					pill.classList.add('disabled');
 					pill.disabled = true;
-					pill.setAttribute('title', isPassed ? passedLabel : bookedLabel);
+					var hintMsg = isPassed ? passedHint : bookedHint;
+					var titleMsg = isPassed ? passedLabel : bookedLabel;
+					pill.setAttribute('title', titleMsg);
+					pill.setAttribute('data-tooltip', hintMsg);
+
 					if (pill.classList.contains('active')) {
 						pill.classList.remove('active');
 						if (timeInput) timeInput.value = '';
@@ -282,6 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					pill.classList.remove('disabled');
 					pill.disabled = false;
 					pill.removeAttribute('title');
+					pill.removeAttribute('data-tooltip');
 				}
 			});
 		})

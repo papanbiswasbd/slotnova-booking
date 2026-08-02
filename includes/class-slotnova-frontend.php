@@ -388,6 +388,8 @@ class Frontend {
 			'choose_time_text'  => __( 'Choose a time...', 'slotnova-booking' ),
 			'booked_text'       => __( 'Booked', 'slotnova-booking' ),
 			'passed_text'       => __( 'Time Passed', 'slotnova-booking' ),
+			'booked_hint'       => __( 'This time slot is already booked. Please try selecting a different date, employee, or service.', 'slotnova-booking' ),
+			'passed_hint'       => __( 'This time slot has already passed for today. Please select another date or time.', 'slotnova-booking' ),
 			'site_current_date' => wp_date( 'Y-m-d' ),
 			'site_current_time' => wp_date( 'H:i' ),
 			'i18n'              => array(
