@@ -1807,3 +1807,69 @@
 	box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45) !important;
 	transform: translateY(-1px) !important;
 }
+
+/* -------------------------------------------------------------------------
+ * Manual Booking Modal UI/UX Upgrade
+ * ------------------------------------------------------------------------- */
+.slotnova-manual-modal-content {
+	max-width: 680px !important;
+	width: 90% !important;
+	border-radius: 16px !important;
+	overflow: hidden !important;
+	border: 1px solid #e2e8f0 !important;
+	box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25) !important;
+}
+
+.slotnova-manual-modal-body {
+	max-height: 72vh !important;
+	overflow-y: auto !important;
+	padding: 24px !important;
+}
+
+.slotnova-modal-section {
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 18px 20px;
+	margin-bottom: 20px;
+}
+
+.slotnova-section-title {
+	margin: 0 0 16px 0 !important;
+	font-size: 13px !important;
+	font-weight: 700 !important;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: #475569 !important;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.slotnova-section-title .dashicons {
+	color: #4f46e5 !important;
+	font-size: 16px !important;
+	width: 16px !important;
+	height: 16px !important;
+}
+
+.slotnova-input-styled,
+.slotnova-select-styled {
+	width: 100% !important;
+	padding: 9px 12px !important;
+	border: 1px solid #cbd5e1 !important;
+	border-radius: 8px !important;
+	font-size: 13px !important;
+	color: #1e293b !important;
+	background: #ffffff !important;
+	transition: all 0.2s ease !important;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+	box-sizing: border-box !important;
+}
+
+.slotnova-input-styled:focus,
+.slotnova-select-styled:focus {
+	border-color: #6366f1 !important;
+	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+	outline: none !important;
+}
