@@ -105,56 +105,22 @@ class Cart {
 	 * @return bool
 	 */
 	private function is_slot_already_booked( $product_id, $date, $time, $service_id = 0, $employee_id = 0 ) {
-		$args = array(
-			'status' => array( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-pending' ),
-			'limit'  => -1,
-		);
+		$booked_slots = Plugin::instance()->frontend->get_booked_slots_for_date( $product_id, $date, $service_id, $employee_id );
+		if ( empty( $booked_slots ) ) {
+			return false;
+		}
 
-		$orders = wc_get_orders( $args );
-		foreach ( $orders as $order ) {
-			foreach ( $order->get_items() as $item ) {
-				if ( (int) $item->get_product_id() === (int) $product_id ) {
-					$item_date        = $item->get_meta( 'Date' );
-					$item_time        = $item->get_meta( 'Time' );
-					$item_service_id  = (int) $item->get_meta( '_slotnova_service_id' );
-					$item_employee_id = (int) $item->get_meta( '_slotnova_employee_id' );
-					$item_service     = $item->get_meta( 'Service' );
-					$item_employee    = $item->get_meta( 'Employee' );
+		if ( empty( $time ) ) {
+			return true;
+		}
 
-					if ( $item_date === $date && ( empty( $time ) || $item_time === $time ) ) {
-						if ( $employee_id > 0 ) {
-							if ( $item_employee_id > 0 ) {
-								if ( $item_employee_id === $employee_id ) {
-									return true;
-								}
-							} elseif ( ! empty( $item_employee ) ) {
-								$emp_term = get_term( $employee_id, 'slotnova_employee' );
-								if ( $emp_term && ! is_wp_error( $emp_term ) && $emp_term->name === $item_employee ) {
-									return true;
-								}
-							} else {
-								return true;
-							}
-						} elseif ( $service_id > 0 ) {
-							if ( $item_service_id > 0 ) {
-								if ( $item_service_id === $service_id ) {
-									return true;
-								}
-							} elseif ( ! empty( $item_service ) ) {
-								$svc_term = get_term( $service_id, 'slotnova_service' );
-								if ( $svc_term && ! is_wp_error( $svc_term ) && $svc_term->name === $item_service ) {
-									return true;
-								}
-							} else {
-								return true;
-							}
-						} else {
-							return true;
-						}
-					}
-				}
+		$formatted_time = date( 'h:i A', strtotime( $time ) );
+		foreach ( $booked_slots as $bs ) {
+			if ( date( 'h:i A', strtotime( $bs ) ) === $formatted_time ) {
+				return true;
 			}
 		}
+
 		return false;
 	}
 

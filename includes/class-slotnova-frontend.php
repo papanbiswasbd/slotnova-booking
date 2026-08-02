@@ -124,7 +124,7 @@ class Frontend {
 	}
 
 	/**
-	 * AJAX handler to fetch booked time slots for a specific product and date.
+	 * AJAX endpoint for fetching booked time slots.
 	 *
 	 * @return void
 	 */
@@ -143,6 +143,29 @@ class Frontend {
 		}
 
 		$target_date  = date( 'Y-m-d', strtotime( $raw_date ) );
+		$booked_slots = $this->get_booked_slots_for_date( $product_id, $target_date, $service_id, $employee_id );
+
+		wp_send_json_success( array(
+			'date'         => $target_date,
+			'booked_slots' => $booked_slots,
+		) );
+	}
+
+	/**
+	 * Query booked time slots for a given product, date, service, and employee.
+	 *
+	 * @param int    $product_id Product ID.
+	 * @param string $date Date string.
+	 * @param int    $service_id Service term ID.
+	 * @param int    $employee_id Employee term ID.
+	 * @return array
+	 */
+	public function get_booked_slots_for_date( $product_id, $date, $service_id = 0, $employee_id = 0 ) {
+		if ( empty( $date ) || false === strtotime( $date ) ) {
+			return array();
+		}
+
+		$target_date  = date( 'Y-m-d', strtotime( $date ) );
 		$booked_slots = array();
 
 		// Check active orders
@@ -155,7 +178,7 @@ class Frontend {
 		foreach ( $orders as $order ) {
 			foreach ( $order->get_items() as $item ) {
 				$item_prod_id = (int) $item->get_product_id();
-				if ( $product_id > 0 && $item_prod_id > 0 && $item_prod_id !== $product_id ) {
+				if ( $product_id > 0 && $item_prod_id > 0 && $item_prod_id !== (int) $product_id ) {
 					continue;
 				}
 
@@ -182,24 +205,34 @@ class Frontend {
 
 				// Employee matching: If an employee is selected, check if this order is for that employee
 				if ( $employee_id > 0 ) {
-					if ( $item_employee_id > 0 ) {
-						if ( $item_employee_id === $employee_id ) {
-							$is_match = true;
-						}
+					if ( $item_employee_id > 0 && $item_employee_id === $employee_id ) {
+						$is_match = true;
 					} elseif ( '' !== $item_employee ) {
 						$emp_term = get_term( $employee_id, 'slotnova_employee' );
 						if ( $emp_term && ! is_wp_error( $emp_term ) && strtolower( $emp_term->name ) === strtolower( $item_employee ) ) {
 							$is_match = true;
 						}
 					} else {
-						$is_match = true;
+						// Order item has no employee assigned; check if it matches service
+						if ( $service_id > 0 ) {
+							if ( $item_service_id > 0 && $item_service_id === $service_id ) {
+								$is_match = true;
+							} elseif ( '' !== $item_service ) {
+								$svc_term = get_term( $service_id, 'slotnova_service' );
+								if ( $svc_term && ! is_wp_error( $svc_term ) && strtolower( $svc_term->name ) === strtolower( $item_service ) ) {
+									$is_match = true;
+								}
+							} else {
+								$is_match = true;
+							}
+						} else {
+							$is_match = true;
+						}
 					}
 				} elseif ( $service_id > 0 ) {
 					// Service matching: If no employee selected, check if order is for this service
-					if ( $item_service_id > 0 ) {
-						if ( $item_service_id === $service_id ) {
-							$is_match = true;
-						}
+					if ( $item_service_id > 0 && $item_service_id === $service_id ) {
+						$is_match = true;
 					} elseif ( '' !== $item_service ) {
 						$svc_term = get_term( $service_id, 'slotnova_service' );
 						if ( $svc_term && ! is_wp_error( $svc_term ) && strtolower( $svc_term->name ) === strtolower( $item_service ) ) {
@@ -222,7 +255,7 @@ class Frontend {
 		if ( function_exists( 'WC' ) && WC()->cart ) {
 			foreach ( WC()->cart->get_cart() as $cart_item ) {
 				$cart_prod_id = isset( $cart_item['product_id'] ) ? (int) $cart_item['product_id'] : 0;
-				if ( $product_id > 0 && $cart_prod_id > 0 && $cart_prod_id !== $product_id ) {
+				if ( $product_id > 0 && $cart_prod_id > 0 && $cart_prod_id !== (int) $product_id ) {
 					continue;
 				}
 
@@ -263,10 +296,7 @@ class Frontend {
 			}
 		}
 
-		// Allow developers to filter the list of booked time slots
-		$booked_slots = apply_filters( 'slotnova_get_booked_slots', $booked_slots, $product_id, $date, $service_id, $employee_id );
-
-		wp_send_json_success( array( 'booked_slots' => $booked_slots ) );
+		return apply_filters( 'slotnova_get_booked_slots', $booked_slots, $product_id, $target_date, $service_id, $employee_id );
 	}
 
 	/**
