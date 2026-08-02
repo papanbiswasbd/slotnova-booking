@@ -194,11 +194,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		var serviceInput = document.getElementById('slotnova_service');
 		var employeeInput = document.getElementById('slotnova_employee');
+		var timeInput = document.getElementById('slotnova_booking_time');
 
 		var serviceId = serviceInput ? serviceInput.value : '';
 		var employeeId = employeeInput ? employeeInput.value : '';
 
 		var timePills = document.querySelectorAll('.slotnova-time-pill');
+		var isToday = (dateStr === siteDate);
+		var passedLabel = (typeof slotnova_params !== 'undefined' && slotnova_params.passed_text) ? slotnova_params.passed_text : 'Time Passed';
+		var bookedLabel = (typeof slotnova_params !== 'undefined' && slotnova_params.booked_text) ? slotnova_params.booked_text : 'Booked';
+
+		// INSTANT UI RESET: Un-disable all time slots immediately upon changing date/service/employee
+		timePills.forEach(function(pill) {
+			var slotVal = pill.getAttribute('data-value');
+			var isPassed = false;
+			if (isToday && siteTime) {
+				var slot24h = timeTo24h(slotVal);
+				if (slot24h && slot24h <= siteTime) {
+					isPassed = true;
+				}
+			}
+			if (isPassed) {
+				pill.classList.add('disabled');
+				pill.disabled = true;
+				pill.setAttribute('title', passedLabel);
+			} else {
+				pill.classList.remove('disabled');
+				pill.disabled = false;
+				pill.removeAttribute('title');
+			}
+		});
 
 		var formData = new FormData();
 		formData.append('action', 'slotnova_get_booked_slots');
@@ -215,10 +240,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		.then(function(res) { return res.json(); })
 		.then(function(res) {
 			var booked = (res.success && res.data && res.data.booked_slots) ? res.data.booked_slots : [];
-			var bookedLabel = (typeof slotnova_params !== 'undefined' && slotnova_params.booked_text) ? slotnova_params.booked_text : 'Booked';
-			var passedLabel = (typeof slotnova_params !== 'undefined' && slotnova_params.passed_text) ? slotnova_params.passed_text : 'Time Passed';
-
-			var isToday = (dateStr === siteDate);
 
 			timePills.forEach(function(pill) {
 				var slotVal = pill.getAttribute('data-value');
@@ -245,11 +266,6 @@ document.addEventListener('DOMContentLoaded', function() {
 					pill.classList.remove('disabled');
 					pill.disabled = false;
 					pill.removeAttribute('title');
-					// Preserve active state if this pill is currently active
-					if (pill.classList.contains('active')) {
-						if (timeInput) timeInput.value = slotVal;
-						if (summaryTime) summaryTime.textContent = slotVal;
-					}
 				}
 			});
 		})

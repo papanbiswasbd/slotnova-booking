@@ -305,6 +305,30 @@ jQuery(document).ready(function($) {
 		var siteDate = slotnova_admin_data.site_current_date || '';
 		var siteTime = slotnova_admin_data.site_current_time || '';
 		var timePills = document.querySelectorAll('#mb_time_pills .slotnova-time-pill');
+		var isToday = (dateStr === siteDate);
+		var bookedLabel = slotnova_admin_data.booked_text || 'Booked';
+		var passedLabel = slotnova_admin_data.passed_text || 'Time Passed';
+
+		// INSTANT UI RESET: Un-disable all time slots immediately upon changing date/service/employee
+		timePills.forEach(function(pill) {
+			var slotVal = pill.getAttribute('data-value');
+			var isPassed = false;
+			if (isToday && siteTime) {
+				var slot24h = mbTimeTo24h(slotVal);
+				if (slot24h && slot24h <= siteTime) {
+					isPassed = true;
+				}
+			}
+			if (isPassed) {
+				pill.classList.add('disabled');
+				pill.disabled = true;
+				pill.setAttribute('title', passedLabel);
+			} else {
+				pill.classList.remove('disabled');
+				pill.disabled = false;
+				pill.removeAttribute('title');
+			}
+		});
 
 		var postData = {
 			action: 'slotnova_get_booked_slots',
@@ -316,9 +340,6 @@ jQuery(document).ready(function($) {
 
 		$.post(slotnova_admin_data.ajax_url, postData, function(res) {
 			var booked = (res.success && res.data && res.data.booked_slots) ? res.data.booked_slots : [];
-			var bookedLabel = slotnova_admin_data.booked_text || 'Booked';
-			var passedLabel = slotnova_admin_data.passed_text || 'Time Passed';
-			var isToday = (dateStr === siteDate);
 
 			timePills.forEach(function(pill) {
 				var slotVal = pill.getAttribute('data-value');
