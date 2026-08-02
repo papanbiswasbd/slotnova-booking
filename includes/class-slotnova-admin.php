@@ -111,7 +111,9 @@ class Admin {
 		header( 'Pragma: no-cache' );
 		header( 'Expires: 0' );
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 		$output = fopen( 'php://output', 'w' );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fputcsv
 		fputcsv( $output, array(
 			'Order ID',
 			'Customer Name',
@@ -126,6 +128,7 @@ class Admin {
 		) );
 
 		foreach ( $bookings as $b ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fputcsv
 			fputcsv( $output, array(
 				'#' . $b['order_id'],
 				$b['customer'],
@@ -140,6 +143,7 @@ class Admin {
 			) );
 		}
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 		fclose( $output );
 		exit;
 	}
