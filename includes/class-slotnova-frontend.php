@@ -205,13 +205,16 @@ class Frontend {
 		wp_enqueue_script( 'slotnova-frontend-js', SLOTNOVA_BOOKING_URL . 'assets/js/slotnova-frontend.js', array( 'slotnova-flatpickr-js' ), SLOTNOVA_BOOKING_VERSION, true );
 
 		wp_localize_script( 'slotnova-frontend-js', 'slotnova_params', array(
-			'ajax_url'         => admin_url( 'admin-ajax.php' ),
-			'nonce'            => wp_create_nonce( 'slotnova_frontend_nonce' ),
-			'currency_symbol'  => get_woocommerce_currency_symbol(),
-			'free_text'        => __( 'Free', 'slotnova-booking' ),
-			'choose_time_text' => __( 'Choose a time...', 'slotnova-booking' ),
-			'booked_text'      => __( 'Booked', 'slotnova-booking' ),
-			'i18n'             => array(
+			'ajax_url'          => admin_url( 'admin-ajax.php' ),
+			'nonce'             => wp_create_nonce( 'slotnova_frontend_nonce' ),
+			'currency_symbol'   => get_woocommerce_currency_symbol(),
+			'free_text'         => __( 'Free', 'slotnova-booking' ),
+			'choose_time_text'  => __( 'Choose a time...', 'slotnova-booking' ),
+			'booked_text'       => __( 'Booked', 'slotnova-booking' ),
+			'passed_text'       => __( 'Time Passed', 'slotnova-booking' ),
+			'site_current_date' => wp_date( 'Y-m-d' ),
+			'site_current_time' => wp_date( 'H:i' ),
+			'i18n'              => array(
 				'select_service'  => __( 'Please select a service before booking.', 'slotnova-booking' ),
 				'select_employee' => __( 'Please select an employee before booking.', 'slotnova-booking' ),
 				'select_date'     => __( 'Please select a date before booking.', 'slotnova-booking' ),
@@ -359,10 +362,20 @@ class Frontend {
 				$all_off_days_arr = array_merge( $all_off_days_arr, $specific_off_arr );
 			}
 			$combined_off_days = implode( ',', $all_off_days_arr );
+
+			$opening = get_post_meta( $product_id, '_slotnova_opening_time', true );
+			if ( empty( $opening ) ) {
+				$opening = get_option( 'slotnova_opening_time', '09:00' );
+			}
+
+			$closing = get_post_meta( $product_id, '_slotnova_closing_time', true );
+			if ( empty( $closing ) ) {
+				$closing = get_option( 'slotnova_closing_time', '17:00' );
+			}
 			?>
 			<p class="form-row form-row-wide">
 				<label for="slotnova_booking_date"><?php esc_html_e( 'Select Date', 'slotnova-booking' ); ?></label>
-				<input type="text" name="slotnova_booking_date" id="slotnova_booking_date" required class="slotnova-is-hidden" data-off-days="<?php echo esc_attr( $combined_off_days ); ?>">
+				<input type="text" name="slotnova_booking_date" id="slotnova_booking_date" required class="slotnova-is-hidden" data-off-days="<?php echo esc_attr( $combined_off_days ); ?>" data-opening-time="<?php echo esc_attr( $opening ); ?>" data-closing-time="<?php echo esc_attr( $closing ); ?>">
 			</p>
 
 			<?php

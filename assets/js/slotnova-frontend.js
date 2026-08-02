@@ -17,11 +17,101 @@ document.addEventListener('DOMContentLoaded', function() {
 	var summaryTime = document.getElementById('summary-booking-time');
 
 	var timeSlotsWrapper = document.querySelector('.slotnova-time-slots-wrapper');
-	var timeInput = document.getElementById('slotnova_booking_time');
+	// Helper function to convert 12-hour AM/PM time string ("10:00 AM", "01:30 PM") to 24-hour "HH:MM"
+	function timeTo24h(timeStr) {
+		if (!timeStr) return '';
+		var str = timeStr.trim();
+		var parts = str.split(' ');
+		if (parts.length < 2) return str;
+		var timeParts = parts[0].split(':');
+		var hours = parseInt(timeParts[0], 10);
+		var minutes = parseInt(timeParts[1], 10);
+		var ampm = parts[1].toUpperCase();
+
+		if (ampm === 'PM' && hours < 12) hours += 12;
+		if (ampm === 'AM' && hours === 12) hours = 0;
+
+		var hStr = hours < 10 ? '0' + hours : '' + hours;
+		var mStr = minutes < 10 ? '0' + minutes : '' + minutes;
+		return hStr + ':' + mStr;
+	}
+
+	var siteDate = (typeof slotnova_params !== 'undefined' && slotnova_params.site_current_date) ? slotnova_params.site_current_date : '';
+	var siteTime = (typeof slotnova_params !== 'undefined' && slotnova_params.site_current_time) ? slotnova_params.site_current_time : '';
+
+	function isDateDisabled(dateObj, disableArr) {
+		for (var i = 0; i < disableArr.length; i++) {
+			var dRule = disableArr[i];
+			if (typeof dRule === 'function' && dRule(dateObj)) {
+				return true;
+			}
+			if (typeof dRule === 'string') {
+				var y = dateObj.getFullYear();
+				var m = ('0' + (dateObj.getMonth() + 1)).slice(-2);
+				var d = ('0' + dateObj.getDate()).slice(-2);
+				if ((y + '-' + m + '-' + d) === dRule) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	function normalizeTo24h(timeStr) {
+		if (!timeStr) return '';
+		var str = timeStr.trim();
+		if (str.indexOf('AM') !== -1 || str.indexOf('PM') !== -1) {
+			return timeTo24h(str);
+		}
+		var parts = str.split(':');
+		if (parts.length >= 2) {
+			var h = parseInt(parts[0], 10);
+			var m = parseInt(parts[1], 10);
+			var hStr = h < 10 ? '0' + h : '' + h;
+			var mStr = m < 10 ? '0' + m : '' + m;
+			return hStr + ':' + mStr;
+		}
+		return str;
+	}
+
+	function getFirstAvailableDate(startDateObj, closingTime, disableArr) {
+		var checkDate = new Date(startDateObj.getTime());
+		var todayYMD = siteDate;
+
+		var closing24h = normalizeTo24h(closingTime);
+		var siteTime24h = normalizeTo24h(siteTime);
+
+		var isTodayPastClosing = false;
+		if (closing24h && siteTime24h && siteTime24h >= closing24h) {
+			isTodayPastClosing = true;
+		}
+
+		for (var dayOffset = 0; dayOffset < 90; dayOffset++) {
+			var y = checkDate.getFullYear();
+			var m = ('0' + (checkDate.getMonth() + 1)).slice(-2);
+			var d = ('0' + checkDate.getDate()).slice(-2);
+			var currentYMD = y + '-' + m + '-' + d;
+
+			var isOff = isDateDisabled(checkDate, disableArr);
+
+			if (!isOff) {
+				if (currentYMD === todayYMD) {
+					if (!isTodayPastClosing) {
+						return currentYMD;
+					}
+				} else {
+					return currentYMD;
+				}
+			}
+			checkDate.setDate(checkDate.getDate() + 1);
+		}
+		return todayYMD;
+	}
 
 	var dateInput = document.getElementById('slotnova_booking_date');
 	if (dateInput && typeof flatpickr !== 'undefined') {
 		var offDaysRaw = dateInput.getAttribute('data-off-days');
+		var closingTime = dateInput.getAttribute('data-closing-time');
 		var disableArr = [];
 		if (offDaysRaw) {
 			var offDays = offDaysRaw.split(',').map(function(item) { return item.trim(); });
@@ -39,9 +129,21 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 		}
 
+		// If today is past closing time, disable today's date in Flatpickr so user cannot select it
+		var closing24h = normalizeTo24h(closingTime);
+		var siteTime24h = normalizeTo24h(siteTime);
+		if (closing24h && siteTime24h && siteTime24h >= closing24h && siteDate) {
+			if (disableArr.indexOf(siteDate) === -1) {
+				disableArr.push(siteDate);
+			}
+		}
+
+		var initialDateYMD = getFirstAvailableDate(new Date(), closingTime, disableArr);
+
 		flatpickr(dateInput, {
 			dateFormat: 'Y-m-d',
 			minDate: 'today',
+			defaultDate: initialDateYMD,
 			inline: true,
 			disable: disableArr,
 			onChange: function(selectedDates, dateStr) {
@@ -62,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 					if (summaryTime) summaryTime.textContent = '-';
 
-					// Check booked slots for selected date via AJAX
+					// Check booked and passed slots for selected date
 					fetchBookedSlots(dateStr);
 
 					// Update summary box visibility
@@ -70,6 +172,16 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			}
 		});
+
+		// Trigger initial load for the calculated initial date
+		if (initialDateYMD) {
+			if (timeSlotsWrapper) {
+				timeSlotsWrapper.classList.remove('slotnova-is-hidden');
+			}
+			if (summaryDate) summaryDate.textContent = initialDateYMD;
+			if (dateInput) dateInput.value = initialDateYMD;
+			fetchBookedSlots(initialDateYMD);
+		}
 	}
 
 	function fetchBookedSlots(dateStr) {
@@ -104,13 +216,26 @@ document.addEventListener('DOMContentLoaded', function() {
 		.then(function(res) {
 			var booked = (res.success && res.data && res.data.booked_slots) ? res.data.booked_slots : [];
 			var bookedLabel = (typeof slotnova_params !== 'undefined' && slotnova_params.booked_text) ? slotnova_params.booked_text : 'Booked';
+			var passedLabel = (typeof slotnova_params !== 'undefined' && slotnova_params.passed_text) ? slotnova_params.passed_text : 'Time Passed';
+
+			var isToday = (dateStr === siteDate);
 
 			timePills.forEach(function(pill) {
 				var slotVal = pill.getAttribute('data-value');
-				if (booked.indexOf(slotVal) !== -1) {
+				var isBooked = (booked.indexOf(slotVal) !== -1);
+				
+				var isPassed = false;
+				if (isToday && siteTime) {
+					var slot24h = timeTo24h(slotVal);
+					if (slot24h && slot24h <= siteTime) {
+						isPassed = true;
+					}
+				}
+
+				if (isBooked || isPassed) {
 					pill.classList.add('disabled');
 					pill.disabled = true;
-					pill.setAttribute('title', bookedLabel);
+					pill.setAttribute('title', isPassed ? passedLabel : bookedLabel);
 					if (pill.classList.contains('active')) {
 						pill.classList.remove('active');
 						if (timeInput) timeInput.value = '';
@@ -120,6 +245,11 @@ document.addEventListener('DOMContentLoaded', function() {
 					pill.classList.remove('disabled');
 					pill.disabled = false;
 					pill.removeAttribute('title');
+					// Preserve active state if this pill is currently active
+					if (pill.classList.contains('active')) {
+						if (timeInput) timeInput.value = slotVal;
+						if (summaryTime) summaryTime.textContent = slotVal;
+					}
 				}
 			});
 		})
@@ -128,23 +258,28 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	}
 
-	// Time Slots Pill Click Handler
-	var timePills = document.querySelectorAll('.slotnova-time-pill');
-	timePills.forEach(function(pill) {
-		pill.addEventListener('click', function(e) {
-			e.preventDefault();
-			if (this.disabled || this.classList.contains('disabled')) {
-				return false;
-			}
-			timePills.forEach(function(p) { p.classList.remove('active'); });
-			this.classList.add('active');
+	// Time Slots Pill Click Handler (Event Delegation)
+	document.addEventListener('click', function(e) {
+		var pill = e.target.closest('.slotnova-time-pill');
+		if (!pill) return;
 
-			var value = this.getAttribute('data-value');
-			if (timeInput) timeInput.value = value;
-			if (summaryTime) summaryTime.textContent = value;
+		e.preventDefault();
+		if (pill.disabled || pill.classList.contains('disabled')) {
+			return false;
+		}
 
-			checkSummaryVisibility();
-		});
+		var allPills = document.querySelectorAll('.slotnova-time-pill');
+		allPills.forEach(function(p) { p.classList.remove('active'); });
+		pill.classList.add('active');
+
+		var value = pill.getAttribute('data-value');
+		var tInput = document.getElementById('slotnova_booking_time');
+		var sTime = document.getElementById('summary-booking-time');
+
+		if (tInput) tInput.value = value;
+		if (sTime) sTime.textContent = value;
+
+		checkSummaryVisibility();
 	});
 
 	// Custom Dropdown Logic

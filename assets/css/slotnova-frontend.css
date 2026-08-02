@@ -440,8 +440,8 @@
 	cursor: not-allowed !important;
 }
 
-.flatpickr-calendar.inline .flatpickr-day.today {
-	border-color: #2271b1 !important;
+.flatpickr-calendar.inline .flatpickr-day.today:not(.selected) {
+	border-color: transparent !important;
 }
 
 /* Time Slots Pill Buttons Grid */

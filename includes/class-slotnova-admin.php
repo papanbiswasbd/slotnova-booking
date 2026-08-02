@@ -303,23 +303,29 @@ class Admin {
 	 * @return array
 	 */
 	public function add_slotnova_product_tab( $tabs ) {
-		if ( isset( $tabs['general'] ) ) {
-			array_push( $tabs['general']['class'], 'show_if_slotnova' );
-		}
-
 		$tabs['slotnova_booking'] = array(
 			'label'    => __( 'SlotNova Booking', 'slotnova-booking' ),
 			'target'   => 'slotnova_booking_data',
 			'class'    => array( 'show_if_slotnova' ),
-			'priority' => 25,
+			'priority' => 1,
 		);
 
 		$tabs['slotnova_slot_manager'] = array(
 			'label'    => __( 'Slot Manager', 'slotnova-booking' ),
 			'target'   => 'slotnova_slot_manager_data',
 			'class'    => array( 'show_if_slotnova' ),
-			'priority' => 26,
+			'priority' => 2,
 		);
+
+		uasort( $tabs, function( $a, $b ) {
+			$a_priority = isset( $a['priority'] ) ? intval( $a['priority'] ) : 50;
+			$b_priority = isset( $b['priority'] ) ? intval( $b['priority'] ) : 50;
+			if ( $a_priority === $b_priority ) {
+				return 0;
+			}
+			return ( $a_priority < $b_priority ) ? -1 : 1;
+		} );
+
 		return $tabs;
 	}
 
@@ -712,97 +718,165 @@ class Admin {
 		$all_employees = get_terms( array( 'taxonomy' => 'slotnova_employee', 'hide_empty' => false ) );
 		?>
 		<div class="wrap slotnova-dashboard-wrap">
-			<div class="slotnova-admin-header">
-				<div class="slotnova-header-title">
-					<h1><?php esc_html_e( 'SlotNova Overview', 'slotnova-booking' ); ?></h1>
-					<p class="slotnova-subtitle"><?php esc_html_e( 'Manage your appointments, track revenue performance, and handle customer bookings smoothly.', 'slotnova-booking' ); ?></p>
+			<h1 class="wp-heading-inline screen-reader-text"><?php esc_html_e( 'SlotNova Dashboard', 'slotnova-booking' ); ?></h1>
+			<!-- Hero Header Banner -->
+			<div class="slotnova-hero-banner">
+				<div class="slotnova-hero-content">
+					<div class="slotnova-hero-badges">
+						<span class="slotnova-pill-badge slotnova-pill-pulse">
+							<span class="slotnova-pulse-dot"></span> <?php esc_html_e( 'Live System Active', 'slotnova-booking' ); ?>
+						</span>
+						<span class="slotnova-pill-badge slotnova-pill-date">
+							<span class="dashicons dashicons-calendar-alt"></span> <?php echo esc_html( wp_date( 'l, F j, Y' ) ); ?>
+						</span>
+					</div>
+					<h1 class="slotnova-hero-title"><?php esc_html_e( 'SlotNova Command Center', 'slotnova-booking' ); ?></h1>
+					<p class="slotnova-hero-subtitle"><?php esc_html_e( 'Monitor real-time appointment volume, revenue performance, and manage your booking operations seamlessly.', 'slotnova-booking' ); ?></p>
 				</div>
-				<div class="slotnova-header-actions">
+				<div class="slotnova-hero-actions">
 					<form method="get" action="" class="slotnova-inline-form">
 						<input type="hidden" name="page" value="slotnova-dashboard" />
-						<select name="date_filter" class="slotnova-filter-select">
-							<?php foreach ( $filter_options as $value => $label ) : ?>
-								<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $current_filter, $value ); ?>><?php echo esc_html( $label ); ?></option>
-							<?php endforeach; ?>
-						</select>
+						<div class="slotnova-select-wrapper">
+							<select name="date_filter" class="slotnova-filter-select">
+								<?php foreach ( $filter_options as $value => $label ) : ?>
+									<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $current_filter, $value ); ?>><?php echo esc_html( $label ); ?></option>
+								<?php endforeach; ?>
+							</select>
+						</div>
 					</form>
-					<button type="button" class="button button-primary slotnova-btn-icon" id="slotnova-open-manual-booking-modal">
+					<button type="button" class="slotnova-btn slotnova-btn-primary" id="slotnova-open-manual-booking-modal">
 						<span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add Manual Booking', 'slotnova-booking' ); ?>
 					</button>
-					<button type="button" class="button button-secondary slotnova-btn-icon" id="slotnova-export-csv-btn">
+					<button type="button" class="slotnova-btn slotnova-btn-glass" id="slotnova-export-csv-btn">
 						<span class="dashicons dashicons-download"></span> <?php esc_html_e( 'Export CSV', 'slotnova-booking' ); ?>
 					</button>
 				</div>
 			</div>
 
-			<!-- Stat Cards Grid -->
+			<!-- Modern Stat Cards Grid -->
 			<div class="slotnova-dashboard-grid">
-				<div class="slotnova-stat-card slotnova-card-blue">
-					<div class="slotnova-stat-icon"><span class="dashicons dashicons-calendar-alt"></span></div>
+				<div class="slotnova-stat-card slotnova-card-indigo">
+					<div class="slotnova-stat-icon-wrapper">
+						<div class="slotnova-stat-icon"><span class="dashicons dashicons-calendar-alt"></span></div>
+					</div>
 					<div class="slotnova-stat-details">
-						<h3 class="slotnova-stat-card-title"><?php esc_html_e( 'Total Bookings', 'slotnova-booking' ); ?></h3>
+						<div class="slotnova-stat-top">
+							<h3 class="slotnova-stat-card-title"><?php esc_html_e( 'Total Bookings', 'slotnova-booking' ); ?></h3>
+							<span class="slotnova-trend-tag slotnova-tag-blue"><?php echo esc_html( $filter_options[ $current_filter ] ); ?></span>
+						</div>
 						<p class="slotnova-stat-card-value"><?php echo esc_html( $data['total_bookings'] ); ?></p>
+						<span class="slotnova-stat-subtext"><?php esc_html_e( 'Confirmed & Processed Orders', 'slotnova-booking' ); ?></span>
 					</div>
 				</div>
-				<div class="slotnova-stat-card slotnova-card-green">
-					<div class="slotnova-stat-icon"><span class="dashicons dashicons-money-alt"></span></div>
+
+				<div class="slotnova-stat-card slotnova-card-emerald">
+					<div class="slotnova-stat-icon-wrapper">
+						<div class="slotnova-stat-icon"><span class="dashicons dashicons-money-alt"></span></div>
+					</div>
 					<div class="slotnova-stat-details">
-						<h3 class="slotnova-stat-card-title"><?php esc_html_e( 'Total Revenue', 'slotnova-booking' ); ?></h3>
+						<div class="slotnova-stat-top">
+							<h3 class="slotnova-stat-card-title"><?php esc_html_e( 'Total Revenue', 'slotnova-booking' ); ?></h3>
+							<span class="slotnova-trend-tag slotnova-tag-green">+100% <?php esc_html_e( 'Net', 'slotnova-booking' ); ?></span>
+						</div>
 						<p class="slotnova-stat-card-value"><?php echo wp_kses_post( wc_price( $data['total_revenue'] ) ); ?></p>
+						<span class="slotnova-stat-subtext"><?php esc_html_e( 'Earned from SlotNova services', 'slotnova-booking' ); ?></span>
 					</div>
 				</div>
-				<div class="slotnova-stat-card slotnova-card-yellow">
-					<div class="slotnova-stat-icon"><span class="dashicons dashicons-clock"></span></div>
+
+				<div class="slotnova-stat-card slotnova-card-amber">
+					<div class="slotnova-stat-icon-wrapper">
+						<div class="slotnova-stat-icon"><span class="dashicons dashicons-clock"></span></div>
+					</div>
 					<div class="slotnova-stat-details">
-						<h3 class="slotnova-stat-card-title"><?php esc_html_e( "Today's Schedule", 'slotnova-booking' ); ?></h3>
+						<div class="slotnova-stat-top">
+							<h3 class="slotnova-stat-card-title"><?php esc_html_e( "Today's Schedule", 'slotnova-booking' ); ?></h3>
+							<span class="slotnova-trend-tag slotnova-tag-yellow"><?php esc_html_e( 'Live Today', 'slotnova-booking' ); ?></span>
+						</div>
 						<p class="slotnova-stat-card-value"><?php echo esc_html( $data['today_bookings'] ); ?></p>
+						<span class="slotnova-stat-subtext"><?php esc_html_e( 'Appointments scheduled today', 'slotnova-booking' ); ?></span>
 					</div>
 				</div>
-				<div class="slotnova-stat-card slotnova-card-purple">
-					<div class="slotnova-stat-icon"><span class="dashicons dashicons-hourglass"></span></div>
+
+				<div class="slotnova-stat-card slotnova-card-rose">
+					<div class="slotnova-stat-icon-wrapper">
+						<div class="slotnova-stat-icon"><span class="dashicons dashicons-hourglass"></span></div>
+					</div>
 					<div class="slotnova-stat-details">
-						<h3 class="slotnova-stat-card-title"><?php esc_html_e( 'Pending Confirmation', 'slotnova-booking' ); ?></h3>
+						<div class="slotnova-stat-top">
+							<h3 class="slotnova-stat-card-title"><?php esc_html_e( 'Pending Action', 'slotnova-booking' ); ?></h3>
+							<span class="slotnova-trend-tag slotnova-tag-purple"><?php esc_html_e( 'Action Needed', 'slotnova-booking' ); ?></span>
+						</div>
 						<p class="slotnova-stat-card-value"><?php echo esc_html( $data['pending_bookings'] ); ?></p>
+						<span class="slotnova-stat-subtext"><?php esc_html_e( 'Processing or On-Hold Bookings', 'slotnova-booking' ); ?></span>
 					</div>
 				</div>
 			</div>
 
-			<!-- Smart KPI Bar -->
+			<!-- Enhanced KPI Summary Strip -->
 			<div class="slotnova-kpi-bar">
 				<div class="slotnova-kpi-item">
-					<span class="slotnova-kpi-label"><?php esc_html_e( 'Avg. Booking Value', 'slotnova-booking' ); ?></span>
-					<strong class="slotnova-kpi-val"><?php echo wp_kses_post( wc_price( $data['avg_booking_value'] ) ); ?></strong>
+					<div class="slotnova-kpi-icon-mini"><span class="dashicons dashicons-chart-line"></span></div>
+					<div class="slotnova-kpi-text">
+						<span class="slotnova-kpi-label"><?php esc_html_e( 'Avg. Booking Value', 'slotnova-booking' ); ?></span>
+						<strong class="slotnova-kpi-val"><?php echo wp_kses_post( wc_price( $data['avg_booking_value'] ) ); ?></strong>
+					</div>
 				</div>
+				<div class="slotnova-kpi-divider"></div>
 				<div class="slotnova-kpi-item">
-					<span class="slotnova-kpi-label"><?php esc_html_e( 'Order Fulfillment Rate', 'slotnova-booking' ); ?></span>
-					<strong class="slotnova-kpi-val"><?php echo esc_html( $data['completion_rate'] ); ?>%</strong>
+					<div class="slotnova-kpi-icon-mini"><span class="dashicons dashicons-yes-alt"></span></div>
+					<div class="slotnova-kpi-text">
+						<span class="slotnova-kpi-label"><?php esc_html_e( 'Fulfillment Rate', 'slotnova-booking' ); ?></span>
+						<strong class="slotnova-kpi-val"><?php echo esc_html( $data['completion_rate'] ); ?>%</strong>
+					</div>
 				</div>
+				<div class="slotnova-kpi-divider"></div>
 				<div class="slotnova-kpi-item">
-					<span class="slotnova-kpi-label"><?php esc_html_e( 'Top Peak Hour', 'slotnova-booking' ); ?></span>
-					<strong class="slotnova-kpi-val">
-						<?php 
-						$peak_keys = array_keys( $data['peak_hours'] );
-						echo ! empty( $peak_keys ) ? esc_html( $peak_keys[0] ) : esc_html__( 'N/A', 'slotnova-booking' ); 
-						?>
-					</strong>
+					<div class="slotnova-kpi-icon-mini"><span class="dashicons dashicons-performance"></span></div>
+					<div class="slotnova-kpi-text">
+						<span class="slotnova-kpi-label"><?php esc_html_e( 'Top Peak Hour', 'slotnova-booking' ); ?></span>
+						<strong class="slotnova-kpi-val">
+							<?php 
+							$peak_keys = array_keys( $data['peak_hours'] );
+							echo ! empty( $peak_keys ) ? esc_html( $peak_keys[0] ) : esc_html__( 'N/A', 'slotnova-booking' ); 
+							?>
+						</strong>
+					</div>
+				</div>
+				<div class="slotnova-kpi-divider"></div>
+				<div class="slotnova-kpi-item">
+					<div class="slotnova-kpi-icon-mini"><span class="dashicons dashicons-groups"></span></div>
+					<div class="slotnova-kpi-text">
+						<span class="slotnova-kpi-label"><?php esc_html_e( 'Active Staff', 'slotnova-booking' ); ?></span>
+						<strong class="slotnova-kpi-val"><?php echo esc_html( count( $data['top_employees'] ) ); ?></strong>
+					</div>
 				</div>
 			</div>
 
-			<!-- Chart & Analytics Container -->
+			<!-- Chart & Performance Trends -->
 			<div class="slotnova-chart-container">
 				<div class="slotnova-chart-header">
-					<h3 class="slotnova-chart-title">
-						<?php 
-						/* translators: %s: filter label */
-						printf( esc_html__( 'Performance Trends (%s)', 'slotnova-booking' ), esc_html( $filter_options[ $current_filter ] ) ); 
-						?>
-					</h3>
+					<div class="slotnova-chart-title-group">
+						<h3 class="slotnova-chart-title">
+							<span class="dashicons dashicons-chart-area"></span>
+							<?php 
+							/* translators: %s: filter label */
+							printf( esc_html__( 'Performance Analytics (%s)', 'slotnova-booking' ), esc_html( $filter_options[ $current_filter ] ) ); 
+							?>
+						</h3>
+						<p class="slotnova-chart-desc"><?php esc_html_e( 'Visual representation of appointment volume and revenue stream over time.', 'slotnova-booking' ); ?></p>
+					</div>
 					<div class="slotnova-chart-toggles">
-						<button type="button" class="slotnova-chart-toggle-btn active" data-dataset="bookings"><?php esc_html_e( 'Bookings Count', 'slotnova-booking' ); ?></button>
-						<button type="button" class="slotnova-chart-toggle-btn" data-dataset="revenue"><?php esc_html_e( 'Revenue Trend', 'slotnova-booking' ); ?></button>
+						<button type="button" class="slotnova-chart-toggle-btn active" data-dataset="bookings">
+							<span class="slotnova-btn-dot dot-blue"></span> <?php esc_html_e( 'Bookings Count', 'slotnova-booking' ); ?>
+						</button>
+						<button type="button" class="slotnova-chart-toggle-btn" data-dataset="revenue">
+							<span class="slotnova-btn-dot dot-green"></span> <?php esc_html_e( 'Revenue ($)', 'slotnova-booking' ); ?>
+						</button>
 					</div>
 				</div>
-				<canvas id="slotnovaBookingsChart" height="90"></canvas>
+				<div class="slotnova-chart-wrapper">
+					<canvas id="slotnovaBookingsChart" height="85"></canvas>
+				</div>
 			</div>
 
 			<!-- Smart Analytics Row: Peak Hours & Busiest Days -->
@@ -811,12 +885,13 @@ class Admin {
 				<div class="slotnova-dashboard-card">
 					<div class="slotnova-card-header">
 						<h3><span class="dashicons dashicons-dashboard"></span> <?php esc_html_e( 'Peak Booking Hours Analytics', 'slotnova-booking' ); ?></h3>
+						<span class="slotnova-header-tag"><?php esc_html_e( 'Demand Distribution', 'slotnova-booking' ); ?></span>
 					</div>
 					<div class="slotnova-card-content">
 						<?php if ( empty( $data['peak_hours'] ) ) : ?>
 							<div class="slotnova-empty-state">
-								<span class="dashicons dashicons-clock"></span>
-								<p><?php esc_html_e( 'No slot time data available for this range.', 'slotnova-booking' ); ?></p>
+								<div class="slotnova-empty-icon"><span class="dashicons dashicons-clock"></span></div>
+								<p><?php esc_html_e( 'No slot time data available for this date range.', 'slotnova-booking' ); ?></p>
 							</div>
 						<?php else : ?>
 							<ul class="slotnova-progress-list">
@@ -827,8 +902,8 @@ class Admin {
 								?>
 									<li>
 										<div class="slotnova-progress-info">
-											<span><strong><?php echo esc_html( $hour_slot ); ?></strong></span>
-											<span><?php echo esc_html( $h_count ); ?> <?php esc_html_e( 'bookings', 'slotnova-booking' ); ?></span>
+											<span class="slotnova-time-chip"><span class="dashicons dashicons-clock"></span> <strong><?php echo esc_html( $hour_slot ); ?></strong></span>
+											<span class="slotnova-count-badge"><?php echo esc_html( $h_count ); ?> <?php esc_html_e( 'bookings', 'slotnova-booking' ); ?></span>
 										</div>
 										<div class="slotnova-bar-bg"><div class="slotnova-bar-fill" style="width: <?php echo esc_attr( $perc ); ?>%;"></div></div>
 									</li>
@@ -842,6 +917,7 @@ class Admin {
 				<div class="slotnova-dashboard-card">
 					<div class="slotnova-card-header">
 						<h3><span class="dashicons dashicons-calendar"></span> <?php esc_html_e( 'Busiest Days of the Week', 'slotnova-booking' ); ?></h3>
+						<span class="slotnova-header-tag"><?php esc_html_e( 'Weekly Load', 'slotnova-booking' ); ?></span>
 					</div>
 					<div class="slotnova-card-content">
 						<?php 
@@ -849,7 +925,7 @@ class Admin {
 						if ( $max_day === 0 ) :
 						?>
 							<div class="slotnova-empty-state">
-								<span class="dashicons dashicons-calendar-alt"></span>
+								<div class="slotnova-empty-icon"><span class="dashicons dashicons-calendar-alt"></span></div>
 								<p><?php esc_html_e( 'No booking day distribution available yet.', 'slotnova-booking' ); ?></p>
 							</div>
 						<?php else : ?>
@@ -859,8 +935,8 @@ class Admin {
 								?>
 									<div class="slotnova-day-bar-col">
 										<span class="slotnova-day-count"><?php echo esc_html( $d_count ); ?></span>
-										<div class="slotnova-vbar-container">
-											<div class="slotnova-vbar-fill" style="height: <?php echo esc_attr( $d_perc ); ?>%;"></div>
+										<div class="slotnova-vbar-container" title="<?php echo esc_attr( $d_count . ' bookings' ); ?>">
+											<div class="slotnova-vbar-fill" style="height: <?php echo esc_attr( max( 8, $d_perc ) ); ?>%;"></div>
 										</div>
 										<span class="slotnova-day-name"><?php echo esc_html( $day_code ); ?></span>
 									</div>
@@ -871,38 +947,46 @@ class Admin {
 				</div>
 			</div>
 
-			<!-- Two Column Widgets Layout -->
+			<!-- Two Column Dashboard Widgets Layout -->
 			<div class="slotnova-dashboard-columns">
 				<!-- Today's Agenda Widget -->
 				<div class="slotnova-dashboard-card slotnova-agenda-card">
 					<div class="slotnova-card-header">
 						<h3><span class="dashicons dashicons-list-view"></span> <?php esc_html_e( "Today's Appointments Agenda", 'slotnova-booking' ); ?></h3>
-						<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-calendar' ) ); ?>" class="slotnova-link-more"><?php esc_html_e( 'View All Bookings &rarr;', 'slotnova-booking' ); ?></a>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-calendar' ) ); ?>" class="slotnova-link-more">
+							<?php esc_html_e( 'View All Bookings', 'slotnova-booking' ); ?> <span class="dashicons dashicons-arrow-right-alt"></span>
+						</a>
 					</div>
 					<div class="slotnova-card-content">
 						<?php if ( empty( $data['todays_agenda'] ) ) : ?>
 							<div class="slotnova-empty-state">
-								<span class="dashicons dashicons-smiley"></span>
+								<div class="slotnova-empty-icon"><span class="dashicons dashicons-smiley"></span></div>
 								<p><?php esc_html_e( 'No appointments scheduled for today.', 'slotnova-booking' ); ?></p>
 							</div>
 						<?php else : ?>
 							<ul class="slotnova-agenda-list">
-								<?php foreach ( $data['todays_agenda'] as $agenda ) : ?>
+								<?php foreach ( $data['todays_agenda'] as $agenda ) :
+									$cust_initials = mb_strtoupper( mb_substr( $agenda['customer'], 0, 1 ) );
+								?>
 									<li class="slotnova-agenda-item">
-										<div class="slotnova-agenda-time">
-											<span class="dashicons dashicons-clock"></span>
-											<strong><?php echo esc_html( $agenda['time'] ); ?></strong>
+										<div class="slotnova-avatar-circle">
+											<?php echo esc_html( $cust_initials ); ?>
 										</div>
 										<div class="slotnova-agenda-info">
-											<strong><?php echo esc_html( $agenda['customer'] ); ?></strong>
+											<div class="slotnova-agenda-customer-line">
+												<strong><?php echo esc_html( $agenda['customer'] ); ?></strong>
+												<span class="slotnova-agenda-time-tag"><span class="dashicons dashicons-clock"></span> <?php echo esc_html( $agenda['time'] ); ?></span>
+											</div>
 											<div class="slotnova-agenda-sub">
-												<span><?php echo esc_html( $agenda['service'] ); ?></span> &bull; 
-												<em><?php echo esc_html( $agenda['employee'] ); ?></em>
+												<span class="slotnova-service-chip"><?php echo esc_html( $agenda['service'] ); ?></span>
+												<span class="slotnova-staff-chip"><span class="dashicons dashicons-admin-users"></span> <?php echo esc_html( $agenda['employee'] ); ?></span>
 											</div>
 										</div>
 										<div class="slotnova-agenda-action">
 											<span class="slotnova-badge status-<?php echo sanitize_html_class( strtolower( $agenda['status'] ) ); ?>"><?php echo esc_html( $agenda['status'] ); ?></span>
-											<a href="<?php echo esc_url( $agenda['order_url'] ); ?>" class="button button-small" title="<?php esc_attr_e( 'View Order', 'slotnova-booking' ); ?>">&rarr;</a>
+											<a href="<?php echo esc_url( $agenda['order_url'] ); ?>" class="slotnova-btn-round" title="<?php esc_attr_e( 'View Order Details', 'slotnova-booking' ); ?>">
+												<span class="dashicons dashicons-arrow-right-alt2"></span>
+											</a>
 										</div>
 									</li>
 								<?php endforeach; ?>
@@ -911,44 +995,59 @@ class Admin {
 					</div>
 				</div>
 
-				<!-- Top Breakdown Widgets -->
+				<!-- Popularity Insights Card -->
 				<div class="slotnova-dashboard-card slotnova-breakdown-card">
 					<div class="slotnova-card-header">
 						<h3><span class="dashicons dashicons-chart-pie"></span> <?php esc_html_e( 'Popularity Insights', 'slotnova-booking' ); ?></h3>
+						<span class="slotnova-header-tag"><?php esc_html_e( 'Top Rankings', 'slotnova-booking' ); ?></span>
 					</div>
 					<div class="slotnova-card-content">
 						<div class="slotnova-breakdown-section">
-							<h4><?php esc_html_e( 'Top Booked Services', 'slotnova-booking' ); ?></h4>
+							<h4 class="slotnova-breakdown-heading"><span class="dashicons dashicons-star-filled"></span> <?php esc_html_e( 'Top Booked Services', 'slotnova-booking' ); ?></h4>
 							<?php if ( empty( $data['top_services'] ) ) : ?>
-								<p class="description"><?php esc_html_e( 'No service data available yet.', 'slotnova-booking' ); ?></p>
+								<p class="slotnova-empty-text"><?php esc_html_e( 'No service booking data available yet.', 'slotnova-booking' ); ?></p>
 							<?php else : ?>
-								<ul class="slotnova-progress-list">
-									<?php foreach ( $data['top_services'] as $svc_name => $count ) : ?>
-										<li>
-											<div class="slotnova-progress-info">
-												<span><?php echo esc_html( $svc_name ); ?></span>
-												<strong><?php echo esc_html( $count ); ?> <?php esc_html_e( 'bookings', 'slotnova-booking' ); ?></strong>
+								<ul class="slotnova-ranking-list">
+									<?php 
+									$rank = 1;
+									foreach ( $data['top_services'] as $svc_name => $count ) : 
+									?>
+										<li class="slotnova-ranking-item">
+											<span class="slotnova-rank-badge rank-<?php echo esc_attr( $rank ); ?>">#<?php echo esc_html( $rank ); ?></span>
+											<div class="slotnova-ranking-details">
+												<span class="slotnova-ranking-name"><?php echo esc_html( $svc_name ); ?></span>
+												<strong class="slotnova-ranking-count"><?php echo esc_html( $count ); ?> <?php esc_html_e( 'bookings', 'slotnova-booking' ); ?></strong>
 											</div>
 										</li>
-									<?php endforeach; ?>
+									<?php 
+										$rank++;
+									endforeach; 
+									?>
 								</ul>
 							<?php endif; ?>
 						</div>
 
 						<div class="slotnova-breakdown-section slotnova-mt-20">
-							<h4><?php esc_html_e( 'Top Performing Staff', 'slotnova-booking' ); ?></h4>
+							<h4 class="slotnova-breakdown-heading"><span class="dashicons dashicons-groups"></span> <?php esc_html_e( 'Top Performing Staff', 'slotnova-booking' ); ?></h4>
 							<?php if ( empty( $data['top_employees'] ) ) : ?>
-								<p class="description"><?php esc_html_e( 'No staff data available yet.', 'slotnova-booking' ); ?></p>
+								<p class="slotnova-empty-text"><?php esc_html_e( 'No staff booking data available yet.', 'slotnova-booking' ); ?></p>
 							<?php else : ?>
-								<ul class="slotnova-progress-list">
-									<?php foreach ( $data['top_employees'] as $emp_name => $count ) : ?>
-										<li>
-											<div class="slotnova-progress-info">
-												<span><?php echo esc_html( $emp_name ); ?></span>
-												<strong><?php echo esc_html( $count ); ?> <?php esc_html_e( 'bookings', 'slotnova-booking' ); ?></strong>
+								<ul class="slotnova-ranking-list">
+									<?php 
+									$staff_rank = 1;
+									foreach ( $data['top_employees'] as $emp_name => $count ) : 
+									?>
+										<li class="slotnova-ranking-item">
+											<span class="slotnova-rank-badge rank-<?php echo esc_attr( $staff_rank ); ?>">#<?php echo esc_html( $staff_rank ); ?></span>
+											<div class="slotnova-ranking-details">
+												<span class="slotnova-ranking-name"><?php echo esc_html( $emp_name ); ?></span>
+												<strong class="slotnova-ranking-count"><?php echo esc_html( $count ); ?> <?php esc_html_e( 'bookings', 'slotnova-booking' ); ?></strong>
 											</div>
 										</li>
-									<?php endforeach; ?>
+									<?php 
+										$staff_rank++;
+									endforeach; 
+									?>
 								</ul>
 							<?php endif; ?>
 						</div>
@@ -1098,9 +1197,10 @@ class Admin {
 						'employee'   => ! empty( $employee ) ? $employee : __( 'Any Staff', 'slotnova-booking' ),
 						'date'       => $booking_date,
 						'time'       => ! empty( $time ) ? $time : __( 'All Day', 'slotnova-booking' ),
-						'status'     => wc_get_order_status_name( $order_status ),
-						'status_raw' => $order_status,
-						'total'      => $item->get_total(),
+						'status'          => wc_get_order_status_name( $order_status ),
+						'status_raw'      => $order_status,
+						'total'           => $item->get_total(),
+						'total_formatted' => wp_kses_post( wc_price( $item->get_total() ) ),
 					);
 
 					$event_title = $customer_name . ' - ' . ( ! empty( $service ) ? $service : __( 'Booking', 'slotnova-booking' ) );
@@ -1154,26 +1254,53 @@ class Admin {
 		$all_employees = get_terms( array( 'taxonomy' => 'slotnova_employee', 'hide_empty' => false ) );
 		?>
 		<div class="wrap slotnova-bookings-wrap">
-			<div class="slotnova-admin-header">
-				<h1><?php esc_html_e( 'All Bookings Management', 'slotnova-booking' ); ?></h1>
-				<button type="button" class="button button-secondary slotnova-btn-icon" id="slotnova-export-csv-btn">
-					<span class="dashicons dashicons-download"></span> <?php esc_html_e( 'Export CSV', 'slotnova-booking' ); ?>
-				</button>
+			<h1 class="wp-heading-inline screen-reader-text"><?php esc_html_e( 'All Bookings Management', 'slotnova-booking' ); ?></h1>
+			
+			<!-- Hero Header Banner -->
+			<div class="slotnova-hero-banner">
+				<div class="slotnova-hero-content">
+					<div class="slotnova-hero-badges">
+						<span class="slotnova-pill-badge slotnova-pill-pulse">
+							<span class="slotnova-pulse-dot"></span> <?php esc_html_e( 'Bookings Database', 'slotnova-booking' ); ?>
+						</span>
+						<span class="slotnova-pill-badge slotnova-pill-date">
+							<span class="dashicons dashicons-list-view"></span> <?php echo esc_html( count( $data['list'] ) ); ?> <?php esc_html_e( 'Records Found', 'slotnova-booking' ); ?>
+						</span>
+					</div>
+					<h1 class="slotnova-hero-title"><?php esc_html_e( 'All Bookings Management', 'slotnova-booking' ); ?></h1>
+					<p class="slotnova-hero-subtitle"><?php esc_html_e( 'Browse, filter, and track customer appointments seamlessly across list and interactive calendar views.', 'slotnova-booking' ); ?></p>
+				</div>
+				<div class="slotnova-hero-actions">
+					<button type="button" class="slotnova-btn slotnova-btn-primary" id="slotnova-open-manual-booking-modal">
+						<span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add Manual Booking', 'slotnova-booking' ); ?>
+					</button>
+					<button type="button" class="slotnova-btn slotnova-btn-glass" id="slotnova-export-csv-btn">
+						<span class="dashicons dashicons-download"></span> <?php esc_html_e( 'Export CSV', 'slotnova-booking' ); ?>
+					</button>
+				</div>
 			</div>
 
-			<h2 class="nav-tab-wrapper slotnova-nav-tabs">
-				<a href="#" class="nav-tab nav-tab-active" id="slotnova-tab-list-view"><?php esc_html_e( 'List View', 'slotnova-booking' ); ?></a>
-				<a href="#" class="nav-tab" id="slotnova-tab-calendar-view"><?php esc_html_e( 'Calendar View', 'slotnova-booking' ); ?></a>
-			</h2>
+			<!-- Segmented Pill Tab Switcher -->
+			<div class="slotnova-tab-switcher">
+				<a href="#" class="slotnova-tab-pill active" id="slotnova-tab-list-view">
+					<span class="dashicons dashicons-menu-alt3"></span> <?php esc_html_e( 'List View', 'slotnova-booking' ); ?>
+				</a>
+				<a href="#" class="slotnova-tab-pill" id="slotnova-tab-calendar-view">
+					<span class="dashicons dashicons-calendar-alt"></span> <?php esc_html_e( 'Calendar View', 'slotnova-booking' ); ?>
+				</a>
+			</div>
 
 			<div id="slotnova-list-view-container">
-				<!-- Search & Filters Toolbar -->
-				<form method="get" action="" class="slotnova-filter-toolbar">
+				<!-- Search & Filters Toolbar Card -->
+				<form method="get" action="" class="slotnova-filter-card">
 					<input type="hidden" name="page" value="slotnova-calendar" />
-					<div class="slotnova-toolbar-group">
-						<input type="search" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="<?php esc_attr_e( 'Search customer, email, order ID...', 'slotnova-booking' ); ?>" class="slotnova-search-input" />
+					<div class="slotnova-toolbar-grid">
+						<div class="slotnova-search-box">
+							<span class="dashicons dashicons-search slotnova-search-icon"></span>
+							<input type="search" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="<?php esc_attr_e( 'Search customer, email, phone, order #...', 'slotnova-booking' ); ?>" class="slotnova-input-styled" />
+						</div>
 
-						<select name="service" class="slotnova-filter-select">
+						<select name="service" class="slotnova-select-styled">
 							<option value=""><?php esc_html_e( 'All Services', 'slotnova-booking' ); ?></option>
 							<?php if ( ! is_wp_error( $all_services ) && ! empty( $all_services ) ) : ?>
 								<?php foreach ( $all_services as $svc ) : ?>
@@ -1182,7 +1309,7 @@ class Admin {
 							<?php endif; ?>
 						</select>
 
-						<select name="employee" class="slotnova-filter-select">
+						<select name="employee" class="slotnova-select-styled">
 							<option value=""><?php esc_html_e( 'All Staff', 'slotnova-booking' ); ?></option>
 							<?php if ( ! is_wp_error( $all_employees ) && ! empty( $all_employees ) ) : ?>
 								<?php foreach ( $all_employees as $emp ) : ?>
@@ -1191,7 +1318,7 @@ class Admin {
 							<?php endif; ?>
 						</select>
 
-						<select name="status" class="slotnova-filter-select">
+						<select name="status" class="slotnova-select-styled">
 							<option value=""><?php esc_html_e( 'All Statuses', 'slotnova-booking' ); ?></option>
 							<option value="processing" <?php selected( $status_filter, 'processing' ); ?>><?php esc_html_e( 'Processing', 'slotnova-booking' ); ?></option>
 							<option value="completed" <?php selected( $status_filter, 'completed' ); ?>><?php esc_html_e( 'Completed', 'slotnova-booking' ); ?></option>
@@ -1199,62 +1326,175 @@ class Admin {
 							<option value="cancelled" <?php selected( $status_filter, 'cancelled' ); ?>><?php esc_html_e( 'Cancelled', 'slotnova-booking' ); ?></option>
 						</select>
 
-						<button type="submit" class="button"><?php esc_html_e( 'Filter', 'slotnova-booking' ); ?></button>
-						<?php if ( ! empty( $search ) || ! empty( $service_filter ) || ! empty( $employee_filter ) || ! empty( $status_filter ) ) : ?>
-							<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-calendar' ) ); ?>" class="button button-link"><?php esc_html_e( 'Reset Filters', 'slotnova-booking' ); ?></a>
-						<?php endif; ?>
+						<div class="slotnova-filter-actions-group">
+							<button type="submit" class="slotnova-btn-action slotnova-btn-action-primary">
+								<span class="dashicons dashicons-filter"></span> <?php esc_html_e( 'Filter', 'slotnova-booking' ); ?>
+							</button>
+							<?php if ( ! empty( $search ) || ! empty( $service_filter ) || ! empty( $employee_filter ) || ! empty( $status_filter ) ) : ?>
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-calendar' ) ); ?>" class="slotnova-btn-action slotnova-btn-action-reset">
+									<?php esc_html_e( 'Reset', 'slotnova-booking' ); ?>
+								</a>
+							<?php endif; ?>
+						</div>
 					</div>
 				</form>
 
-				<table class="wp-list-table widefat fixed striped table-view-list slotnova-table">
-					<thead>
-						<tr>
-							<th style="width: 80px;"><?php esc_html_e( 'Order ID', 'slotnova-booking' ); ?></th>
-							<th><?php esc_html_e( 'Customer', 'slotnova-booking' ); ?></th>
-							<th><?php esc_html_e( 'Contact Info', 'slotnova-booking' ); ?></th>
-							<th><?php esc_html_e( 'Service', 'slotnova-booking' ); ?></th>
-							<th><?php esc_html_e( 'Assigned Staff', 'slotnova-booking' ); ?></th>
-							<th><?php esc_html_e( 'Date & Time', 'slotnova-booking' ); ?></th>
-							<th><?php esc_html_e( 'Status', 'slotnova-booking' ); ?></th>
-							<th style="width: 100px; text-align: right;"><?php esc_html_e( 'Actions', 'slotnova-booking' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php if ( empty( $data['list'] ) ) : ?>
+				<!-- Premium Table Card -->
+				<div class="slotnova-table-card">
+					<table class="slotnova-modern-table">
+						<thead>
 							<tr>
-								<td colspan="8" class="slotnova-empty-table"><?php esc_html_e( 'No bookings matching your criteria.', 'slotnova-booking' ); ?></td>
+								<th style="width: 100px;"><?php esc_html_e( 'Order ID', 'slotnova-booking' ); ?></th>
+								<th><?php esc_html_e( 'Customer', 'slotnova-booking' ); ?></th>
+								<th><?php esc_html_e( 'Service', 'slotnova-booking' ); ?></th>
+								<th><?php esc_html_e( 'Assigned Staff', 'slotnova-booking' ); ?></th>
+								<th><?php esc_html_e( 'Booking Date & Time', 'slotnova-booking' ); ?></th>
+								<th><?php esc_html_e( 'Status', 'slotnova-booking' ); ?></th>
+								<th style="width: 110px; text-align: right;"><?php esc_html_e( 'Action', 'slotnova-booking' ); ?></th>
 							</tr>
-						<?php else : ?>
-							<?php foreach ( $data['list'] as $booking ) : ?>
+						</thead>
+						<tbody>
+							<?php if ( empty( $data['list'] ) ) : ?>
 								<tr>
-									<td><a href="<?php echo esc_url( $booking['order_url'] ); ?>" class="slotnova-order-link">#<?php echo esc_html( $booking['order_id'] ); ?></a></td>
-									<td><strong><?php echo esc_html( $booking['customer'] ); ?></strong></td>
-									<td>
-										<a href="mailto:<?php echo esc_attr( $booking['email'] ); ?>"><?php echo esc_html( $booking['email'] ); ?></a>
-										<?php if ( ! empty( $booking['phone'] ) ) : ?>
-											<br/><small class="text-muted"><?php echo esc_html( $booking['phone'] ); ?></small>
-										<?php endif; ?>
-									</td>
-									<td><span class="slotnova-pill-service"><?php echo esc_html( $booking['service'] ); ?></span></td>
-									<td><em><?php echo esc_html( $booking['employee'] ); ?></em></td>
-									<td>
-										<strong><?php echo esc_html( wp_date( 'M d, Y', strtotime( $booking['date'] ) ) ); ?></strong>
-										<br/>
-										<small class="slotnova-time-chip"><?php echo esc_html( $booking['time'] ); ?></small>
-									</td>
-									<td><span class="slotnova-badge status-<?php echo sanitize_html_class( strtolower( $booking['status_raw'] ) ); ?>"><?php echo esc_html( $booking['status'] ); ?></span></td>
-									<td style="text-align: right;">
-										<a href="<?php echo esc_url( $booking['order_url'] ); ?>" class="button button-small" title="<?php esc_attr_e( 'View Order Details', 'slotnova-booking' ); ?>"><?php esc_html_e( 'View', 'slotnova-booking' ); ?></a>
+									<td colspan="7" class="slotnova-empty-table-cell">
+										<div class="slotnova-empty-state">
+											<div class="slotnova-empty-icon"><span class="dashicons dashicons-calendar-alt"></span></div>
+											<p><?php esc_html_e( 'No bookings matching your criteria.', 'slotnova-booking' ); ?></p>
+										</div>
 									</td>
 								</tr>
-							<?php endforeach; ?>
-						<?php endif; ?>
-					</tbody>
-				</table>
+							<?php else : ?>
+								<?php foreach ( $data['list'] as $booking ) :
+									$cust_initial = mb_strtoupper( mb_substr( $booking['customer'], 0, 1 ) );
+								?>
+									<tr class="slotnova-table-row">
+										<td>
+											<a href="<?php echo esc_url( $booking['order_url'] ); ?>" class="slotnova-order-pill">
+												#<?php echo esc_html( $booking['order_id'] ); ?>
+											</a>
+										</td>
+										<td>
+											<div class="slotnova-customer-cell">
+												<div class="slotnova-avatar-circle-sm">
+													<?php echo esc_html( $cust_initial ); ?>
+												</div>
+												<div class="slotnova-customer-meta">
+													<strong><?php echo esc_html( $booking['customer'] ); ?></strong>
+													<div class="slotnova-contact-sub">
+														<span><?php echo esc_html( $booking['email'] ); ?></span>
+														<?php if ( ! empty( $booking['phone'] ) ) : ?>
+															&bull; <span><?php echo esc_html( $booking['phone'] ); ?></span>
+														<?php endif; ?>
+													</div>
+												</div>
+											</div>
+										</td>
+										<td>
+											<span class="slotnova-badge-service"><?php echo esc_html( $booking['service'] ); ?></span>
+										</td>
+										<td>
+											<span class="slotnova-staff-tag">
+												<span class="dashicons dashicons-admin-users"></span> <?php echo esc_html( $booking['employee'] ); ?>
+											</span>
+										</td>
+										<td>
+											<div class="slotnova-datetime-cell">
+												<span class="slotnova-date-text"><?php echo esc_html( wp_date( 'M d, Y', strtotime( $booking['date'] ) ) ); ?></span>
+												<span class="slotnova-time-text"><span class="dashicons dashicons-clock"></span> <?php echo esc_html( $booking['time'] ); ?></span>
+											</div>
+										</td>
+										<td>
+											<span class="slotnova-badge status-<?php echo sanitize_html_class( strtolower( $booking['status_raw'] ) ); ?>">
+												<?php echo esc_html( $booking['status'] ); ?>
+											</span>
+										</td>
+										<td style="text-align: right;">
+											<div class="slotnova-action-cell-group">
+												<button type="button" class="slotnova-btn-action-view slotnova-open-details-modal" data-booking="<?php echo esc_attr( wp_json_encode( $booking ) ); ?>" title="<?php esc_attr_e( 'View Booking Details', 'slotnova-booking' ); ?>">
+													<span class="dashicons dashicons-visibility"></span> <?php esc_html_e( 'View', 'slotnova-booking' ); ?>
+												</button>
+												<a href="<?php echo esc_url( $booking['order_url'] ); ?>" class="slotnova-btn-action-icon" title="<?php esc_attr_e( 'Edit Order in WooCommerce', 'slotnova-booking' ); ?>">
+													<span class="dashicons dashicons-edit"></span>
+												</a>
+											</div>
+										</td>
+									</tr>
+								<?php endforeach; ?>
+							<?php endif; ?>
+						</tbody>
+					</table>
+				</div>
 			</div>
 
 			<div id="slotnova-calendar-view-container" class="slotnova-calendar-container slotnova-is-hidden">
 				<div id="slotnova-fullcalendar"></div>
+			</div>
+
+			<!-- Booking Details Modal Popup (Classic Style) -->
+			<div id="slotnova-booking-details-modal" class="slotnova-modal-overlay slotnova-is-hidden">
+				<div class="slotnova-modal-content slotnova-details-modal-content">
+					<div class="slotnova-modal-header slotnova-classic-modal-header">
+						<div class="slotnova-modal-header-title">
+							<h2><?php esc_html_e( 'Booking Details', 'slotnova-booking' ); ?> <span id="bd-modal-order-id" class="slotnova-order-pill"></span></h2>
+						</div>
+						<button type="button" class="slotnova-modal-close" aria-label="<?php esc_attr_e( 'Close', 'slotnova-booking' ); ?>">&times;</button>
+					</div>
+
+					<div class="slotnova-modal-body slotnova-details-modal-body">
+						<div class="slotnova-details-hero-classic">
+							<div class="slotnova-avatar-circle-classic" id="bd-modal-avatar">G</div>
+							<div class="slotnova-details-hero-text">
+								<h3 id="bd-modal-customer-name">Guest Customer</h3>
+								<span id="bd-modal-status-badge" class="slotnova-badge status-processing">Processing</span>
+							</div>
+						</div>
+
+						<!-- Summary Grid Cards -->
+						<div class="slotnova-details-grid">
+							<div class="slotnova-detail-box-classic">
+								<span class="slotnova-detail-label"><span class="dashicons dashicons-calendar-alt"></span> <?php esc_html_e( 'Date & Time', 'slotnova-booking' ); ?></span>
+								<strong id="bd-modal-datetime" class="slotnova-detail-val">-</strong>
+							</div>
+							<div class="slotnova-detail-box-classic">
+								<span class="slotnova-detail-label"><span class="dashicons dashicons-admin-settings"></span> <?php esc_html_e( 'Service', 'slotnova-booking' ); ?></span>
+								<strong id="bd-modal-service" class="slotnova-detail-val">-</strong>
+							</div>
+							<div class="slotnova-detail-box-classic">
+								<span class="slotnova-detail-label"><span class="dashicons dashicons-admin-users"></span> <?php esc_html_e( 'Assigned Staff', 'slotnova-booking' ); ?></span>
+								<strong id="bd-modal-employee" class="slotnova-detail-val">-</strong>
+							</div>
+							<div class="slotnova-detail-box-classic">
+								<span class="slotnova-detail-label"><span class="dashicons dashicons-money-alt"></span> <?php esc_html_e( 'Total Amount', 'slotnova-booking' ); ?></span>
+								<strong id="bd-modal-total" class="slotnova-detail-val">-</strong>
+							</div>
+						</div>
+
+						<!-- Customer Info Section Card -->
+						<div class="slotnova-details-contact-card">
+							<h4 class="slotnova-contact-heading"><span class="dashicons dashicons-businessperson"></span> <?php esc_html_e( 'Customer Information', 'slotnova-booking' ); ?></h4>
+							<div class="slotnova-contact-grid">
+								<div class="slotnova-contact-item">
+									<span class="slotnova-contact-label"><span class="dashicons dashicons-email"></span> <?php esc_html_e( 'Email Address', 'slotnova-booking' ); ?></span>
+									<a href="" id="bd-modal-email" class="slotnova-contact-value-link">-</a>
+								</div>
+								<div class="slotnova-contact-item">
+									<span class="slotnova-contact-label"><span class="dashicons dashicons-phone"></span> <?php esc_html_e( 'Phone Number', 'slotnova-booking' ); ?></span>
+									<span id="bd-modal-phone" class="slotnova-contact-value">-</span>
+								</div>
+								<div class="slotnova-contact-item slotnova-full-width">
+									<span class="slotnova-contact-label"><span class="dashicons dashicons-location"></span> <?php esc_html_e( 'Billing Address', 'slotnova-booking' ); ?></span>
+									<span id="bd-modal-address" class="slotnova-contact-value">-</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="slotnova-modal-footer">
+						<button type="button" class="slotnova-btn-modal-cancel slotnova-modal-close"><?php esc_html_e( 'Close', 'slotnova-booking' ); ?></button>
+						<a href="#" id="bd-modal-order-link" target="_blank" class="slotnova-btn-modal-primary">
+							<span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Edit WooCommerce Order', 'slotnova-booking' ); ?>
+						</a>
+					</div>
+				</div>
 			</div>
 		</div>
 		<?php
@@ -1634,5 +1874,23 @@ class Admin {
 
 		$specific_off = isset( $_POST['_slotnova_specific_off_days'] ) ? sanitize_textarea_field( wp_unslash( $_POST['_slotnova_specific_off_days'] ) ) : '';
 		update_post_meta( $post_id, '_slotnova_specific_off_days', $specific_off );
+
+		// Set virtual product flag for slotnova
+		update_post_meta( $post_id, '_virtual', 'yes' );
+
+		// Calculate min service price to populate _regular_price and _price if not set
+		if ( ! empty( $services_meta ) ) {
+			$prices = array();
+			foreach ( $services_meta as $sm ) {
+				if ( isset( $sm['price'] ) && '' !== $sm['price'] && is_numeric( $sm['price'] ) ) {
+					$prices[] = floatval( $sm['price'] );
+				}
+			}
+			if ( ! empty( $prices ) ) {
+				$min_price = min( $prices );
+				update_post_meta( $post_id, '_regular_price', $min_price );
+				update_post_meta( $post_id, '_price', $min_price );
+			}
+		}
 	}
 }

@@ -16,15 +16,15 @@ jQuery(document).ready(function($) {
 		if (chartEl && typeof Chart !== 'undefined') {
 			var ctx = chartEl.getContext('2d');
 
-			// Gradient background fill for bookings
-			var gradientBlue = ctx.createLinearGradient(0, 0, 0, 300);
-			gradientBlue.addColorStop(0, 'rgba(34, 113, 177, 0.35)');
-			gradientBlue.addColorStop(1, 'rgba(34, 113, 177, 0.01)');
+			// Indigo Gradient fill for bookings
+			var gradientBlue = ctx.createLinearGradient(0, 0, 0, 320);
+			gradientBlue.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+			gradientBlue.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
 
-			// Gradient background fill for revenue
-			var gradientGreen = ctx.createLinearGradient(0, 0, 0, 300);
-			gradientGreen.addColorStop(0, 'rgba(0, 163, 42, 0.35)');
-			gradientGreen.addColorStop(1, 'rgba(0, 163, 42, 0.01)');
+			// Emerald Gradient fill for revenue
+			var gradientGreen = ctx.createLinearGradient(0, 0, 0, 320);
+			gradientGreen.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+			gradientGreen.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
 
 			var dashboardChart = new Chart(ctx, {
 				type: 'line',
@@ -33,25 +33,41 @@ jQuery(document).ready(function($) {
 					datasets: [{
 						label: slotnova_admin_data.chart.i18n_label,
 						data: slotnova_admin_data.chart.values,
-						borderColor: '#2271b1',
+						borderColor: '#6366f1',
 						backgroundColor: gradientBlue,
 						borderWidth: 3,
-						pointRadius: 4,
-						pointHoverRadius: 6,
+						pointBackgroundColor: '#6366f1',
+						pointBorderColor: '#ffffff',
+						pointBorderWidth: 2,
+						pointRadius: 5,
+						pointHoverRadius: 7,
 						fill: true,
-						tension: 0.35
+						tension: 0.4
 					}]
 				},
 				options: {
 					responsive: true,
 					maintainAspectRatio: true,
 					plugins: {
-						legend: { display: false }
+						legend: { display: false },
+						tooltip: {
+							backgroundColor: '#0f172a',
+							titleFont: { size: 13, weight: 'bold' },
+							bodyFont: { size: 12 },
+							padding: 10,
+							cornerRadius: 8,
+							displayColors: false
+						}
 					},
 					scales: {
+						x: {
+							grid: { display: false },
+							ticks: { color: '#64748b', font: { size: 12 } }
+						},
 						y: {
 							beginAtZero: true,
-							ticks: { stepSize: 1 }
+							grid: { color: '#f1f5f9' },
+							ticks: { color: '#64748b', font: { size: 12 }, stepSize: 1 }
 						}
 					}
 				}
@@ -68,12 +84,14 @@ jQuery(document).ready(function($) {
 				if (datasetType === 'revenue') {
 					dashboardChart.data.datasets[0].label = slotnova_admin_data.chart.i18n_revenue;
 					dashboardChart.data.datasets[0].data = slotnova_admin_data.chart.revenue_values;
-					dashboardChart.data.datasets[0].borderColor = '#00a32a';
+					dashboardChart.data.datasets[0].borderColor = '#10b981';
+					dashboardChart.data.datasets[0].pointBackgroundColor = '#10b981';
 					dashboardChart.data.datasets[0].backgroundColor = gradientGreen;
 				} else {
 					dashboardChart.data.datasets[0].label = slotnova_admin_data.chart.i18n_label;
 					dashboardChart.data.datasets[0].data = slotnova_admin_data.chart.values;
-					dashboardChart.data.datasets[0].borderColor = '#2271b1';
+					dashboardChart.data.datasets[0].borderColor = '#6366f1';
+					dashboardChart.data.datasets[0].pointBackgroundColor = '#6366f1';
 					dashboardChart.data.datasets[0].backgroundColor = gradientBlue;
 				}
 
@@ -121,14 +139,14 @@ jQuery(document).ready(function($) {
 		$modal.removeClass('slotnova-is-hidden').show();
 	});
 
-	$(document).on('click', '.slotnova-modal-close', function(e) {
+	$(document).on('click', '.slotnova-modal-close, .slotnova-btn-cancel', function(e) {
 		e.preventDefault();
-		$modal.addClass('slotnova-is-hidden').hide();
+		$('.slotnova-modal-overlay').addClass('slotnova-is-hidden').hide();
 	});
 
-	$(document).on('click', '#slotnova-manual-booking-modal', function(e) {
-		if ($(e.target).is('#slotnova-manual-booking-modal')) {
-			$modal.addClass('slotnova-is-hidden').hide();
+	$(document).on('click', '.slotnova-modal-overlay', function(e) {
+		if ($(e.target).hasClass('slotnova-modal-overlay')) {
+			$(this).addClass('slotnova-is-hidden').hide();
 		}
 	});
 
@@ -202,16 +220,16 @@ jQuery(document).ready(function($) {
 	if (tabList && tabCal) {
 		$(tabList).on('click', function(e) {
 			e.preventDefault();
-			$(tabList).addClass('nav-tab-active');
-			$(tabCal).removeClass('nav-tab-active');
+			$(tabList).addClass('active nav-tab-active');
+			$(tabCal).removeClass('active nav-tab-active');
 			$(containerList).removeClass('slotnova-is-hidden').show();
 			$(containerCal).addClass('slotnova-is-hidden').hide();
 		});
 
 		$(tabCal).on('click', function(e) {
 			e.preventDefault();
-			$(tabCal).addClass('nav-tab-active');
-			$(tabList).removeClass('nav-tab-active');
+			$(tabCal).addClass('active nav-tab-active');
+			$(tabList).removeClass('active nav-tab-active');
 			$(containerList).addClass('slotnova-is-hidden').hide();
 			$(containerCal).removeClass('slotnova-is-hidden').show();
 
@@ -327,6 +345,58 @@ jQuery(document).ready(function($) {
 		}).open();
 	});
 
+	/* -------------------------------------------------------------------------
+	 * 8. Booking Details Modal Popup
+	 * ------------------------------------------------------------------------- */
+	var $detailsModal = $('#slotnova-booking-details-modal');
+
+	$(document).on('click', '.slotnova-open-details-modal', function(e) {
+		e.preventDefault();
+		var booking = $(this).data('booking');
+		if (!booking) return;
+
+		$('#bd-modal-order-id').text('#' + booking.order_id);
+		$('#bd-modal-customer-name').text(booking.customer || 'Guest');
+		
+		var initial = (booking.customer && booking.customer.length > 0) ? booking.customer.charAt(0).toUpperCase() : 'G';
+		$('#bd-modal-avatar').text(initial);
+
+		var statusClass = 'status-' + (booking.status_raw ? booking.status_raw.toLowerCase() : 'processing');
+		$('#bd-modal-status-badge').attr('class', 'slotnova-badge ' + statusClass).text(booking.status);
+
+		var formattedDate = booking.date || '';
+		if (booking.time) {
+			formattedDate += ' at ' + booking.time;
+		}
+		$('#bd-modal-datetime').text(formattedDate || '-');
+		$('#bd-modal-service').text(booking.service || 'General Service');
+		$('#bd-modal-employee').text(booking.employee || 'Any Staff');
+		
+		if (booking.total_formatted) {
+			$('#bd-modal-total').html(booking.total_formatted);
+		} else {
+			$('#bd-modal-total').text('$' + (booking.total || '0.00'));
+		}
+
+		if (booking.email) {
+			$('#bd-modal-email').attr('href', 'mailto:' + booking.email).text(booking.email);
+		} else {
+			$('#bd-modal-email').removeAttr('href').text('N/A');
+		}
+
+		$('#bd-modal-phone').text(booking.phone || 'N/A');
+		$('#bd-modal-address').text(booking.address || 'N/A');
+		$('#bd-modal-order-link').attr('href', booking.order_url || '#');
+
+		$detailsModal.removeClass('slotnova-is-hidden').show();
+	});
+
+	$(document).on('click', '#slotnova-booking-details-modal', function(e) {
+		if ($(e.target).is('#slotnova-booking-details-modal')) {
+			$detailsModal.addClass('slotnova-is-hidden').hide();
+		}
+	});
+
 	$('body').on('click', '.slotnova-remove-image-button', function(e) {
 		e.preventDefault();
 		var button = $(this);
@@ -334,5 +404,18 @@ jQuery(document).ready(function($) {
 		button.siblings('.slotnova-image-preview').attr('src', '').hide();
 		button.hide();
 	});
+
+	/* -------------------------------------------------------------------------
+	 * 9. Auto Select 1st SlotNova Tab on Product Type Selection
+	 * ------------------------------------------------------------------------- */
+	if ($('#product-type').length) {
+		$(document).on('change', '#product-type', function() {
+			if ('slotnova' === $(this).val()) {
+				setTimeout(function() {
+					$('.slotnova_booking_options a, .slotnova_booking_tab a').first().trigger('click');
+				}, 50);
+			}
+		});
+	}
 
 });
