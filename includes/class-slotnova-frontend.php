@@ -165,7 +165,7 @@ class Frontend {
 			return array();
 		}
 
-		$target_date  = date( 'Y-m-d', strtotime( $date ) );
+		$target_date  = gmdate( 'Y-m-d', strtotime( $date . ' 12:00:00 UTC' ) );
 		$booked_slots = array();
 
 		// Check active orders
@@ -182,19 +182,19 @@ class Frontend {
 					continue;
 				}
 
-				$item_raw_date = $item->get_meta( 'Date' );
+				$item_raw_date = trim( (string) $item->get_meta( 'Date' ) );
 				$item_raw_time = trim( (string) $item->get_meta( 'Time' ) );
 
 				if ( empty( $item_raw_date ) || empty( $item_raw_time ) || false === strtotime( $item_raw_date ) || false === strtotime( $item_raw_time ) ) {
 					continue;
 				}
 
-				$item_date = date( 'Y-m-d', strtotime( $item_raw_date ) );
+				$item_date = gmdate( 'Y-m-d', strtotime( $item_raw_date . ' 12:00:00 UTC' ) );
 				if ( $item_date !== $target_date ) {
 					continue;
 				}
 
-				$item_time = date( 'h:i A', strtotime( $item_raw_time ) );
+				$item_time = gmdate( 'h:i A', strtotime( '1970-01-01 ' . $item_raw_time . ' UTC' ) );
 
 				$item_service_id  = (int) $item->get_meta( '_slotnova_service_id' );
 				$item_employee_id = (int) $item->get_meta( '_slotnova_employee_id' );
@@ -259,22 +259,21 @@ class Frontend {
 					continue;
 				}
 
-				$cart_raw_date = isset( $cart_item['slotnova_booking']['date'] ) ? $cart_item['slotnova_booking']['date'] : '';
+				$cart_raw_date = isset( $cart_item['slotnova_booking']['date'] ) ? trim( (string) $cart_item['slotnova_booking']['date'] ) : '';
 				$cart_raw_time = isset( $cart_item['slotnova_booking']['time'] ) ? trim( (string) $cart_item['slotnova_booking']['time'] ) : '';
 
 				if ( empty( $cart_raw_date ) || empty( $cart_raw_time ) || false === strtotime( $cart_raw_date ) || false === strtotime( $cart_raw_time ) ) {
 					continue;
 				}
 
-				$cart_date = date( 'Y-m-d', strtotime( $cart_raw_date ) );
+				$cart_date = gmdate( 'Y-m-d', strtotime( $cart_raw_date . ' 12:00:00 UTC' ) );
 				if ( $cart_date !== $target_date ) {
 					continue;
 				}
 
-				$cart_time = date( 'h:i A', strtotime( $cart_raw_time ) );
-
-				$cart_svc = isset( $cart_item['slotnova_booking']['service_id'] ) ? (int) $cart_item['slotnova_booking']['service_id'] : 0;
-				$cart_emp = isset( $cart_item['slotnova_booking']['employee_id'] ) ? (int) $cart_item['slotnova_booking']['employee_id'] : 0;
+				$cart_time = gmdate( 'h:i A', strtotime( '1970-01-01 ' . $cart_raw_time . ' UTC' ) );
+				$cart_svc  = isset( $cart_item['slotnova_booking']['service_id'] ) ? (int) $cart_item['slotnova_booking']['service_id'] : 0;
+				$cart_emp  = isset( $cart_item['slotnova_booking']['employee_id'] ) ? (int) $cart_item['slotnova_booking']['employee_id'] : 0;
 
 				$is_match = false;
 

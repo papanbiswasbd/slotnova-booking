@@ -114,9 +114,9 @@ class Cart {
 			return true;
 		}
 
-		$formatted_time = date( 'h:i A', strtotime( $time ) );
+		$formatted_time = gmdate( 'h:i A', strtotime( '1970-01-01 ' . $time . ' UTC' ) );
 		foreach ( $booked_slots as $bs ) {
-			if ( date( 'h:i A', strtotime( $bs ) ) === $formatted_time ) {
+			if ( gmdate( 'h:i A', strtotime( '1970-01-01 ' . $bs . ' UTC' ) ) === $formatted_time ) {
 				return true;
 			}
 		}
