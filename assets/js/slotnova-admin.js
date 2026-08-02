@@ -220,16 +220,16 @@ jQuery(document).ready(function($) {
 	if (tabList && tabCal) {
 		$(tabList).on('click', function(e) {
 			e.preventDefault();
-			$(tabList).addClass('active nav-tab-active');
-			$(tabCal).removeClass('active nav-tab-active');
+			$(tabList).addClass('active');
+			$(tabCal).removeClass('active');
 			$(containerList).removeClass('slotnova-is-hidden').show();
 			$(containerCal).addClass('slotnova-is-hidden').hide();
 		});
 
 		$(tabCal).on('click', function(e) {
 			e.preventDefault();
-			$(tabCal).addClass('active nav-tab-active');
-			$(tabList).removeClass('active nav-tab-active');
+			$(tabCal).addClass('active');
+			$(tabList).removeClass('active');
 			$(containerList).addClass('slotnova-is-hidden').hide();
 			$(containerCal).removeClass('slotnova-is-hidden').show();
 
