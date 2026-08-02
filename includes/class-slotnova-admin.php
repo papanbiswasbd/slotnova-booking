@@ -178,6 +178,7 @@ class Admin {
 			$args     = array(
 				'post_type'      => 'product',
 				'posts_per_page' => 1,
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 				'tax_query'      => array(
 					array(
 						'taxonomy' => 'product_type',
