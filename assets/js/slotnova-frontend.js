@@ -143,16 +143,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		flatpickr(dateInput, {
 			dateFormat: 'Y-m-d',
 			minDate: 'today',
-			defaultDate: initialDateYMD,
 			inline: true,
 			disable: disableArr,
 			onChange: function(selectedDates, dateStr) {
 				if (dateStr) {
-					// Reveal time slots grid
-					if (timeSlotsWrapper) {
-						timeSlotsWrapper.classList.remove('slotnova-is-hidden');
-					}
-					// Update Summary Date
+					if (dateInput) dateInput.value = dateStr;
 					if (summaryDate) summaryDate.textContent = dateStr;
 
 					// Clear selected time slot on date change
@@ -164,23 +159,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
 					if (summaryTime) summaryTime.textContent = '-';
 
-					// Check booked and passed slots for selected date
-					fetchBookedSlots(dateStr);
+					if (shouldShowTimeSlots()) {
+						if (timeSlotsWrapper) timeSlotsWrapper.classList.remove('slotnova-is-hidden');
+						fetchBookedSlots(dateStr);
+					} else {
+						if (timeSlotsWrapper) timeSlotsWrapper.classList.add('slotnova-is-hidden');
+					}
 
-					// Update summary box visibility
 					checkSummaryVisibility();
 				}
 			}
 		});
 
-		// Trigger initial load for the calculated initial date
-		if (initialDateYMD) {
-			if (timeSlotsWrapper) {
-				timeSlotsWrapper.classList.remove('slotnova-is-hidden');
+		function shouldShowTimeSlots() {
+			var serviceInput = document.getElementById('slotnova_service');
+			var employeeInput = document.getElementById('slotnova_employee');
+			var dInput = document.getElementById('slotnova_booking_date');
+
+			if (serviceInput && !serviceInput.value) {
+				return false;
 			}
-			if (summaryDate) summaryDate.textContent = initialDateYMD;
-			if (dateInput) dateInput.value = initialDateYMD;
-			fetchBookedSlots(initialDateYMD);
+			if (employeeInput && !employeeInput.value) {
+				return false;
+			}
+			if (!dInput || !dInput.value) {
+				return false;
+			}
+			return true;
 		}
 	}
 
@@ -461,8 +466,21 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 
 					// Re-evaluate time slot availability for the selected Service or Employee
-					if (dateInput && dateInput.value) {
-						fetchBookedSlots(dateInput.value);
+					var sInput = document.getElementById('slotnova_service');
+					var eInput = document.getElementById('slotnova_employee');
+					var dInput = document.getElementById('slotnova_booking_date');
+					var isReady = true;
+
+					if (sInput && !sInput.value) isReady = false;
+					if (eInput && !eInput.value) isReady = false;
+					if (!dInput || !dInput.value) isReady = false;
+
+					var tWrapper = document.querySelector('.slotnova-time-slots-wrapper');
+					if (isReady) {
+						if (tWrapper) tWrapper.classList.remove('slotnova-is-hidden');
+						fetchBookedSlots(dInput.value);
+					} else {
+						if (tWrapper) tWrapper.classList.add('slotnova-is-hidden');
 					}
 
 					checkSummaryVisibility();
