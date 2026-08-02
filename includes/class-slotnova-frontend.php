@@ -551,13 +551,13 @@ class Frontend {
 						$duration = 60;
 					}
 
-					$start_time = strtotime( $opening );
-					$end_time   = strtotime( $closing );
+					$start_time = strtotime( '1970-01-01 ' . $opening . ':00 UTC' );
+					$end_time   = strtotime( '1970-01-01 ' . $closing . ':00 UTC' );
 
 					if ( $start_time && $end_time && $start_time < $end_time ) {
 						$current_time = $start_time;
 						while ( $current_time + ( $duration * 60 ) <= $end_time ) {
-							$slot_label = wp_date( 'h:i A', $current_time );
+							$slot_label = gmdate( 'h:i A', $current_time );
 							echo '<button type="button" class="slotnova-time-pill" data-value="' . esc_attr( $slot_label ) . '">' . esc_html( $slot_label ) . '</button>';
 							$current_time += ( $duration * 60 );
 						}

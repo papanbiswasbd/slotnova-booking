@@ -736,7 +736,7 @@ class Admin {
 					$time     = $item->get_meta( 'Time' );
 
 					if ( ! empty( $time ) ) {
-						$hour_formatted                       = wp_date( 'g:00 A', strtotime( $time ) );
+						$hour_formatted                       = gmdate( 'g:00 A', strtotime( '1970-01-01 ' . $time . ' UTC' ) );
 						$peak_hours_count[ $hour_formatted ] = ( isset( $peak_hours_count[ $hour_formatted ] ) ? $peak_hours_count[ $hour_formatted ] : 0 ) + 1;
 					}
 
@@ -1262,7 +1262,7 @@ class Admin {
 					$event_title = $customer_name . ' - ' . ( ! empty( $service ) ? $service : __( 'Booking', 'slotnova-booking' ) );
 					$event_start = $booking_date;
 					if ( ! empty( $time ) ) {
-						$time_24     = wp_date( 'H:i:s', strtotime( $time ) );
+						$time_24     = gmdate( 'H:i:s', strtotime( '1970-01-01 ' . $time . ' UTC' ) );
 						$event_start .= 'T' . $time_24;
 					}
 
@@ -1747,12 +1747,12 @@ class Admin {
 								<label><?php esc_html_e( 'Select Time Slot', 'slotnova-booking' ); ?></label>
 								<div class="slotnova-time-pills-grid" id="mb_time_pills">
 									<?php
-									$start_time = strtotime( $opening );
-									$end_time   = strtotime( $closing );
+									$start_time = strtotime( '1970-01-01 ' . $opening . ':00 UTC' );
+									$end_time   = strtotime( '1970-01-01 ' . $closing . ':00 UTC' );
 									if ( $start_time && $end_time && $start_time < $end_time ) {
 										$current_time = $start_time;
 										while ( $current_time + ( $duration * 60 ) <= $end_time ) {
-											$slot_label = wp_date( 'h:i A', $current_time );
+											$slot_label = gmdate( 'h:i A', $current_time );
 											echo '<button type="button" class="slotnova-time-pill" data-value="' . esc_attr( $slot_label ) . '">' . esc_html( $slot_label ) . '</button>';
 											$current_time += ( $duration * 60 );
 										}
