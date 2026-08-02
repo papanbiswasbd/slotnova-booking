@@ -48,7 +48,7 @@ if ( ! function_exists( 'slotnova_parse_date' ) ) {
 
 		// 3. If no 4-digit year is present, append current year to prevent strtotime parsing numbers as hours
 		if ( ! preg_match( '/\b\d{4}\b/', $clean ) ) {
-			$clean .= ' ' . date( 'Y' );
+			$clean .= ' ' . gmdate( 'Y' );
 		}
 
 		// 4. Parse using DateTime with UTC timezone to prevent any offset shifts
