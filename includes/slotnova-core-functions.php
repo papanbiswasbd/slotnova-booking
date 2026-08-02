@@ -35,17 +35,34 @@ if ( ! function_exists( 'slotnova_parse_date' ) ) {
 			return false;
 		}
 		$clean = trim( (string) $date_str );
-		// Strip ordinal suffixes: 1st, 2nd, 3rd, 4th, etc.
+
+		// 1. Direct Y-m-d matching (e.g., "2026-08-18")
+		if ( preg_match( '/^(\d{4})-(\d{2})-(\d{2})$/', $clean, $matches ) ) {
+			if ( checkdate( (int) $matches[2], (int) $matches[3], (int) $matches[1] ) ) {
+				return sprintf( '%04d-%02d-%02d', $matches[1], $matches[2], $matches[3] );
+			}
+		}
+
+		// 2. Strip ordinal suffixes: 1st, 2nd, 3rd, 4th, etc.
 		$clean = preg_replace( '/(\d+)(st|nd|rd|th)/i', '$1', $clean );
 
-		$ts = strtotime( $clean . ' 12:00:00 UTC' );
-		if ( false === $ts ) {
-			$ts = strtotime( $clean );
+		// 3. If no 4-digit year is present, append current year to prevent strtotime parsing numbers as hours
+		if ( ! preg_match( '/\b\d{4}\b/', $clean ) ) {
+			$clean .= ' ' . date( 'Y' );
 		}
-		if ( false === $ts ) {
-			return false;
+
+		// 4. Parse using DateTime with UTC timezone to prevent any offset shifts
+		try {
+			$dt = new DateTime( $clean, new DateTimeZone( 'UTC' ) );
+			return $dt->format( 'Y-m-d' );
+		} catch ( Exception $e ) {
+			$ts = strtotime( $clean . ' 12:00:00 UTC' );
+			if ( false !== $ts ) {
+				return gmdate( 'Y-m-d', $ts );
+			}
 		}
-		return gmdate( 'Y-m-d', $ts );
+
+		return false;
 	}
 }
 
