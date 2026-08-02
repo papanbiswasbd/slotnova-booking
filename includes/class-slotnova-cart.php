@@ -29,6 +29,9 @@ class Cart {
 		add_filter( 'woocommerce_cart_item_price', array( $this, 'filter_cart_item_price_html' ), 10, 3 );
 		add_filter( 'woocommerce_get_item_data', array( $this, 'display_booking_data_in_cart' ), 10, 2 );
 		add_action( 'woocommerce_checkout_create_order_line_item', array( $this, 'save_booking_data_to_order' ), 10, 4 );
+		add_filter( 'woocommerce_hidden_order_itemmeta', array( $this, 'hide_internal_order_item_meta' ) );
+		add_filter( 'woocommerce_order_item_get_formatted_meta_data', array( $this, 'filter_formatted_order_item_meta' ), 10, 2 );
+		add_filter( 'woocommerce_order_item_display_meta_key', array( $this, 'hide_meta_key_display' ), 10, 3 );
 	}
 
 	/**
@@ -324,5 +327,48 @@ class Cart {
 
 			do_action( 'slotnova_save_booking_data_to_order', $item, $cart_item_key, $values, $order );
 		}
+	}
+
+	/**
+	 * Hide internal SlotNova meta keys from WooCommerce order item meta displays.
+	 *
+	 * @param array $hidden_meta List of hidden meta keys.
+	 * @return array
+	 */
+	public function hide_internal_order_item_meta( $hidden_meta ) {
+		$hidden_meta[] = '_slotnova_service_id';
+		$hidden_meta[] = '_slotnova_employee_id';
+		return $hidden_meta;
+	}
+
+	/**
+	 * Filter formatted order item meta data to remove internal service and employee IDs.
+	 *
+	 * @param array                  $formatted_meta Array of meta objects.
+	 * @param \WC_Order_Item_Product $item Order item object.
+	 * @return array
+	 */
+	public function filter_formatted_order_item_meta( $formatted_meta, $item ) {
+		foreach ( $formatted_meta as $key => $meta ) {
+			if ( isset( $meta->key ) && in_array( $meta->key, array( '_slotnova_service_id', '_slotnova_employee_id' ), true ) ) {
+				unset( $formatted_meta[ $key ] );
+			}
+		}
+		return $formatted_meta;
+	}
+
+	/**
+	 * Hide internal meta keys from order item display.
+	 *
+	 * @param string $display_key Display key string.
+	 * @param object $meta Meta object.
+	 * @param object $item Item object.
+	 * @return string
+	 */
+	public function hide_meta_key_display( $display_key, $meta, $item ) {
+		if ( isset( $meta->key ) && in_array( $meta->key, array( '_slotnova_service_id', '_slotnova_employee_id' ), true ) ) {
+			return '';
+		}
+		return $display_key;
 	}
 }
