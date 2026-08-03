@@ -4,7 +4,7 @@ Tags: booking, spa, appointments, reservations, salon
 Requires at least: 5.3
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,6 +62,13 @@ SlotNova Booking exposes standard WordPress action and filter hooks:
 
 == Changelog ==
 
+= 1.1.1 =
+* Added streamlined SlotNova Overview Dashboard Analytics Widget with dynamic Chart.js timeline and metrics summary.
+* Added Classic & Clean WP Admin Filter Toolbar with quick 1-click date range presets (Today, Last 7 Days, Last 30 Days, This Month, This Year).
+* Added Booking Management List View (showing last 20 bookings) & interactive FullCalendar Schedule tab switcher with View Details modal popup.
+* Added prominent "View All Bookings" action button linking directly to full plugin booking management page.
+* Fixed currency HTML entity decoding (`$2,515.00`) and upgraded metric card visual icons and header status badges.
+
 = 1.1.0 =
 * Added instant AJAX time slot loading and real-time double-booking prevention.
 * Added UTC date normalization (`slotnova_parse_date()`) to prevent timezone offset shifts.
@@ -74,6 +81,9 @@ SlotNova Booking exposes standard WordPress action and filter hooks:
 * Initial Release of SlotNova Booking for WooCommerce.
 
 == Upgrade Notice ==
+
+= 1.1.1 =
+Upgrade to 1.1.1 for streamlined dashboard overview analytics, quick date range filter presets, and interactive booking schedule calendar.
 
 = 1.1.0 =
 Upgrade to 1.1.0 for instant time slot availability validation, developer hooks, and enhanced UI/UX.

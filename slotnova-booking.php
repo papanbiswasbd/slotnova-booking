@@ -3,7 +3,7 @@
  * Plugin Name: SlotNova Booking for WooCommerce
  * Plugin URI: https://wordpress.org/plugins/slotnova-booking
  * Description: WooCommerce Booking Plugin for SPA Centers, Salons, and Service Businesses.
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: SlotNova
  * Author URI: https://profiles.wordpress.org/papanbiswasbd/
  * Text Domain: slotnova-booking
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define Plugin Constants
-define( 'SLOTNOVA_BOOKING_VERSION', '1.1.0' );
+define( 'SLOTNOVA_BOOKING_VERSION', '1.1.1' );
 define( 'SLOTNOVA_BOOKING_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SLOTNOVA_BOOKING_URL', plugin_dir_url( __FILE__ ) );
 
