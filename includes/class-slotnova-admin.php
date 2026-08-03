@@ -37,6 +37,7 @@ class Admin {
 		// AJAX Handlers for Smart Features
 		add_action( 'wp_ajax_slotnova_export_bookings_csv', array( $this, 'ajax_export_bookings_csv' ) );
 		add_action( 'wp_ajax_slotnova_create_manual_booking', array( $this, 'ajax_create_manual_booking' ) );
+		add_action( 'wp_ajax_slotnova_get_widget_stats', array( $this, 'ajax_get_widget_stats' ) );
 
 		// Native WP Admin Dashboard Widget Hook
 		add_action( 'wp_dashboard_setup', array( $this, 'register_wp_dashboard_widget' ) );
@@ -63,18 +64,374 @@ class Admin {
 	 * @return void
 	 */
 	public function render_wp_dashboard_widget() {
-		$data = $this->get_dashboard_data( 'this_week' );
+		$stats           = $this->get_stats_overview_data();
+		$all_services    = get_terms( array( 'taxonomy' => 'slotnova_service', 'hide_empty' => false ) );
+		$service_options = array();
+		if ( ! is_wp_error( $all_services ) && ! empty( $all_services ) ) {
+			foreach ( $all_services as $s ) {
+				$service_options[] = $s->name;
+			}
+		}
 		?>
-		<div class="slotnova-wp-widget-content">
-			<p><strong><?php esc_html_e( "Today's Appointments:", 'slotnova-booking' ); ?></strong> <?php echo esc_html( $data['today_bookings'] ); ?></p>
-			<p><strong><?php esc_html_e( 'Total Revenue (This Week):', 'slotnova-booking' ); ?></strong> <?php echo wp_kses_post( wc_price( $data['total_revenue'] ) ); ?></p>
-			<p><strong><?php esc_html_e( 'Pending Confirmation:', 'slotnova-booking' ); ?></strong> <?php echo esc_html( $data['pending_bookings'] ); ?></p>
+		<div class="slotnova-stats-dashboard-container">
+			<!-- Header Bar -->
+			<div class="slotnova-stats-header">
+				<div class="slotnova-stats-title-group">
+					<div class="slotnova-stats-title-row">
+						<span class="slotnova-header-icon"><span class="dashicons dashicons-chart-area"></span></span>
+						<h2 class="slotnova-stats-title"><?php esc_html_e( 'SlotNova Booking Analytics', 'slotnova-booking' ); ?></h2>
+						<span class="slotnova-live-badge"><span class="slotnova-live-dot"></span> <?php esc_html_e( 'Live System', 'slotnova-booking' ); ?></span>
+					</div>
+					<p class="slotnova-stats-subtitle"><?php esc_html_e( 'Real-time performance, peak hours intelligence, and service breakdown', 'slotnova-booking' ); ?></p>
+				</div>
+				<div class="slotnova-stats-header-nav">
+					<button type="button" id="slotnova-widget-fullscreen-toggle" class="button button-secondary slotnova-hdr-btn">
+						<span class="dashicons dashicons-fullscreen-alt"></span>
+						<span class="slotnova-fs-text"><?php esc_html_e( 'Fullscreen View', 'slotnova-booking' ); ?></span>
+					</button>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-calendar' ) ); ?>" class="button button-primary slotnova-hdr-btn">
+						<span class="dashicons dashicons-calendar-alt"></span>
+						<?php esc_html_e( 'View All Bookings', 'slotnova-booking' ); ?>
+					</a>
+				</div>
+			</div>
 
-			<hr style="border: 0; border-top: 1px solid #eee; margin: 12px 0;" />
+			<!-- Quick Metric Cards Grid -->
+			<div class="slotnova-metrics-pills-grid">
+				<div class="slotnova-metric-pill slotnova-pill-blue">
+					<div class="slotnova-pill-icon-box">
+						<span class="dashicons dashicons-calendar-alt"></span>
+					</div>
+					<div class="slotnova-pill-content">
+						<span class="slotnova-pill-label"><?php esc_html_e( 'Total Bookings', 'slotnova-booking' ); ?></span>
+						<span class="slotnova-pill-value" id="slotnova-stat-total-bookings"><?php echo esc_html( $stats['total_range_submissions'] ); ?></span>
+					</div>
+				</div>
+				<div class="slotnova-metric-pill slotnova-pill-green">
+					<div class="slotnova-pill-icon-box">
+						<span class="dashicons dashicons-money-alt"></span>
+					</div>
+					<div class="slotnova-pill-content">
+						<span class="slotnova-pill-label"><?php esc_html_e( 'Total Revenue', 'slotnova-booking' ); ?></span>
+						<span class="slotnova-pill-value" id="slotnova-stat-total-revenue"><?php echo esc_html( $stats['formatted_total_revenue'] ); ?></span>
+					</div>
+				</div>
+				<div class="slotnova-metric-pill slotnova-pill-purple">
+					<div class="slotnova-pill-icon-box">
+						<span class="dashicons dashicons-clock"></span>
+					</div>
+					<div class="slotnova-pill-content">
+						<span class="slotnova-pill-label"><?php esc_html_e( 'Peak Booking Hour', 'slotnova-booking' ); ?></span>
+						<span class="slotnova-pill-value" id="slotnova-stat-peak-hour"><?php echo esc_html( $stats['peak_hour_display'] ); ?></span>
+					</div>
+				</div>
+				<div class="slotnova-metric-pill slotnova-pill-orange">
+					<div class="slotnova-pill-icon-box">
+						<span class="dashicons dashicons-star-filled"></span>
+					</div>
+					<div class="slotnova-pill-content">
+						<span class="slotnova-pill-label"><?php esc_html_e( 'Top Service', 'slotnova-booking' ); ?></span>
+						<span class="slotnova-pill-value" id="slotnova-stat-top-service"><?php echo esc_html( $stats['top_service_display'] ); ?></span>
+					</div>
+				</div>
+			</div>
 
-			<div style="display: flex; gap: 10px; flex-wrap: wrap;">
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-dashboard' ) ); ?>" class="button button-primary"><?php esc_html_e( 'Open SlotNova Dashboard', 'slotnova-booking' ); ?></a>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-calendar' ) ); ?>" class="button button-secondary"><?php esc_html_e( 'View All Bookings', 'slotnova-booking' ); ?></a>
+			<!-- Classic & Clean Filter Bar -->
+			<div class="slotnova-stats-filter-bar">
+				<div class="slotnova-filter-preset-row">
+					<span class="slotnova-preset-label"><?php esc_html_e( 'Quick Date Range:', 'slotnova-booking' ); ?></span>
+					<button type="button" class="slotnova-preset-btn" data-preset="today"><?php esc_html_e( 'Today', 'slotnova-booking' ); ?></button>
+					<button type="button" class="slotnova-preset-btn" data-preset="last_7_days"><?php esc_html_e( 'Last 7 Days', 'slotnova-booking' ); ?></button>
+					<button type="button" class="slotnova-preset-btn active" data-preset="last_30_days"><?php esc_html_e( 'Last 30 Days', 'slotnova-booking' ); ?></button>
+					<button type="button" class="slotnova-preset-btn" data-preset="this_month"><?php esc_html_e( 'This Month', 'slotnova-booking' ); ?></button>
+					<button type="button" class="slotnova-preset-btn" data-preset="this_year"><?php esc_html_e( 'This Year', 'slotnova-booking' ); ?></button>
+				</div>
+
+				<div class="slotnova-filter-row">
+					<div class="slotnova-filter-item slotnova-filter-search">
+						<label for="slotnova-widget-search"><?php esc_html_e( 'Search', 'slotnova-booking' ); ?></label>
+						<input type="search" id="slotnova-widget-search" value="<?php echo esc_attr( $stats['search'] ); ?>" placeholder="<?php esc_attr_e( 'Customer, order #...', 'slotnova-booking' ); ?>" />
+					</div>
+					<div class="slotnova-filter-item">
+						<label for="slotnova-widget-from"><?php esc_html_e( 'From', 'slotnova-booking' ); ?></label>
+						<input type="date" id="slotnova-widget-from" value="<?php echo esc_attr( $stats['from_date'] ); ?>" />
+					</div>
+					<div class="slotnova-filter-item">
+						<label for="slotnova-widget-to"><?php esc_html_e( 'To', 'slotnova-booking' ); ?></label>
+						<input type="date" id="slotnova-widget-to" value="<?php echo esc_attr( $stats['to_date'] ); ?>" />
+					</div>
+					<div class="slotnova-filter-item">
+						<label for="slotnova-widget-service"><?php esc_html_e( 'Service', 'slotnova-booking' ); ?></label>
+						<select id="slotnova-widget-service">
+							<option value=""><?php esc_html_e( 'All Services', 'slotnova-booking' ); ?></option>
+							<?php foreach ( $service_options as $srv ) : ?>
+								<option value="<?php echo esc_attr( $srv ); ?>" <?php selected( $stats['service'], $srv ); ?>><?php echo esc_html( $srv ); ?></option>
+							<?php endforeach; ?>
+						</select>
+					</div>
+					<div class="slotnova-filter-btns">
+						<button type="button" id="slotnova-widget-filter-btn" class="button button-primary"><?php esc_html_e( 'Filter', 'slotnova-booking' ); ?></button>
+						<button type="button" id="slotnova-widget-export-btn" class="button button-secondary"><?php esc_html_e( 'Export CSV', 'slotnova-booking' ); ?></button>
+						<button type="button" id="slotnova-widget-reset-btn" class="button button-link slotnova-reset-link"><?php esc_html_e( 'Reset', 'slotnova-booking' ); ?></button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Main Dynamic Performance Chart (Bookings vs Revenue vs Appointments) -->
+			<div class="slotnova-main-chart-card">
+				<div class="slotnova-chart-card-header">
+					<div class="slotnova-chart-card-title">
+						<h3 id="slotnova-main-chart-heading"><?php esc_html_e( 'Booking Activity Timeline', 'slotnova-booking' ); ?></h3>
+						<span class="slotnova-card-subtitle" id="slotnova-main-chart-subtitle"><?php printf( esc_html__( 'Range: %s to %s', 'slotnova-booking' ), esc_html( $stats['from_date'] ), esc_html( $stats['to_date'] ) ); ?></span>
+					</div>
+					<div class="slotnova-chart-card-toggles">
+						<div class="slotnova-btn-group" id="slotnova-metric-toggle-group">
+							<button type="button" class="slotnova-toggle-btn active" data-metric="bookings"><?php esc_html_e( 'Bookings', 'slotnova-booking' ); ?></button>
+							<button type="button" class="slotnova-toggle-btn" data-metric="revenue"><?php esc_html_e( 'Revenue', 'slotnova-booking' ); ?></button>
+							<button type="button" class="slotnova-toggle-btn" data-metric="appointments"><?php esc_html_e( 'Appointments', 'slotnova-booking' ); ?></button>
+						</div>
+						<div class="slotnova-btn-group" id="slotnova-period-toggle-group">
+							<button type="button" class="slotnova-toggle-btn active" data-period="daily"><?php esc_html_e( 'Daily', 'slotnova-booking' ); ?></button>
+							<button type="button" class="slotnova-toggle-btn" data-period="weekly"><?php esc_html_e( 'Weekly', 'slotnova-booking' ); ?></button>
+							<button type="button" class="slotnova-toggle-btn" data-period="monthly"><?php esc_html_e( 'Monthly', 'slotnova-booking' ); ?></button>
+						</div>
+					</div>
+				</div>
+				<div class="slotnova-chart-wrapper">
+					<canvas id="slotnovaMainAnalyticsChart"></canvas>
+				</div>
+			</div>
+
+			<!-- Secondary Analytics Row: Peak Hours & Day Distribution -->
+			<div class="slotnova-stats-grid-2 slotnova-mt-20">
+				<div class="slotnova-stats-card">
+					<h4><?php esc_html_e( 'Peak Booking Hours (24-Hour Distribution)', 'slotnova-booking' ); ?></h4>
+					<p class="slotnova-card-subtitle"><?php esc_html_e( 'Identify when customers prefer to make bookings', 'slotnova-booking' ); ?></p>
+					<div class="slotnova-chart-wrapper slotnova-chart-sm">
+						<canvas id="slotnovaHourlyDistributionChart"></canvas>
+					</div>
+				</div>
+				<div class="slotnova-stats-card">
+					<h4><?php esc_html_e( 'Day of Week Distribution', 'slotnova-booking' ); ?></h4>
+					<p class="slotnova-card-subtitle"><?php esc_html_e( 'Volume distribution across Monday - Sunday', 'slotnova-booking' ); ?></p>
+					<div class="slotnova-chart-wrapper slotnova-chart-sm">
+						<canvas id="slotnovaDayDistributionChart"></canvas>
+					</div>
+				</div>
+			</div>
+
+			<!-- Booking Management & Calendar Schedule Card -->
+			<div class="slotnova-main-chart-card slotnova-mt-20" id="slotnova-widget-management-section">
+				<div class="slotnova-chart-card-header">
+					<div class="slotnova-chart-card-title">
+						<h3><?php esc_html_e( 'Booking Management & Calendar Schedule', 'slotnova-booking' ); ?></h3>
+						<span class="slotnova-card-subtitle"><?php esc_html_e( 'Browse live customer booking records or toggle full interactive calendar view', 'slotnova-booking' ); ?></span>
+					</div>
+					<div class="slotnova-chart-card-toggles">
+						<div class="slotnova-btn-group" id="slotnova-widget-view-toggle-group">
+							<button type="button" class="slotnova-toggle-btn active" data-view="list">
+								<span class="dashicons dashicons-menu-alt3" style="vertical-align: middle; margin-right: 3px;"></span>
+								<?php esc_html_e( 'List View', 'slotnova-booking' ); ?>
+							</button>
+							<button type="button" class="slotnova-toggle-btn" data-view="calendar">
+								<span class="dashicons dashicons-calendar-alt" style="vertical-align: middle; margin-right: 3px;"></span>
+								<?php esc_html_e( 'Calendar View', 'slotnova-booking' ); ?>
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Container 1: Table List View -->
+				<div id="slotnova-widget-list-view-container">
+					<div class="slotnova-table-responsive-wrapper">
+						<table class="slotnova-modern-table slotnova-widget-table">
+							<thead>
+								<tr>
+									<th style="width: 80px;"><?php esc_html_e( 'Order', 'slotnova-booking' ); ?></th>
+									<th><?php esc_html_e( 'Customer', 'slotnova-booking' ); ?></th>
+									<th><?php esc_html_e( 'Service', 'slotnova-booking' ); ?></th>
+									<th><?php esc_html_e( 'Staff', 'slotnova-booking' ); ?></th>
+									<th><?php esc_html_e( 'Date & Time', 'slotnova-booking' ); ?></th>
+									<th><?php esc_html_e( 'Status', 'slotnova-booking' ); ?></th>
+									<th style="width: 80px; text-align: right;"><?php esc_html_e( 'Action', 'slotnova-booking' ); ?></th>
+								</tr>
+							</thead>
+							<tbody id="slotnova-widget-bookings-table-body">
+								<?php if ( empty( $stats['recent_bookings'] ) ) : ?>
+									<tr>
+										<td colspan="7" class="slotnova-empty-table-cell">
+											<div class="slotnova-empty-state">
+												<div class="slotnova-empty-icon"><span class="dashicons dashicons-calendar-alt"></span></div>
+												<p><?php esc_html_e( 'No bookings matching your criteria.', 'slotnova-booking' ); ?></p>
+											</div>
+										</td>
+									</tr>
+								<?php else : ?>
+									<?php foreach ( $stats['recent_bookings'] as $booking ) :
+										$cust_initial = mb_strtoupper( mb_substr( $booking['customer'], 0, 1 ) );
+									?>
+										<tr class="slotnova-table-row">
+											<td>
+												<a href="<?php echo esc_url( $booking['order_url'] ); ?>" class="slotnova-order-pill">
+													#<?php echo esc_html( $booking['order_id'] ); ?>
+												</a>
+											</td>
+											<td>
+												<div class="slotnova-customer-cell">
+													<div class="slotnova-avatar-circle-sm">
+														<?php echo esc_html( $cust_initial ); ?>
+													</div>
+													<div class="slotnova-customer-meta">
+														<strong><?php echo esc_html( $booking['customer'] ); ?></strong>
+														<div class="slotnova-contact-sub">
+															<span><?php echo esc_html( $booking['email'] ); ?></span>
+														</div>
+													</div>
+												</div>
+											</td>
+											<td>
+												<span class="slotnova-badge-service"><?php echo esc_html( $booking['service'] ); ?></span>
+											</td>
+											<td>
+												<span class="slotnova-staff-tag">
+													<span class="dashicons dashicons-admin-users"></span> <?php echo esc_html( $booking['employee'] ); ?>
+												</span>
+											</td>
+											<td>
+												<div class="slotnova-datetime-cell">
+													<span class="slotnova-date-text"><?php echo esc_html( wp_date( 'M d, Y', strtotime( $booking['date'] ) ) ); ?></span>
+													<span class="slotnova-time-text"><span class="dashicons dashicons-clock"></span> <?php echo esc_html( $booking['time'] ); ?></span>
+												</div>
+											</td>
+											<td>
+												<span class="slotnova-badge status-<?php echo sanitize_html_class( strtolower( $booking['status_raw'] ) ); ?>">
+													<?php echo esc_html( $booking['status'] ); ?>
+												</span>
+											</td>
+											<td style="text-align: right;">
+												<div class="slotnova-action-cell-group">
+													<button type="button" class="slotnova-btn-action-view slotnova-open-details-modal" data-booking="<?php echo esc_attr( wp_json_encode( $booking ) ); ?>" title="<?php esc_attr_e( 'View Booking Details', 'slotnova-booking' ); ?>">
+														<span class="dashicons dashicons-visibility"></span> <?php esc_html_e( 'View', 'slotnova-booking' ); ?>
+													</button>
+												</div>
+											</td>
+										</tr>
+									<?php endforeach; ?>
+								<?php endif; ?>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<!-- Container 2: Interactive Calendar View -->
+				<div id="slotnova-widget-calendar-view-container" class="slotnova-is-hidden" style="padding-top: 10px;">
+					<div id="slotnova-widget-fullcalendar"></div>
+				</div>
+
+				<!-- Management Footer Bar with View All Bookings button -->
+				<div class="slotnova-management-footer-bar">
+					<span class="slotnova-records-count-text">
+						<span class="dashicons dashicons-list-view"></span>
+						<?php printf( esc_html__( 'Showing latest %d bookings', 'slotnova-booking' ), count( $stats['recent_bookings'] ) ); ?>
+					</span>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-calendar' ) ); ?>" class="button button-primary slotnova-view-all-bookings-btn">
+						<?php esc_html_e( 'View All Bookings', 'slotnova-booking' ); ?> &rarr;
+					</a>
+				</div>
+			</div>
+
+			<!-- Field Report Distribution Card -->
+			<div class="slotnova-report-card slotnova-mt-20">
+				<div class="slotnova-report-card-header">
+					<h4 class="slotnova-report-card-title"><?php esc_html_e( 'Service & Category Analytics Breakdown', 'slotnova-booking' ); ?></h4>
+					<div class="slotnova-report-select-wrapper">
+						<label for="slotnova-widget-report-field"><?php esc_html_e( 'Group by:', 'slotnova-booking' ); ?></label>
+						<select id="slotnova-widget-report-field">
+							<option value="service" <?php selected( $stats['report_field'], 'service' ); ?>><?php esc_html_e( 'Service / Form', 'slotnova-booking' ); ?></option>
+							<option value="employee" <?php selected( $stats['report_field'], 'employee' ); ?>><?php esc_html_e( 'Staff / Employee', 'slotnova-booking' ); ?></option>
+							<option value="status" <?php selected( $stats['report_field'], 'status' ); ?>><?php esc_html_e( 'Booking Status', 'slotnova-booking' ); ?></option>
+							<option value="time" <?php selected( $stats['report_field'], 'time' ); ?>><?php esc_html_e( 'Time Slot', 'slotnova-booking' ); ?></option>
+						</select>
+					</div>
+				</div>
+
+				<div id="slotnova-widget-report-bars" class="slotnova-report-bars-list">
+					<?php if ( ! empty( $stats['field_report'] ) ) : ?>
+						<?php foreach ( $stats['field_report'] as $item ) : ?>
+							<div class="slotnova-report-bar-item">
+								<div class="slotnova-report-bar-label">
+									<strong><?php printf( esc_html__( '%d bookings: %s', 'slotnova-booking' ), (int) $item['count'], esc_html( $item['label'] ) ); ?></strong>
+								</div>
+								<div class="slotnova-report-bar-track">
+									<div class="slotnova-report-bar-fill" style="width: <?php echo esc_attr( max( 5, $item['percentage'] ) ); ?>%; background-color: <?php echo esc_attr( $item['color'] ); ?>;">
+										<span class="slotnova-report-bar-text"><?php echo esc_html( number_format( $item['percentage'], 1 ) ); ?>%</span>
+									</div>
+								</div>
+							</div>
+						<?php endforeach; ?>
+					<?php else : ?>
+						<p class="slotnova-no-report-data"><?php esc_html_e( 'No booking data recorded for the selected range.', 'slotnova-booking' ); ?></p>
+					<?php endif; ?>
+				</div>
+			</div>
+
+			<!-- Footer Action Bar -->
+			<div class="slotnova-stats-footer">
+				<div class="slotnova-stats-footer-links">
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-dashboard' ) ); ?>" class="button button-primary"><?php esc_html_e( 'Open Full Dashboard', 'slotnova-booking' ); ?></a>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-calendar' ) ); ?>" class="button button-secondary"><?php esc_html_e( 'View All Bookings', 'slotnova-booking' ); ?></a>
+				</div>
+			<!-- Booking Details Modal Popup -->
+			<div id="slotnova-booking-details-modal" class="slotnova-modal-overlay slotnova-is-hidden">
+				<div class="slotnova-modal-content slotnova-details-modal-content">
+					<div class="slotnova-modal-header slotnova-classic-modal-header">
+						<div class="slotnova-modal-header-title">
+							<h2><?php esc_html_e( 'Booking Details', 'slotnova-booking' ); ?> <span id="bd-modal-order-id" class="slotnova-order-pill"></span></h2>
+						</div>
+						<button type="button" class="slotnova-modal-close" aria-label="<?php esc_attr_e( 'Close', 'slotnova-booking' ); ?>">&times;</button>
+					</div>
+
+					<div class="slotnova-modal-body slotnova-details-modal-body">
+						<div class="slotnova-details-hero-classic">
+							<div class="slotnova-avatar-circle-classic" id="bd-modal-avatar">G</div>
+							<div class="slotnova-details-hero-text">
+								<h3 id="bd-modal-customer-name">Guest Customer</h3>
+								<span id="bd-modal-status-badge" class="slotnova-badge status-processing">Processing</span>
+							</div>
+						</div>
+
+						<div class="slotnova-details-grid-classic">
+							<div class="slotnova-detail-box-classic">
+								<span class="slotnova-box-lbl"><?php esc_html_e( 'Service', 'slotnova-booking' ); ?></span>
+								<strong id="bd-modal-service">Haircut</strong>
+							</div>
+							<div class="slotnova-detail-box-classic">
+								<span class="slotnova-box-lbl"><?php esc_html_e( 'Assigned Staff', 'slotnova-booking' ); ?></span>
+								<strong id="bd-modal-staff">John Doe</strong>
+							</div>
+							<div class="slotnova-detail-box-classic">
+								<span class="slotnova-box-lbl"><?php esc_html_e( 'Date & Time', 'slotnova-booking' ); ?></span>
+								<strong id="bd-modal-datetime">2026-08-04 @ 10:00 AM</strong>
+							</div>
+							<div class="slotnova-detail-box-classic">
+								<span class="slotnova-box-lbl"><?php esc_html_e( 'Amount Paid', 'slotnova-booking' ); ?></span>
+								<strong id="bd-modal-total" style="color: #00a32a;">$50.00</strong>
+							</div>
+						</div>
+
+						<div class="slotnova-details-contact-section">
+							<h4><?php esc_html_e( 'Customer Contact Info', 'slotnova-booking' ); ?></h4>
+							<p><strong><?php esc_html_e( 'Email:', 'slotnova-booking' ); ?></strong> <span id="bd-modal-email">customer@example.com</span></p>
+							<p><strong><?php esc_html_e( 'Phone:', 'slotnova-booking' ); ?></strong> <span id="bd-modal-phone">N/A</span></p>
+							<p><strong><?php esc_html_e( 'Address:', 'slotnova-booking' ); ?></strong> <span id="bd-modal-address">N/A</span></p>
+						</div>
+					</div>
+
+					<div class="slotnova-modal-footer">
+						<a id="bd-modal-edit-link" href="#" class="button button-primary"><?php esc_html_e( 'Edit Order in WooCommerce', 'slotnova-booking' ); ?></a>
+						<button type="button" class="button button-secondary slotnova-modal-close-btn"><?php esc_html_e( 'Close', 'slotnova-booking' ); ?></button>
+					</div>
+				</div>
 			</div>
 		</div>
 		<?php
@@ -441,20 +798,24 @@ class Admin {
 	public function enqueue_scripts( $hook ) {
 		$is_slotnova_page = ( strpos( $hook, 'slotnova' ) !== false );
 		$is_product_page  = in_array( $hook, array( 'post.php', 'post-new.php' ), true );
+		$is_dashboard     = ( 'index.php' === $hook );
 
-		if ( ! $is_slotnova_page && ! $is_product_page ) {
+		if ( ! $is_slotnova_page && ! $is_product_page && ! $is_dashboard ) {
 			return;
 		}
 
 		$admin_js_deps = array( 'jquery' );
 
-		if ( $is_slotnova_page || $is_product_page ) {
+		if ( $is_slotnova_page || $is_product_page || $is_dashboard ) {
 			wp_enqueue_style( 'slotnova-flatpickr-css', SLOTNOVA_BOOKING_URL . 'assets/css/flatpickr-light.css', array(), '4.6.13' );
 			wp_enqueue_script( 'slotnova-flatpickr-js', SLOTNOVA_BOOKING_URL . 'assets/js/flatpickr.min.js', array(), '4.6.13', true );
 			$admin_js_deps[] = 'slotnova-flatpickr-js';
+
+			wp_enqueue_script( 'slotnova-chart-js', SLOTNOVA_BOOKING_URL . 'assets/js/chart.min.js', array(), '4.4.0', true );
+			$admin_js_deps[] = 'slotnova-chart-js';
 		}
 
-		if ( strpos( $hook, 'slotnova-calendar' ) !== false ) {
+		if ( $is_dashboard || strpos( $hook, 'slotnova-calendar' ) !== false || strpos( $hook, 'slotnova-dashboard' ) !== false ) {
 			wp_enqueue_script( 'slotnova-fullcalendar-js', SLOTNOVA_BOOKING_URL . 'assets/js/fullcalendar.min.js', array(), '6.1.15', true );
 			$admin_js_deps[] = 'slotnova-fullcalendar-js';
 		}
@@ -483,7 +844,7 @@ class Admin {
 			),
 		);
 
-		if ( strpos( $hook, 'slotnova-dashboard' ) !== false || strpos( $hook, 'slotnova-calendar' ) !== false ) {
+		if ( $is_dashboard || strpos( $hook, 'slotnova-dashboard' ) !== false || strpos( $hook, 'slotnova-calendar' ) !== false ) {
 			$all_services  = get_terms( array( 'taxonomy' => 'slotnova_service', 'hide_empty' => false ) );
 			$all_employees = get_terms( array( 'taxonomy' => 'slotnova_employee', 'hide_empty' => false ) );
 
@@ -505,9 +866,7 @@ class Admin {
 			$localized_data['employees'] = array_values( array_unique( $employee_list ) );
 		}
 
-		if ( strpos( $hook, 'slotnova-dashboard' ) !== false ) {
-			wp_enqueue_script( 'slotnova-chart-js', SLOTNOVA_BOOKING_URL . 'assets/js/chart.min.js', array(), '4.4.0', true );
-
+		if ( $is_dashboard || strpos( $hook, 'slotnova-dashboard' ) !== false ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$current_filter = isset( $_GET['date_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['date_filter'] ) ) : 'last_7_days';
 			$data           = $this->get_dashboard_data( $current_filter );
@@ -519,6 +878,8 @@ class Admin {
 				'i18n_label'     => __( 'Bookings Made', 'slotnova-booking' ),
 				'i18n_revenue'   => __( 'Revenue ($)', 'slotnova-booking' ),
 			);
+
+			$localized_data['widget_stats'] = $this->get_stats_overview_data();
 		}
 
 		if ( strpos( $hook, 'slotnova-calendar' ) !== false ) {
@@ -2252,5 +2613,342 @@ class Admin {
 		}
 
 		do_action( 'slotnova_save_product_tab_data', $post_id, $_POST );
+	}
+
+	/**
+	 * AJAX Handler: Get widget stats analytics.
+	 *
+	 * @return void
+	 */
+	public function ajax_get_widget_stats() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'slotnova-booking' ) ) );
+		}
+
+		check_ajax_referer( 'slotnova_admin_nonce', 'security' );
+
+		$params = array(
+			'search'       => isset( $_REQUEST['search'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['search'] ) ) : '',
+			'from_date'    => isset( $_REQUEST['from_date'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['from_date'] ) ) : '',
+			'to_date'      => isset( $_REQUEST['to_date'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['to_date'] ) ) : '',
+			'service'      => isset( $_REQUEST['service'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['service'] ) ) : '',
+			'report_field' => isset( $_REQUEST['report_field'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['report_field'] ) ) : 'service',
+		);
+
+		$stats = $this->get_stats_overview_data( $params );
+		wp_send_json_success( $stats );
+	}
+
+	/**
+	 * Generate full stats overview data for WP Dashboard widget and Stats overview page.
+	 *
+	 * @param array $params Filter parameters.
+	 * @return array
+	 */
+	public function get_stats_overview_data( $params = array() ) {
+		$today_ts = current_time( 'timestamp' );
+		$today    = wp_date( 'Y-m-d', $today_ts );
+
+		$search       = ! empty( $params['search'] ) ? strtolower( sanitize_text_field( $params['search'] ) ) : '';
+		$service_flt  = ! empty( $params['service'] ) ? sanitize_text_field( $params['service'] ) : '';
+		$from_date    = ! empty( $params['from_date'] ) ? sanitize_text_field( $params['from_date'] ) : wp_date( 'Y-m-d', strtotime( '-30 days', $today_ts ) );
+		$to_date      = ! empty( $params['to_date'] ) ? sanitize_text_field( $params['to_date'] ) : $today;
+		$report_field = ! empty( $params['report_field'] ) ? sanitize_text_field( $params['report_field'] ) : 'service';
+
+		$orders = wc_get_orders( array(
+			'status' => array( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-pending', 'wc-cancelled', 'wc-refunded' ),
+			'limit'  => -1,
+		) );
+
+		// 1. Submission Time Stats (last 12 months, last 12 weeks, last 30 days)
+		$sub_monthly_labels = array();
+		$sub_monthly_counts = array();
+		for ( $i = 11; $i >= 0; $i-- ) {
+			$m_ts                       = strtotime( "-{$i} months", strtotime( wp_date( 'Y-m-01', $today_ts ) ) );
+			$key                        = wp_date( 'Y-m', $m_ts );
+			$sub_monthly_labels[ $key ] = wp_date( 'M Y', $m_ts );
+			$sub_monthly_counts[ $key ] = 0;
+		}
+
+		$sub_weekly_labels = array();
+		$sub_weekly_counts = array();
+		for ( $i = 11; $i >= 0; $i-- ) {
+			$w_ts                      = strtotime( "-{$i} weeks", $today_ts );
+			$key                       = wp_date( 'o-\WW', $w_ts );
+			$sub_weekly_labels[ $key ] = 'Wk ' . wp_date( 'W', $w_ts );
+			$sub_weekly_counts[ $key ] = 0;
+		}
+
+		$sub_daily_labels = array();
+		$sub_daily_counts = array();
+		for ( $i = 29; $i >= 0; $i-- ) {
+			$d_ts                     = strtotime( "-{$i} days", $today_ts );
+			$key                      = wp_date( 'Y-m-d', $d_ts );
+			$sub_daily_labels[ $key ] = wp_date( 'M d', $d_ts );
+			$sub_daily_counts[ $key ] = 0;
+		}
+
+		// 2. Booked Times Stats (next 12 months, next 12 weeks, next 30 days)
+		$booked_monthly_labels = array();
+		$booked_monthly_counts = array();
+		for ( $i = 0; $i < 12; $i++ ) {
+			$m_ts                          = strtotime( "+{$i} months", strtotime( wp_date( 'Y-m-01', $today_ts ) ) );
+			$key                           = wp_date( 'Y-m', $m_ts );
+			$booked_monthly_labels[ $key ] = wp_date( 'M Y', $m_ts );
+			$booked_monthly_counts[ $key ] = 0;
+		}
+
+		$booked_weekly_labels = array();
+		$booked_weekly_counts = array();
+		for ( $i = 0; $i < 12; $i++ ) {
+			$w_ts                         = strtotime( "+{$i} weeks", $today_ts );
+			$key                          = wp_date( 'o-\WW', $w_ts );
+			$booked_weekly_labels[ $key ] = 'Wk ' . wp_date( 'W', $w_ts );
+			$booked_weekly_counts[ $key ] = 0;
+		}
+
+		$booked_daily_labels = array();
+		$booked_daily_counts = array();
+		for ( $i = 0; $i < 30; $i++ ) {
+			$d_ts                        = strtotime( "+{$i} days", $today_ts );
+			$key                         = wp_date( 'Y-m-d', $d_ts );
+			$booked_daily_labels[ $key ] = wp_date( 'M d', $d_ts );
+			$booked_daily_counts[ $key ] = 0;
+		}
+
+		// 3. Range Stats
+		$range_daily_labels  = array();
+		$range_daily_counts  = array();
+		$range_daily_revenue = array();
+		$curr_ts             = strtotime( $from_date );
+		$end_ts              = strtotime( $to_date );
+		if ( $curr_ts <= $end_ts ) {
+			while ( $curr_ts <= $end_ts ) {
+				$key                        = wp_date( 'Y-m-d', $curr_ts );
+				$range_daily_labels[ $key ]  = wp_date( 'M d', $curr_ts );
+				$range_daily_counts[ $key ]  = 0;
+				$range_daily_revenue[ $key ] = 0;
+				$curr_ts                     = strtotime( '+1 day', $curr_ts );
+			}
+		}
+
+		$range_hourly_counts     = array_fill( 0, 24, 0 );
+		$field_report_counts     = array();
+		$total_range_submissions = 0;
+		$total_range_revenue     = 0;
+
+		foreach ( $orders as $order ) {
+			$created_date = $order->get_date_created();
+			if ( ! $created_date ) {
+				continue;
+			}
+			$created_ym   = $created_date->date( 'Y-m' );
+			$created_yw   = $created_date->date( 'o-\WW' );
+			$created_ymd  = $created_date->date( 'Y-m-d' );
+			$created_hour = (int) $created_date->date( 'H' );
+
+			$cust_name  = strtolower( $order->get_formatted_billing_full_name() );
+			$cust_email = strtolower( $order->get_billing_email() );
+			$order_id   = (string) $order->get_id();
+
+			if ( isset( $sub_monthly_counts[ $created_ym ] ) ) {
+				$sub_monthly_counts[ $created_ym ]++;
+			}
+			if ( isset( $sub_weekly_counts[ $created_yw ] ) ) {
+				$sub_weekly_counts[ $created_yw ]++;
+			}
+			if ( isset( $sub_daily_counts[ $created_ymd ] ) ) {
+				$sub_daily_counts[ $created_ymd ]++;
+			}
+
+			foreach ( $order->get_items() as $item ) {
+				$booking_date = $item->get_meta( 'Date' );
+				$service      = $item->get_meta( 'Service' );
+				$employee     = $item->get_meta( 'Employee' );
+				$time         = $item->get_meta( 'Time' );
+				$status       = $order->get_status();
+				$item_total   = (float) $item->get_total();
+
+				if ( empty( $service ) ) {
+					$service = __( 'Form 1', 'slotnova-booking' );
+				}
+				if ( empty( $employee ) ) {
+					$employee = __( 'General Staff', 'slotnova-booking' );
+				}
+				if ( empty( $time ) ) {
+					$time = __( 'Standard Time', 'slotnova-booking' );
+				}
+
+				if ( ! empty( $service_flt ) && $service !== $service_flt ) {
+					continue;
+				}
+				if ( ! empty( $search ) ) {
+					$match = ( strpos( $cust_name, $search ) !== false ) ||
+							 ( strpos( $cust_email, $search ) !== false ) ||
+							 ( strpos( $order_id, $search ) !== false ) ||
+							 ( strpos( strtolower( $service ), $search ) !== false );
+					if ( ! $match ) {
+						continue;
+					}
+				}
+
+				if ( ! empty( $booking_date ) ) {
+					$b_ts  = strtotime( $booking_date );
+					$b_ym  = wp_date( 'Y-m', $b_ts );
+					$b_yw  = wp_date( 'o-\WW', $b_ts );
+					$b_ymd = wp_date( 'Y-m-d', $b_ts );
+
+					if ( isset( $booked_monthly_counts[ $b_ym ] ) ) {
+						$booked_monthly_counts[ $b_ym ]++;
+					}
+					if ( isset( $booked_weekly_counts[ $b_yw ] ) ) {
+						$booked_weekly_counts[ $b_yw ]++;
+					}
+					if ( isset( $booked_daily_counts[ $b_ymd ] ) ) {
+						$booked_daily_counts[ $b_ymd ]++;
+					}
+
+					if ( $b_ymd >= $from_date && $b_ymd <= $to_date ) {
+						$total_range_submissions++;
+						$total_range_revenue += $item_total;
+
+						if ( isset( $range_daily_counts[ $b_ymd ] ) ) {
+							$range_daily_counts[ $b_ymd ]++;
+							$range_daily_revenue[ $b_ymd ] += $item_total;
+						}
+
+						if ( ! empty( $time ) ) {
+							$hour = (int) wp_date( 'H', strtotime( '1970-01-01 ' . $time . ' UTC' ) );
+							$range_hourly_counts[ $hour ]++;
+						} else {
+							$range_hourly_counts[ $created_hour ]++;
+						}
+
+						$field_val = '';
+						switch ( $report_field ) {
+							case 'employee':
+								$field_val = $employee;
+								break;
+							case 'status':
+								$field_val = wc_get_order_status_name( $status );
+								break;
+							case 'time':
+								$field_val = $time;
+								break;
+							case 'service':
+							default:
+								$field_val = $service;
+								break;
+						}
+
+						if ( ! isset( $field_report_counts[ $field_val ] ) ) {
+							$field_report_counts[ $field_val ] = 0;
+						}
+						$field_report_counts[ $field_val ]++;
+					}
+				}
+			}
+		}
+
+		arsort( $field_report_counts );
+		$field_report_items = array();
+		$colors             = array( '#f87171', '#fb923c', '#facc15', '#4ade80', '#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#a3e635', '#2dd4bf' );
+		$c_idx              = 0;
+
+		foreach ( $field_report_counts as $val_name => $count ) {
+			$percentage           = $total_range_submissions > 0 ? round( ( $count / $total_range_submissions ) * 100, 2 ) : 0;
+			$color                = $colors[ $c_idx % count( $colors ) ];
+			$field_report_items[] = array(
+				'label'      => $val_name,
+				'count'      => $count,
+				'percentage' => $percentage,
+				'color'      => $color,
+			);
+			$c_idx++;
+		}
+
+		// Calculate peak hour
+		$max_hour_val = max( $range_hourly_counts );
+		$peak_hour_str = 'N/A';
+		if ( $max_hour_val > 0 ) {
+			$peak_hour_idx = array_search( $max_hour_val, $range_hourly_counts, true );
+			$peak_hour_str = gmdate( 'g:00 A', strtotime( '1970-01-01 ' . sprintf( '%02d:00:00', $peak_hour_idx ) . ' UTC' ) );
+		}
+
+		// Calculate top service
+		$top_service_str = ! empty( $field_report_items ) ? $field_report_items[0]['label'] : 'N/A';
+
+		// Day of week distribution
+		$day_counts = array( 'Mon' => 0, 'Tue' => 0, 'Wed' => 0, 'Thu' => 0, 'Fri' => 0, 'Sat' => 0, 'Sun' => 0 );
+		foreach ( $orders as $order ) {
+			foreach ( $order->get_items() as $item ) {
+				$b_date = $item->get_meta( 'Date' );
+				if ( ! empty( $b_date ) ) {
+					$day_name = wp_date( 'D', strtotime( $b_date ) );
+					if ( isset( $day_counts[ $day_name ] ) ) {
+						$day_counts[ $day_name ]++;
+					}
+				}
+			}
+		}
+
+		// Fetch recent bookings and calendar events matching active filter
+		$all_bookings = $this->get_all_bookings_data( $search, $service_flt, '', '' );
+
+		return array(
+			'from_date'               => $from_date,
+			'to_date'                 => $to_date,
+			'search'                  => $search,
+			'service'                 => $service_flt,
+			'report_field'            => $report_field,
+			'total_range_submissions' => $total_range_submissions,
+			'total_range_revenue'     => $total_range_revenue,
+			'formatted_total_revenue' => html_entity_decode( wp_strip_all_tags( wc_price( $total_range_revenue ) ), ENT_QUOTES, 'UTF-8' ),
+			'peak_hour_display'       => $peak_hour_str,
+			'top_service_display'     => $top_service_str,
+			'recent_bookings'         => array_slice( $all_bookings['list'], 0, 20 ),
+			'calendar_events'         => $all_bookings['events'],
+			'day_distribution'        => array(
+				'labels' => array_keys( $day_counts ),
+				'data'   => array_values( $day_counts ),
+			),
+			'sub_monthly'             => array(
+				'labels' => array_values( $sub_monthly_labels ),
+				'data'   => array_values( $sub_monthly_counts ),
+			),
+			'sub_weekly'              => array(
+				'labels' => array_values( $sub_weekly_labels ),
+				'data'   => array_values( $sub_weekly_counts ),
+			),
+			'sub_daily'               => array(
+				'labels' => array_values( $sub_daily_labels ),
+				'data'   => array_values( $sub_daily_counts ),
+			),
+			'booked_monthly'          => array(
+				'labels' => array_values( $booked_monthly_labels ),
+				'data'   => array_values( $booked_monthly_counts ),
+			),
+			'booked_weekly'           => array(
+				'labels' => array_values( $booked_weekly_labels ),
+				'data'   => array_values( $booked_weekly_counts ),
+			),
+			'booked_daily'            => array(
+				'labels' => array_values( $booked_daily_labels ),
+				'data'   => array_values( $booked_daily_counts ),
+			),
+			'range_daily'             => array(
+				'labels' => array_values( $range_daily_labels ),
+				'data'   => array_values( $range_daily_counts ),
+			),
+			'range_hourly'            => array(
+				'labels' => array_map( function( $h ) { return sprintf( '%02d', $h ); }, range( 0, 23 ) ),
+				'data'   => array_values( $range_hourly_counts ),
+			),
+			'range_revenue'           => array(
+				'labels' => array_values( $range_daily_labels ),
+				'data'   => array_values( $range_daily_revenue ),
+			),
+			'field_report'            => $field_report_items,
+		);
 	}
 }

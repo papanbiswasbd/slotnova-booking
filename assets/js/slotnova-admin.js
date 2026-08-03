@@ -111,6 +111,496 @@ jQuery(document).ready(function($) {
 	}
 
 	/* -------------------------------------------------------------------------
+	 * SlotNova Clean Analytics (Chart.js + Dynamic Controls)
+	 * ------------------------------------------------------------------------- */
+	var slotnovaMainChart = null;
+	var slotnovaHourlyChart = null;
+	var slotnovaDayChart = null;
+	var currentStatsData = null;
+	var activeMetric = 'bookings';
+	var activePeriod = 'daily';
+
+	function renderSlotNovaStatsWidget(stats) {
+		if (!stats) return;
+		currentStatsData = stats;
+
+		// 1. Update Top Metric Pills
+		$('#slotnova-stat-total-bookings').text(stats.total_range_submissions || 0);
+		$('#slotnova-stat-total-revenue').text(stats.formatted_total_revenue || '$0.00');
+		$('#slotnova-stat-peak-hour').text(stats.peak_hour_display || 'N/A');
+		$('#slotnova-stat-top-service').text(stats.top_service_display || 'N/A');
+		$('#slotnova-main-chart-subtitle').text('Range: ' + stats.from_date + ' to ' + stats.to_date);
+
+		// 2. Render Main Timeline Chart
+		updateMainTimelineChart();
+
+		// 3. Render Peak Hours Distribution Chart
+		renderHourlyDistributionChart(stats.range_hourly);
+
+		// 4. Render Day of Week Distribution Chart
+		renderDayDistributionChart(stats.day_distribution);
+
+		// 5. Render Field Report Bars
+		renderSlotNovaReportBars(stats.field_report, stats.report_field);
+
+		// 6. Render Recent Bookings Table
+		if (stats.recent_bookings) {
+			renderWidgetBookingsTable(stats.recent_bookings);
+		}
+
+		// 7. Render Calendar if active
+		if (stats.calendar_events && !$('#slotnova-widget-calendar-view-container').hasClass('slotnova-is-hidden')) {
+			renderWidgetFullCalendar(stats.calendar_events);
+		}
+	}
+
+	function updateMainTimelineChart() {
+		if (!currentStatsData || typeof Chart === 'undefined') return;
+		var canvas = document.getElementById('slotnovaMainAnalyticsChart');
+		if (!canvas) return;
+
+		var labels = [];
+		var data = [];
+		var labelText = 'Bookings';
+		var color = '#0284c7';
+		var bgColor = 'rgba(2, 132, 199, 0.12)';
+
+		if (activeMetric === 'revenue') {
+			labelText = 'Revenue ($)';
+			color = '#16a34a';
+			bgColor = 'rgba(22, 163, 74, 0.12)';
+			if (activePeriod === 'monthly') {
+				labels = currentStatsData.sub_monthly.labels;
+				data = currentStatsData.range_revenue ? currentStatsData.range_revenue.data : [];
+			} else if (activePeriod === 'weekly') {
+				labels = currentStatsData.sub_weekly.labels;
+				data = currentStatsData.range_revenue ? currentStatsData.range_revenue.data : [];
+			} else {
+				labels = currentStatsData.range_revenue ? currentStatsData.range_revenue.labels : [];
+				data = currentStatsData.range_revenue ? currentStatsData.range_revenue.data : [];
+			}
+		} else if (activeMetric === 'appointments') {
+			labelText = 'Appointments Scheduled';
+			color = '#8b5cf6';
+			bgColor = 'rgba(139, 92, 246, 0.12)';
+			if (activePeriod === 'monthly') {
+				labels = currentStatsData.booked_monthly.labels;
+				data = currentStatsData.booked_monthly.data;
+			} else if (activePeriod === 'weekly') {
+				labels = currentStatsData.booked_weekly.labels;
+				data = currentStatsData.booked_weekly.data;
+			} else {
+				labels = currentStatsData.booked_daily.labels;
+				data = currentStatsData.booked_daily.data;
+			}
+		} else {
+			// Bookings (Incoming requests)
+			labelText = 'Bookings Made';
+			color = '#0284c7';
+			bgColor = 'rgba(2, 132, 199, 0.12)';
+			if (activePeriod === 'monthly') {
+				labels = currentStatsData.sub_monthly.labels;
+				data = currentStatsData.sub_monthly.data;
+			} else if (activePeriod === 'weekly') {
+				labels = currentStatsData.sub_weekly.labels;
+				data = currentStatsData.sub_weekly.data;
+			} else {
+				labels = currentStatsData.range_daily ? currentStatsData.range_daily.labels : currentStatsData.sub_daily.labels;
+				data = currentStatsData.range_daily ? currentStatsData.range_daily.data : currentStatsData.sub_daily.data;
+			}
+		}
+
+		if (slotnovaMainChart) {
+			slotnovaMainChart.destroy();
+		}
+
+		var ctx = canvas.getContext('2d');
+		slotnovaMainChart = new Chart(ctx, {
+			type: 'line',
+			data: {
+				labels: labels,
+				datasets: [{
+					label: labelText,
+					data: data,
+					borderColor: color,
+					backgroundColor: bgColor,
+					borderWidth: 3,
+					pointBackgroundColor: color,
+					pointBorderColor: '#ffffff',
+					pointBorderWidth: 2,
+					pointRadius: 4,
+					pointHoverRadius: 6,
+					fill: true,
+					tension: 0.35
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: { display: false },
+					tooltip: {
+						backgroundColor: '#0f172a',
+						padding: 10,
+						cornerRadius: 8
+					}
+				},
+				scales: {
+					x: {
+						grid: { display: false },
+						ticks: { font: { size: 11 }, maxRotation: 45 }
+					},
+					y: {
+						beginAtZero: true,
+						grid: { color: '#f1f5f9' },
+						ticks: { font: { size: 11 }, precision: 0 }
+					}
+				}
+			}
+		});
+	}
+
+	function renderHourlyDistributionChart(hourlyData) {
+		if (!hourlyData || typeof Chart === 'undefined') return;
+		var canvas = document.getElementById('slotnovaHourlyDistributionChart');
+		if (!canvas) return;
+
+		if (slotnovaHourlyChart) {
+			slotnovaHourlyChart.destroy();
+		}
+
+		var ctx = canvas.getContext('2d');
+		slotnovaHourlyChart = new Chart(ctx, {
+			type: 'bar',
+			data: {
+				labels: hourlyData.labels,
+				datasets: [{
+					label: 'Bookings Count',
+					data: hourlyData.data,
+					backgroundColor: '#38bdf8',
+					borderRadius: 4
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: { legend: { display: false } },
+				scales: {
+					x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+					y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { precision: 0, font: { size: 10 } } }
+				}
+			}
+		});
+	}
+
+	function renderDayDistributionChart(dayData) {
+		if (!dayData || typeof Chart === 'undefined') return;
+		var canvas = document.getElementById('slotnovaDayDistributionChart');
+		if (!canvas) return;
+
+		if (slotnovaDayChart) {
+			slotnovaDayChart.destroy();
+		}
+
+		var ctx = canvas.getContext('2d');
+		slotnovaDayChart = new Chart(ctx, {
+			type: 'bar',
+			data: {
+				labels: dayData.labels,
+				datasets: [{
+					label: 'Bookings Count',
+					data: dayData.data,
+					backgroundColor: '#818cf8',
+					borderRadius: 4
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: { legend: { display: false } },
+				scales: {
+					x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+					y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { precision: 0, font: { size: 10 } } }
+				}
+			}
+		});
+	}
+
+	function renderSlotNovaReportBars(reportItems, reportField) {
+		var formattedTitle = (reportField || 'service').charAt(0).toUpperCase() + (reportField || 'service').slice(1);
+		var $container = $('#slotnova-widget-report-bars');
+		$container.empty();
+
+		if (!reportItems || reportItems.length === 0) {
+			$container.html('<p class="slotnova-no-report-data">No booking data recorded for the selected range.</p>');
+			return;
+		}
+
+		$.each(reportItems, function(idx, item) {
+			var widthPercent = Math.max(5, item.percentage);
+			var html = '<div class="slotnova-report-bar-item">' +
+				'<div class="slotnova-report-bar-label">' +
+					'<strong>' + item.count + ' bookings: ' + item.label + '</strong>' +
+				'</div>' +
+				'<div class="slotnova-report-bar-track">' +
+					'<div class="slotnova-report-bar-fill" style="width: ' + widthPercent + '%; background-color: ' + item.color + ';">' +
+						'<span class="slotnova-report-bar-text">' + item.percentage.toFixed(1) + '%</span>' +
+					'</div>' +
+				'</div>' +
+			'</div>';
+			$container.append(html);
+		});
+	}
+
+	function renderWidgetBookingsTable(bookings) {
+		var $tbody = $('#slotnova-widget-bookings-table-body');
+		if (!$tbody.length) return;
+		$tbody.empty();
+
+		$('.slotnova-records-count-text').html('<span class="dashicons dashicons-list-view"></span> Showing latest ' + (bookings ? bookings.length : 0) + ' bookings');
+
+		if (!bookings || bookings.length === 0) {
+			$tbody.html('<tr><td colspan="7" class="slotnova-empty-table-cell"><div class="slotnova-empty-state"><div class="slotnova-empty-icon"><span class="dashicons dashicons-calendar-alt"></span></div><p>No bookings matching your criteria.</p></div></td></tr>');
+			return;
+		}
+
+		$.each(bookings, function(idx, item) {
+			var custInitial = (item.customer || 'G').charAt(0).toUpperCase();
+			var statusClass = 'status-' + (item.status_raw || 'processing').toLowerCase();
+			var jsonAttr = $('<div>').text(JSON.stringify(item)).html();
+
+			var row = '<tr class="slotnova-table-row">' +
+				'<td><a href="' + item.order_url + '" class="slotnova-order-pill">#' + item.order_id + '</a></td>' +
+				'<td><div class="slotnova-customer-cell"><div class="slotnova-avatar-circle-sm">' + custInitial + '</div><div class="slotnova-customer-meta"><strong>' + item.customer + '</strong><div class="slotnova-contact-sub"><span>' + item.email + '</span></div></div></div></td>' +
+				'<td><span class="slotnova-badge-service">' + item.service + '</span></td>' +
+				'<td><span class="slotnova-staff-tag"><span class="dashicons dashicons-admin-users"></span> ' + item.employee + '</span></td>' +
+				'<td><div class="slotnova-datetime-cell"><span class="slotnova-date-text">' + item.date + '</span><span class="slotnova-time-text"><span class="dashicons dashicons-clock"></span> ' + item.time + '</span></div></td>' +
+				'<td><span class="slotnova-badge ' + statusClass + '">' + item.status + '</span></td>' +
+				'<td style="text-align: right;"><div class="slotnova-action-cell-group">' +
+					'<button type="button" class="slotnova-btn-action-view slotnova-open-details-modal" data-booking="' + jsonAttr + '" title="View Booking Details"><span class="dashicons dashicons-visibility"></span> View</button>' +
+				'</div></td>' +
+			'</tr>';
+
+			$tbody.append(row);
+		});
+	}
+
+	var slotnovaWidgetCalendar = null;
+	function renderWidgetFullCalendar(events) {
+		var containerCal = document.getElementById('slotnova-widget-fullcalendar');
+		if (!containerCal || typeof FullCalendar === 'undefined') return;
+
+		if (slotnovaWidgetCalendar) {
+			slotnovaWidgetCalendar.removeAllEvents();
+			if (events && events.length) {
+				slotnovaWidgetCalendar.addEventSource(events);
+			}
+			slotnovaWidgetCalendar.render();
+			return;
+		}
+
+		slotnovaWidgetCalendar = new FullCalendar.Calendar(containerCal, {
+			initialView: 'dayGridMonth',
+			headerToolbar: {
+				left: 'prev,next today',
+				center: 'title',
+				right: 'dayGridMonth,timeGridWeek'
+			},
+			height: 460,
+			events: events || [],
+			eventClick: function(info) {
+				if (info.event.url) {
+					info.jsEvent.preventDefault();
+					window.location.href = info.event.url;
+				}
+			}
+		});
+
+		slotnovaWidgetCalendar.render();
+	}
+
+	// Toggle List View vs Calendar View in Widget
+	$(document).on('click', '#slotnova-widget-view-toggle-group .slotnova-toggle-btn', function(e) {
+		e.preventDefault();
+		$('#slotnova-widget-view-toggle-group .slotnova-toggle-btn').removeClass('active');
+		$(this).addClass('active');
+
+		var view = $(this).data('view');
+		if (view === 'calendar') {
+			$('#slotnova-widget-list-view-container').addClass('slotnova-is-hidden');
+			$('#slotnova-widget-calendar-view-container').removeClass('slotnova-is-hidden');
+			if (currentStatsData && currentStatsData.calendar_events) {
+				renderWidgetFullCalendar(currentStatsData.calendar_events);
+			}
+		} else {
+			$('#slotnova-widget-calendar-view-container').addClass('slotnova-is-hidden');
+			$('#slotnova-widget-list-view-container').removeClass('slotnova-is-hidden');
+		}
+	});
+
+	// Toggle metric buttons (Bookings, Revenue, Appointments)
+	$(document).on('click', '#slotnova-metric-toggle-group .slotnova-toggle-btn', function(e) {
+		e.preventDefault();
+		$('#slotnova-metric-toggle-group .slotnova-toggle-btn').removeClass('active');
+		$(this).addClass('active');
+		activeMetric = $(this).data('metric');
+		updateMainTimelineChart();
+	});
+
+	// Toggle period buttons (Daily, Weekly, Monthly)
+	$(document).on('click', '#slotnova-period-toggle-group .slotnova-toggle-btn', function(e) {
+		e.preventDefault();
+		$('#slotnova-period-toggle-group .slotnova-toggle-btn').removeClass('active');
+		$(this).addClass('active');
+		activePeriod = $(this).data('period');
+		updateMainTimelineChart();
+	});
+
+	if (typeof slotnova_admin_data !== 'undefined' && slotnova_admin_data.widget_stats) {
+		renderSlotNovaStatsWidget(slotnova_admin_data.widget_stats);
+	}
+
+	// Click Filter button in Widget
+	$(document).on('click', '#slotnova-widget-filter-btn', function(e) {
+		e.preventDefault();
+		fetchWidgetStats();
+	});
+
+	// Change report field dropdown
+	$(document).on('change', '#slotnova-widget-report-field', function() {
+		fetchWidgetStats();
+	});
+
+	function fetchWidgetStats() {
+		if (typeof slotnova_admin_data === 'undefined') return;
+
+		var search = $('#slotnova-widget-search').val();
+		var fromDate = $('#slotnova-widget-from').val();
+		var toDate = $('#slotnova-widget-to').val();
+		var service = $('#slotnova-widget-service').val();
+		var reportField = $('#slotnova-widget-report-field').val();
+
+		var $btn = $('#slotnova-widget-filter-btn');
+		$btn.prop('disabled', true).text('Filtering...');
+
+		$.ajax({
+			url: slotnova_admin_data.ajax_url,
+			type: 'POST',
+			data: {
+				action: 'slotnova_get_widget_stats',
+				security: slotnova_admin_data.nonce,
+				search: search,
+				from_date: fromDate,
+				to_date: toDate,
+				service: service,
+				report_field: reportField
+			},
+			success: function(res) {
+				$btn.prop('disabled', false).text('Filter');
+				if (res.success && res.data) {
+					renderSlotNovaStatsWidget(res.data);
+				}
+			},
+			error: function() {
+				$btn.prop('disabled', false).text('Filter');
+			}
+		});
+	}
+
+	// Export CSV from widget
+	$(document).on('click', '#slotnova-widget-export-btn', function(e) {
+		e.preventDefault();
+		var search = $('#slotnova-widget-search').val();
+		var service = $('#slotnova-widget-service').val();
+		var downloadUrl = slotnova_admin_data.ajax_url + '?action=slotnova_export_bookings_csv&security=' + slotnova_admin_data.nonce + '&search=' + encodeURIComponent(search) + '&service=' + encodeURIComponent(service);
+		window.location.href = downloadUrl;
+	});
+
+	// Click Preset Date Buttons (Today, Last 7 Days, Last 30 Days, This Month, This Year)
+	$(document).on('click', '.slotnova-preset-btn', function(e) {
+		e.preventDefault();
+		$('.slotnova-preset-btn').removeClass('active');
+		$(this).addClass('active');
+
+		var preset = $(this).data('preset');
+		var today = new Date();
+		var formatDate = function(d) {
+			var year = d.getFullYear();
+			var month = ('0' + (d.getMonth() + 1)).slice(-2);
+			var day = ('0' + d.getDate()).slice(-2);
+			return year + '-' + month + '-' + day;
+		};
+
+		var toDateStr = formatDate(today);
+		var fromDateStr = toDateStr;
+
+		if (preset === 'today') {
+			fromDateStr = toDateStr;
+		} else if (preset === 'last_7_days') {
+			var d = new Date();
+			d.setDate(d.getDate() - 6);
+			fromDateStr = formatDate(d);
+		} else if (preset === 'last_30_days') {
+			var d = new Date();
+			d.setDate(d.getDate() - 29);
+			fromDateStr = formatDate(d);
+		} else if (preset === 'this_month') {
+			var d = new Date(today.getFullYear(), today.getMonth(), 1);
+			fromDateStr = formatDate(d);
+		} else if (preset === 'this_year') {
+			var d = new Date(today.getFullYear(), 0, 1);
+			fromDateStr = formatDate(d);
+		}
+
+		$('#slotnova-widget-from').val(fromDateStr);
+		$('#slotnova-widget-to').val(toDateStr);
+		fetchWidgetStats();
+	});
+
+	// Reset Filter Button
+	$(document).on('click', '#slotnova-widget-reset-btn', function(e) {
+		e.preventDefault();
+		$('#slotnova-widget-search').val('');
+		$('#slotnova-widget-service').val('');
+		$('.slotnova-preset-btn[data-preset="last_30_days"]').trigger('click');
+	});
+
+	// Fullscreen Mode Toggle for Stats Widget
+	$(document).on('click', '#slotnova-widget-fullscreen-toggle', function(e) {
+		e.preventDefault();
+		var $container = $('.slotnova-stats-dashboard-container');
+		$container.toggleClass('slotnova-fullscreen-active');
+
+		if ($container.hasClass('slotnova-fullscreen-active')) {
+			$(this).find('.dashicons').removeClass('dashicons-fullscreen-alt').addClass('dashicons-fullscreen-exit-alt');
+			$(this).find('.slotnova-fs-text').text('Exit Fullscreen');
+			$('body').addClass('slotnova-fs-open');
+		} else {
+			$(this).find('.dashicons').removeClass('dashicons-fullscreen-exit-alt').addClass('dashicons-fullscreen-alt');
+			$(this).find('.slotnova-fs-text').text('Fullscreen View');
+			$('body').removeClass('slotnova-fs-open');
+		}
+
+		setTimeout(function() {
+			window.dispatchEvent(new Event('resize'));
+		}, 150);
+	});
+
+	// Ensure WP Dashboard container takes 100% width for SlotNova widget
+	if ($('#slotnova_wp_dashboard_widget').length) {
+		$('#slotnova_wp_dashboard_widget').closest('.postbox-container').css({
+			'width': '100%',
+			'max-width': '100%',
+			'float': 'none',
+			'clear': 'both'
+		});
+		$('#dashboard-widgets-wrap #dashboard-widgets').css({
+			'display': 'flex',
+			'flex-direction': 'column'
+		});
+	}
+
+	/* -------------------------------------------------------------------------
 	 * 2. Smart Actions: CSV Export Tool
 	 * ------------------------------------------------------------------------- */
 	$(document).on('click', '#slotnova-export-csv-btn', function(e) {

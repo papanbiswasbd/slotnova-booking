@@ -2685,3 +2685,679 @@
 	float: none !important;
 	cursor: pointer !important;
 }
+
+/* ==========================================================================
+   SlotNova Booking Overview Stats Dashboard Container (Widget & Full View)
+   ========================================================================== */
+.slotnova-stats-dashboard-container {
+	background: #ffffff;
+	border-radius: 10px;
+	padding: 20px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	color: #1e293b;
+	box-sizing: border-box;
+}
+
+.slotnova-stats-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 16px;
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	padding: 16px 20px;
+	margin-bottom: 20px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.slotnova-stats-title-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.slotnova-header-icon {
+	width: 32px;
+	height: 32px;
+	border-radius: 6px;
+	background: #e0f2fe;
+	color: #0284c7;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.slotnova-header-icon .dashicons {
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+	color: #0284c7;
+}
+
+.slotnova-stats-title {
+	font-size: 18px !important;
+	font-weight: 700 !important;
+	color: #0f172a !important;
+	margin: 0 !important;
+	line-height: 1.2 !important;
+}
+
+.slotnova-live-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	background: #f0fdf4;
+	border: 1px solid #bbf7d0;
+	color: #15803d;
+	font-size: 11px;
+	font-weight: 600;
+	padding: 2px 8px;
+	border-radius: 12px;
+}
+
+.slotnova-live-dot {
+	width: 6px;
+	height: 6px;
+	background: #22c55e;
+	border-radius: 50%;
+	display: inline-block;
+	box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+.slotnova-stats-subtitle {
+	font-size: 12px;
+	color: #64748b;
+	margin: 4px 0 0 0;
+}
+
+.slotnova-stats-header-nav {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.slotnova-hdr-btn {
+	height: 32px !important;
+	line-height: 30px !important;
+	padding: 0 12px !important;
+	font-size: 12px !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: 5px !important;
+	border-radius: 4px !important;
+}
+
+.slotnova-stats-section {
+	margin-bottom: 24px;
+}
+
+.slotnova-stats-section-title {
+	font-size: 14px;
+	font-weight: 700;
+	color: #334155;
+	margin: 0 0 14px 0;
+	padding-bottom: 6px;
+	border-bottom: 2px solid #f1f5f9;
+}
+
+.slotnova-stats-grid-2 {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 16px;
+}
+
+.slotnova-stats-card {
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	padding: 16px;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+	transition: border-color 0.2s ease;
+}
+
+.slotnova-stats-card:hover {
+	border-color: #cbd5e1;
+}
+
+.slotnova-stats-card h4 {
+	font-size: 13px;
+	font-weight: 600;
+	color: #1e293b;
+	margin: 0 0 4px 0;
+}
+
+.slotnova-card-subtitle {
+	font-size: 11px;
+	color: #64748b;
+	margin: 0 0 10px 0;
+}
+
+/* Better Quick Metric Cards */
+.slotnova-metrics-pills-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.slotnova-metric-pill {
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 10px;
+	padding: 16px 18px;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	box-shadow: 0 2px 4px rgba(15, 23, 42, 0.02);
+	transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.slotnova-metric-pill:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+	border-color: #cbd5e1;
+}
+
+.slotnova-pill-icon-box {
+	width: 44px;
+	height: 44px;
+	border-radius: 10px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.slotnova-pill-icon-box .dashicons {
+	font-size: 22px;
+	width: 22px;
+	height: 22px;
+}
+
+.slotnova-pill-blue .slotnova-pill-icon-box { background: #e0f2fe; color: #0284c7; }
+.slotnova-pill-blue .slotnova-pill-icon-box .dashicons { color: #0284c7; }
+
+.slotnova-pill-green .slotnova-pill-icon-box { background: #dcfce7; color: #16a34a; }
+.slotnova-pill-green .slotnova-pill-icon-box .dashicons { color: #16a34a; }
+
+.slotnova-pill-purple .slotnova-pill-icon-box { background: #f3e8ff; color: #9333ea; }
+.slotnova-pill-purple .slotnova-pill-icon-box .dashicons { color: #9333ea; }
+
+.slotnova-pill-orange .slotnova-pill-icon-box { background: #ffedd5; color: #ea580c; }
+.slotnova-pill-orange .slotnova-pill-icon-box .dashicons { color: #ea580c; }
+
+.slotnova-pill-content {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.slotnova-pill-label {
+	font-size: 11px;
+	font-weight: 700;
+	color: #64748b;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.slotnova-pill-value {
+	font-size: 22px;
+	font-weight: 800;
+	color: #0f172a;
+	line-height: 1.2;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.slotnova-pill-green .slotnova-pill-value {
+	color: #15803d;
+}
+
+/* Main Chart Card */
+.slotnova-main-chart-card {
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	padding: 20px;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+	margin-bottom: 24px;
+}
+
+.slotnova-chart-card-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 16px;
+	margin-bottom: 16px;
+	padding-bottom: 12px;
+	border-bottom: 1px solid #f1f5f9;
+}
+
+.slotnova-chart-card-title h3 {
+	font-size: 15px;
+	font-weight: 700;
+	color: #0f172a;
+	margin: 0 0 2px 0;
+}
+
+.slotnova-chart-card-toggles {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.slotnova-btn-group {
+	display: inline-flex;
+	background: #f1f5f9;
+	padding: 3px;
+	border-radius: 6px;
+	gap: 2px;
+}
+
+.slotnova-toggle-btn {
+	background: transparent;
+	border: none;
+	border-radius: 4px;
+	padding: 5px 12px;
+	font-size: 12px;
+	font-weight: 600;
+	color: #64748b;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.slotnova-toggle-btn.active,
+.slotnova-toggle-btn:hover {
+	background: #ffffff;
+	color: #0284c7;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.slotnova-chart-wrapper {
+	position: relative;
+	width: 100%;
+	height: 260px;
+	overflow: hidden;
+}
+
+.slotnova-chart-wrapper.slotnova-chart-sm {
+	height: 180px;
+	overflow: hidden;
+}
+
+.slotnova-report-card-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-bottom: 16px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #e2e8f0;
+}
+
+.slotnova-report-card-header .slotnova-report-card-title {
+	border-bottom: none;
+	padding-bottom: 0;
+	margin: 0;
+}
+
+.slotnova-mt-20 {
+	margin-top: 20px;
+}
+
+/* Responsive Table & Widget Table Wrapper */
+.slotnova-table-responsive-wrapper {
+	width: 100%;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	margin-top: 10px;
+}
+
+.slotnova-widget-table {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+.slotnova-management-footer-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-top: 16px;
+	padding-top: 14px;
+	border-top: 1px solid #f1f5f9;
+}
+
+.slotnova-records-count-text {
+	font-size: 12px;
+	color: #64748b;
+	font-weight: 500;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.slotnova-view-all-bookings-btn {
+	height: 32px !important;
+	line-height: 30px !important;
+	padding: 0 16px !important;
+	font-size: 12px !important;
+	font-weight: 600 !important;
+}
+
+/* Classic & Clean WP Filter Toolbar */
+.slotnova-stats-filter-bar {
+	background: #fcfcfc;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	padding: 14px 16px;
+	margin-bottom: 24px;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.slotnova-filter-preset-row {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 6px;
+	padding-bottom: 12px;
+	margin-bottom: 12px;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.slotnova-preset-label {
+	font-size: 12px;
+	font-weight: 600;
+	color: #50575e;
+	margin-right: 6px;
+}
+
+.slotnova-preset-btn {
+	background: #ffffff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 4px 11px;
+	font-size: 11px;
+	font-weight: 500;
+	color: #2c3338;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.slotnova-preset-btn:hover {
+	border-color: #2271b1;
+	color: #2271b1;
+	background: #f6f7f7;
+}
+
+.slotnova-preset-btn.active {
+	background: #2271b1;
+	border-color: #2271b1;
+	color: #ffffff;
+}
+
+.slotnova-filter-row {
+	display: flex;
+	align-items: flex-end;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.slotnova-filter-item {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.slotnova-filter-item.slotnova-filter-search {
+	flex: 1;
+	min-width: 180px;
+}
+
+.slotnova-filter-item label {
+	font-size: 11px;
+	font-weight: 600;
+	color: #50575e;
+}
+
+.slotnova-filter-item input[type="text"],
+.slotnova-filter-item input[type="search"],
+.slotnova-filter-item input[type="date"],
+.slotnova-filter-item select {
+	height: 32px;
+	line-height: 30px;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+	padding: 0 10px;
+	font-size: 12px;
+	color: #2c3338;
+	background-color: #ffffff;
+	box-shadow: 0 0 0 transparent;
+	transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.slotnova-filter-item input[type="text"]:focus,
+.slotnova-filter-item input[type="search"]:focus,
+.slotnova-filter-item input[type="date"]:focus,
+.slotnova-filter-item select:focus {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+	outline: 2px solid transparent;
+}
+
+.slotnova-filter-btns {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.slotnova-filter-btns .button {
+	height: 32px !important;
+	line-height: 30px !important;
+	padding: 0 14px !important;
+	font-size: 12px !important;
+}
+
+.slotnova-reset-link {
+	color: #b32d2e !important;
+	text-decoration: none !important;
+	font-size: 12px !important;
+	padding: 0 4px !important;
+}
+
+.slotnova-reset-link:hover {
+	color: #a00 !important;
+	text-decoration: underline !important;
+}
+
+/* Report Section */
+.slotnova-stats-report-section {
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	padding: 18px;
+	margin-bottom: 24px;
+}
+
+.slotnova-report-select-wrapper {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 16px;
+}
+
+.slotnova-report-select-wrapper label {
+	font-size: 13px;
+	font-weight: 600;
+	color: #334155;
+}
+
+.slotnova-report-select-wrapper select {
+	height: 34px;
+	border-radius: 6px;
+	border: 1px solid #cbd5e1;
+	padding: 0 10px;
+	font-size: 13px;
+	color: #0f172a;
+}
+
+.slotnova-report-card {
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	border-radius: 6px;
+	padding: 16px;
+}
+
+.slotnova-report-card-title {
+	font-size: 13px;
+	font-weight: 700;
+	color: #0284c7;
+	margin: 0 0 14px 0;
+	padding-bottom: 8px;
+	border-bottom: 1px solid #e2e8f0;
+}
+
+.slotnova-report-bars-list {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-bottom: 14px;
+}
+
+.slotnova-report-bar-item {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.slotnova-report-bar-label {
+	font-size: 12px;
+	color: #334155;
+}
+
+.slotnova-report-bar-track {
+	width: 100%;
+	height: 22px;
+	background: #e2e8f0;
+	border-radius: 4px;
+	overflow: hidden;
+	position: relative;
+}
+
+.slotnova-report-bar-fill {
+	height: 100%;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	padding-right: 8px;
+	transition: width 0.4s ease;
+	box-sizing: border-box;
+}
+
+.slotnova-report-bar-text {
+	font-size: 10px;
+	font-weight: 700;
+	color: #ffffff;
+	text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.slotnova-report-footnote {
+	font-size: 11px;
+	color: #94a3b8;
+	margin: 10px 0 0 0;
+	font-style: italic;
+}
+
+.slotnova-stats-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 12px;
+	padding-top: 16px;
+	border-top: 1px solid #e2e8f0;
+}
+
+.slotnova-stats-footer-links {
+	display: flex;
+	gap: 10px;
+}
+
+@media print {
+	#adminmenumain, #wpadminbar, #wpfooter, .slotnova-stats-footer-links, #screen-meta-links, .notice, .slotnova-stats-filter-bar {
+		display: none !important;
+	}
+	#wpcontent {
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+	.slotnova-stats-dashboard-container {
+		box-shadow: none !important;
+		border: none !important;
+		padding: 0 !important;
+	}
+}
+
+/* ==========================================================================
+   WP Admin Dashboard Layout: Force SlotNova Widget to 100% Full Width
+   ========================================================================== */
+#dashboard-widgets #slotnova_wp_dashboard_widget,
+#slotnova_wp_dashboard_widget {
+	width: 100% !important;
+	max-width: 100% !important;
+	grid-column: 1 / -1 !important;
+	float: none !important;
+	clear: both !important;
+	margin-bottom: 24px !important;
+}
+
+#dashboard-widgets-wrap #dashboard-widgets {
+	display: flex !important;
+	flex-direction: column !important;
+}
+
+#dashboard-widgets #postbox-container-1,
+#dashboard-widgets #postbox-container-2,
+#dashboard-widgets #postbox-container-3,
+#dashboard-widgets #postbox-container-4 {
+	width: 100% !important;
+	max-width: 100% !important;
+}
+
+/* Fullscreen Mode Overlay */
+body.slotnova-fs-open {
+	overflow: hidden !important;
+}
+
+.slotnova-stats-dashboard-container.slotnova-fullscreen-active {
+	position: fixed !important;
+	top: 32px !important;
+	left: 160px !important;
+	right: 0 !important;
+	bottom: 0 !important;
+	z-index: 99990 !important;
+	overflow-y: auto !important;
+	background: #ffffff !important;
+	padding: 30px !important;
+	border-radius: 0 !important;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25) !important;
+}
+
+@media screen and (max-width: 782px) {
+	.slotnova-stats-dashboard-container.slotnova-fullscreen-active {
+		top: 46px !important;
+		left: 0 !important;
+	}
+}
