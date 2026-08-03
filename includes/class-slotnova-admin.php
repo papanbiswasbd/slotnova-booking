@@ -182,7 +182,12 @@ class Admin {
 				<div class="slotnova-chart-card-header">
 					<div class="slotnova-chart-card-title">
 						<h3 id="slotnova-main-chart-heading"><?php esc_html_e( 'Booking Activity Timeline', 'slotnova-booking' ); ?></h3>
-						<span class="slotnova-card-subtitle" id="slotnova-main-chart-subtitle"><?php printf( esc_html__( 'Range: %s to %s', 'slotnova-booking' ), esc_html( $stats['from_date'] ), esc_html( $stats['to_date'] ) ); ?></span>
+						<span class="slotnova-card-subtitle" id="slotnova-main-chart-subtitle">
+							<?php
+							/* translators: 1: From date, 2: To date */
+							printf( esc_html__( 'Range: %1$s to %2$s', 'slotnova-booking' ), esc_html( $stats['from_date'] ), esc_html( $stats['to_date'] ) );
+							?>
+						</span>
 					</div>
 					<div class="slotnova-chart-card-toggles">
 						<div class="slotnova-btn-group" id="slotnova-metric-toggle-group">
@@ -332,7 +337,10 @@ class Admin {
 				<div class="slotnova-management-footer-bar">
 					<span class="slotnova-records-count-text">
 						<span class="dashicons dashicons-list-view"></span>
-						<?php printf( esc_html__( 'Showing latest %d bookings', 'slotnova-booking' ), count( $stats['recent_bookings'] ) ); ?>
+						<?php
+						/* translators: %d: Number of bookings */
+						printf( esc_html__( 'Showing latest %d bookings', 'slotnova-booking' ), (int) count( $stats['recent_bookings'] ) );
+						?>
 					</span>
 					<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-calendar' ) ); ?>" class="button button-primary slotnova-view-all-bookings-btn">
 						<?php esc_html_e( 'View All Bookings', 'slotnova-booking' ); ?> &rarr;
@@ -360,7 +368,12 @@ class Admin {
 						<?php foreach ( $stats['field_report'] as $item ) : ?>
 							<div class="slotnova-report-bar-item">
 								<div class="slotnova-report-bar-label">
-									<strong><?php printf( esc_html__( '%d bookings: %s', 'slotnova-booking' ), (int) $item['count'], esc_html( $item['label'] ) ); ?></strong>
+									<strong>
+										<?php
+										/* translators: 1: Booking count, 2: Category label */
+										printf( esc_html__( '%1$d bookings: %2$s', 'slotnova-booking' ), (int) $item['count'], esc_html( $item['label'] ) );
+										?>
+									</strong>
 								</div>
 								<div class="slotnova-report-bar-track">
 									<div class="slotnova-report-bar-fill" style="width: <?php echo esc_attr( max( 5, $item['percentage'] ) ); ?>%; background-color: <?php echo esc_attr( $item['color'] ); ?>;">
