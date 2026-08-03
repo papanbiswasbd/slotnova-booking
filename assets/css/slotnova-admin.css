@@ -3393,114 +3393,360 @@ body.slotnova-fs-open {
 .slotnova-addons-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-	gap: 20px;
-	margin-top: 20px;
+	gap: 24px;
+	margin-top: 24px;
 }
 
 .slotnova-addon-card {
 	background: #ffffff;
 	border: 1px solid #e2e8f0;
-	border-radius: 10px;
-	padding: 20px;
+	border-radius: 12px;
+	padding: 22px;
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
-	box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+	box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 	transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.slotnova-addon-card:hover {
-	transform: translateY(-3px);
-	box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
-	border-color: #cbd5e1;
+/* Classic WordPress Card Layout */
+.slotnova-card-classic {
+	background: #ffffff;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	padding: 20px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-.slotnova-addon-header {
+.slotnova-card-classic:hover {
+	border-color: #c3c4c7;
+	box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+	transform: none;
+}
+
+.slotnova-classic-header {
 	display: flex;
-	align-items: center;
-	justify-content: space-between;
+	align-items: flex-start;
+	gap: 14px;
 	margin-bottom: 14px;
 }
 
-.slotnova-addon-icon-box {
-	width: 42px;
-	height: 42px;
+.slotnova-classic-header .slotnova-addon-icon-box {
+	width: 44px;
+	height: 44px;
+	min-width: 44px;
 	border-radius: 8px;
-	background: #e0f2fe;
-	color: #0284c7;
+	background: #f0f6fc;
+	border: 1px solid #c0d8f0;
+	color: #2271b1;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 
-.slotnova-addon-icon-box .dashicons {
-	font-size: 22px;
-	width: 22px;
-	height: 22px;
-	color: #0284c7;
+.slotnova-classic-header .slotnova-addon-icon-box img {
+	width: 28px;
+	height: 28px;
+	object-fit: contain;
 }
 
-.slotnova-addon-body h3 {
-	font-size: 16px;
+.slotnova-card-classic[data-type="pro"] .slotnova-addon-icon-box {
+	background: #fff8e5;
+	border-color: #fce4a6;
+	color: #d97706;
+}
+
+.slotnova-classic-title-area {
+	flex: 1;
+	min-width: 0;
+}
+
+.slotnova-title-row-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.slotnova-title-row-top h3 {
+	font-size: 15px;
 	font-weight: 700;
-	color: #0f172a;
-	margin: 0 0 6px 0;
+	color: #1d2327;
+	margin: 0;
+	line-height: 1.3;
 }
 
-.slotnova-addon-body p {
+.slotnova-badge-classic {
+	font-size: 10px;
+	font-weight: 700;
+	padding: 2px 7px;
+	border-radius: 4px;
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+}
+
+.slotnova-badge-free {
+	background: #edfaef;
+	color: #008a20;
+	border: 1px solid #b7ebc0;
+}
+
+.slotnova-badge-pro {
+	background: #fef3c7;
+	color: #b45309;
+	border: 1px solid #fde68a;
+}
+
+.slotnova-classic-author {
 	font-size: 12px;
-	color: #64748b;
+	color: #646970;
+	margin-top: 4px;
+}
+
+.slotnova-classic-body p {
+	font-size: 13px;
+	color: #50575e;
 	line-height: 1.5;
 	margin: 0 0 16px 0;
 }
 
-.slotnova-addon-footer {
+.slotnova-classic-footer {
 	margin-top: auto;
 	padding-top: 14px;
-	border-top: 1px solid #f1f5f9;
-}
-
-.slotnova-license-input-wrap {
-	margin-bottom: 10px;
-}
-
-.slotnova-addon-license-field {
-	width: 100%;
-	height: 32px;
-	border: 1px solid #cbd5e1;
-	border-radius: 6px;
-	padding: 0 8px;
-	font-size: 12px;
-	background: #f8fafc;
-}
-
-.slotnova-addon-actions-pair {
+	border-top: 1px solid #f0f0f1;
 	display: flex;
-	gap: 8px;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
 }
 
-.slotnova-addon-actions-pair .button {
-	flex: 1;
-	justify-content: center;
+.slotnova-classic-status {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	font-size: 12px;
+	font-weight: 600;
+	padding: 4px 10px;
+	border-radius: 4px;
+}
+
+.slotnova-status-active {
+	background: #edfaef;
+	color: #008a20;
+	border: 1px solid #b7ebc0;
+}
+
+.slotnova-status-installed {
+	background: #f0f6fc;
+	color: #2271b1;
+	border: 1px solid #c0d8f0;
+}
+
+.slotnova-classic-price-label {
+	font-size: 12px;
+	font-weight: 600;
+	color: #646970;
+}
+
+.slotnova-btn-classic-install,
+.slotnova-btn-classic-activate {
+	background: #2271b1 !important;
+	border-color: #2271b1 !important;
+	color: #ffffff !important;
+	height: 34px !important;
+	line-height: 32px !important;
+	font-size: 13px !important;
+	font-weight: 600 !important;
+	border-radius: 4px !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: 5px !important;
+}
+
+.slotnova-btn-classic-install:hover,
+.slotnova-btn-classic-activate:hover {
+	background: #135e96 !important;
+	border-color: #135e96 !important;
+}
+
+.slotnova-btn-classic-deactivate {
+	background: #f6f7f7 !important;
+	border-color: #dcdcde !important;
+	color: #2c3338 !important;
+	height: 34px !important;
+	line-height: 32px !important;
+	font-size: 13px !important;
+	font-weight: 500 !important;
+	border-radius: 4px !important;
+}
+
+.slotnova-btn-classic-deactivate:hover {
+	background: #f0f0f1 !important;
+	border-color: #c3c4c7 !important;
+	color: #1d2327 !important;
+}
+
+.slotnova-addon-card-notice {
+	padding: 8px 12px;
+	border-radius: 6px;
+	font-size: 12px;
+	font-weight: 500;
+	margin-bottom: 12px;
+	line-height: 1.4;
+}
+
+.slotnova-addon-card-notice.slotnova-notice-error {
+	background: #fef2f2;
+	border: 1px solid #fecaca;
+	color: #991b1b;
+}
+
+.slotnova-addon-card-notice.slotnova-notice-error .dashicons {
+	color: #dc2626;
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	margin-right: 6px;
+}
+
+/* License Information Box (Customer Email, Masked Key *****, Expiry) */
+.slotnova-addon-license-meta-box {
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	border-radius: 10px;
+	padding: 12px 14px;
+	margin-top: 14px;
+	margin-bottom: 4px;
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+}
+
+.slotnova-lic-meta-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: 11px;
+}
+
+.slotnova-lic-label {
+	color: #64748b;
+	font-weight: 500;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.slotnova-lic-label .dashicons {
+	font-size: 14px;
+	width: 14px;
+	height: 14px;
+	color: #94a3b8;
+}
+
+.slotnova-lic-val {
+	color: #0f172a;
+	font-weight: 600;
+}
+
+.slotnova-lic-key-masked {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	letter-spacing: 0.5px;
+	color: #6366f1;
+	font-weight: 700;
+}
+
+.slotnova-expiry-tag {
+	color: #15803d;
+	font-weight: 700;
+}
+
+.slotnova-disconnect-license-btn {
+	background: transparent;
+	border: none;
+	color: #ef4444;
+	font-size: 11px;
+	font-weight: 600;
+	cursor: pointer;
+	padding: 0;
+	text-decoration: underline;
+	transition: color 0.2s ease;
+}
+
+.slotnova-disconnect-license-btn:hover {
+	color: #dc2626;
+}
+
+.slotnova-addon-status-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
 }
 
 .slotnova-addon-status-active {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
-	color: #16a34a;
-	font-weight: 600;
+	gap: 5px;
+	padding: 5px 12px;
+	background: #f0fdf4;
+	border: 1px solid #bbf7d0;
+	color: #15803d;
+	font-weight: 700;
 	font-size: 12px;
-	margin-right: 10px;
+	border-radius: 20px;
+}
+
+.slotnova-addon-status-active .dashicons {
+	color: #16a34a;
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
 }
 
 .slotnova-addon-status-installed {
 	display: inline-flex;
 	align-items: center;
-	color: #0284c7;
-	font-weight: 600;
+	gap: 5px;
+	padding: 5px 12px;
+	background: #f0f9ff;
+	border: 1px solid #bae6fd;
+	color: #0369a1;
+	font-weight: 700;
 	font-size: 12px;
-	margin-right: 10px;
+	border-radius: 20px;
+}
+
+.slotnova-btn-deactivate {
+	height: 34px !important;
+	line-height: 32px !important;
+	padding: 0 16px !important;
+	font-size: 12px !important;
+	font-weight: 600 !important;
+	border-radius: 8px !important;
+	background: #ffffff !important;
+	border-color: #cbd5e1 !important;
+	color: #475569 !important;
+	transition: all 0.2s ease !important;
+}
+
+.slotnova-btn-deactivate:hover {
+	background: #f8fafc !important;
+	border-color: #94a3b8 !important;
+	color: #0f172a !important;
+}
+
+.slotnova-btn-activate {
+	height: 34px !important;
+	line-height: 32px !important;
+	padding: 0 18px !important;
+	font-size: 12px !important;
+	font-weight: 600 !important;
+	border-radius: 8px !important;
 }
 
 @media screen and (max-width: 782px) {
@@ -3508,4 +3754,18 @@ body.slotnova-fs-open {
 		top: 46px !important;
 		left: 0 !important;
 	}
+}
+
+/* WP Admin Notices Placement Fix for Hero Banner */
+.slotnova-addons-wrap .notice,
+.slotnova-addons-wrap .updated,
+.slotnova-addons-wrap .error {
+	margin: 15px 0 !important;
+	border-radius: 6px !important;
+}
+
+.slotnova-hero-banner .notice,
+.slotnova-hero-banner .updated,
+.slotnova-hero-banner .error {
+	display: none !important;
 }

@@ -497,16 +497,18 @@ jQuery(document).ready(function($) {
 		});
 	});
 
-	// Install Addon (Free or Pro with License)
+	// Install Addon (Free or Pro)
 	$(document).on('click', '.slotnova-install-addon-btn', function(e) {
 		e.preventDefault();
 		if (typeof slotnova_admin_data === 'undefined') return;
 
 		var $btn = $(this);
+		var $card = $btn.closest('.slotnova-addon-card');
+		var $notice = $card.find('.slotnova-addon-card-notice');
 		var addonSlug = $btn.data('slug');
-		var licenseKey = $('.slotnova-addon-license-field[data-slug="' + addonSlug + '"]').val() || '';
 
-		$btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Installing...');
+		$notice.hide().removeClass('slotnova-notice-error slotnova-notice-success');
+		$btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> <span>Installing...</span>');
 
 		$.ajax({
 			url: slotnova_admin_data.ajax_url,
@@ -514,20 +516,24 @@ jQuery(document).ready(function($) {
 			data: {
 				action: 'slotnova_install_addon',
 				security: slotnova_admin_data.nonce,
-				addon_slug: addonSlug,
-				license_key: licenseKey
+				addon_slug: addonSlug
 			},
 			success: function(res) {
 				if (res.success) {
 					window.location.reload();
 				} else {
-					alert(res.data && res.data.message ? res.data.message : 'Installation failed.');
-					$btn.prop('disabled', false).html('<span class="dashicons dashicons-download"></span> Install');
+					var msg = res.data && res.data.message ? res.data.message : 'Installation failed.';
+					$notice.addClass('slotnova-notice-error')
+						.html('<span class="dashicons dashicons-warning" style="margin-right:4px;"></span> ' + msg)
+						.slideDown(200);
+					$btn.prop('disabled', false).html('<span class="dashicons dashicons-download"></span> <span>Download & Activate</span>');
 				}
 			},
 			error: function() {
-				alert('Server connection error. Please try again.');
-				$btn.prop('disabled', false).html('<span class="dashicons dashicons-download"></span> Install');
+				$notice.addClass('slotnova-notice-error')
+					.html('<span class="dashicons dashicons-warning" style="margin-right:4px;"></span> Server connection error. Please try again.')
+					.slideDown(200);
+				$btn.prop('disabled', false).html('<span class="dashicons dashicons-download"></span> <span>Download & Activate</span>');
 			}
 		});
 	});
@@ -538,9 +544,12 @@ jQuery(document).ready(function($) {
 		if (typeof slotnova_admin_data === 'undefined') return;
 
 		var $btn = $(this);
+		var $card = $btn.closest('.slotnova-addon-card');
+		var $notice = $card.find('.slotnova-addon-card-notice');
 		var file = $btn.data('file');
 		var actionType = $btn.data('action');
 
+		$notice.hide().removeClass('slotnova-notice-error slotnova-notice-success');
 		$btn.prop('disabled', true).text('Processing...');
 
 		$.ajax({
@@ -556,13 +565,66 @@ jQuery(document).ready(function($) {
 				if (res.success) {
 					window.location.reload();
 				} else {
-					alert(res.data && res.data.message ? res.data.message : 'Action failed.');
-					$btn.prop('disabled', false).text('Retry');
+					var msg = res.data && res.data.message ? res.data.message : 'Action failed.';
+					$notice.addClass('slotnova-notice-error')
+						.html('<span class="dashicons dashicons-warning" style="margin-right:4px;"></span> ' + msg)
+						.slideDown(200);
+					$btn.prop('disabled', false).text(actionType === 'activate' ? 'Activate' : 'Deactivate');
+				}
+			},
+			error: function() {
+				$notice.addClass('slotnova-notice-error')
+					.html('<span class="dashicons dashicons-warning" style="margin-right:4px;"></span> Server connection error.')
+					.slideDown(200);
+				$btn.prop('disabled', false).text(actionType === 'activate' ? 'Activate' : 'Deactivate');
+			}
+		});
+	});
+
+	// Buy Addon - Open Purchase URL
+	$(document).on('click', '.slotnova-buy-addon-btn', function(e) {
+		e.preventDefault();
+		var buyUrl = $(this).data('buy-url');
+		if (buyUrl && buyUrl.length > 5) {
+			window.open(buyUrl, '_blank');
+		} else {
+			window.open('https://slotnova.com/addons/', '_blank');
+		}
+	});
+
+	// Disconnect License Key
+	$(document).on('click', '.slotnova-disconnect-license-btn', function(e) {
+		e.preventDefault();
+		if (typeof slotnova_admin_data === 'undefined') return;
+
+		if (!confirm('Are you sure you want to disconnect this license?')) return;
+
+		var $btn = $(this);
+		var slug = $btn.data('slug');
+		var file = $btn.data('file');
+
+		$btn.prop('disabled', true).text('Disconnecting...');
+
+		$.ajax({
+			url: slotnova_admin_data.ajax_url,
+			type: 'POST',
+			data: {
+				action: 'slotnova_disconnect_license',
+				security: slotnova_admin_data.nonce,
+				addon_slug: slug,
+				file: file
+			},
+			success: function(res) {
+				if (res.success) {
+					window.location.reload();
+				} else {
+					alert(res.data && res.data.message ? res.data.message : 'Disconnect failed.');
+					$btn.prop('disabled', false).text('Disconnect');
 				}
 			},
 			error: function() {
 				alert('Server connection error.');
-				$btn.prop('disabled', false).text('Retry');
+				$btn.prop('disabled', false).text('Disconnect');
 			}
 		});
 	});

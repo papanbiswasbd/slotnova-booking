@@ -26,73 +26,42 @@ class SlotNova_Addons {
 	}
 
 	/**
-	 * Get list of available SlotNova Addons.
+	 * Get list of available SlotNova Addons dynamically from Cloudflare Worker API.
+	 *
+	 * @return array
+	 */
+	/**
+	 * Get list of available SlotNova Addons dynamically from Cloudflare Worker API.
 	 *
 	 * @return array
 	 */
 	public function get_addons_catalog() {
-		$catalog = array(
+		$worker_endpoint = get_option( 'slotnova_cloudflare_worker_endpoint', 'https://slotnova-booking.papan-biswas-bd.workers.dev/addons/download' );
+		$list_url        = str_replace( '/addons/download', '/addons/list', $worker_endpoint );
+		if ( false === strpos( $list_url, '/addons/list' ) ) {
+			$list_url = add_query_arg( 'action', 'list', $worker_endpoint );
+		}
+		$list_url = add_query_arg( 't', time(), $list_url ); // Prevent cache header caching
+
+		$response = wp_remote_get(
+			$list_url,
 			array(
-				'slug'        => 'slotnova-sms-notifications',
-				'title'       => __( 'SMS & WhatsApp Notifications', 'slotnova-booking' ),
-				'type'        => 'free',
-				'price'       => __( 'Free', 'slotnova-booking' ),
-				'icon'        => 'dashicons-smartphone',
-				'description' => __( 'Send automated SMS and WhatsApp booking confirmations and reminder alerts to customers and staff.', 'slotnova-booking' ),
-				'version'     => '1.0.0',
-				'file'        => 'slotnova-sms-notifications/slotnova-sms-notifications.php',
-			),
-			array(
-				'slug'        => 'slotnova-google-calendar',
-				'title'       => __( 'Google Calendar 2-Way Sync', 'slotnova-booking' ),
-				'type'        => 'pro',
-				'price'       => '$29',
-				'icon'        => 'dashicons-calendar-alt',
-				'description' => __( 'Automatically sync staff appointments with personal Google Calendars in real-time with 2-way conflict prevention.', 'slotnova-booking' ),
-				'version'     => '1.0.0',
-				'file'        => 'slotnova-google-calendar/slotnova-google-calendar.php',
-			),
-			array(
-				'slug'        => 'slotnova-staff-commission',
-				'title'       => __( 'Staff Commission & Payouts', 'slotnova-booking' ),
-				'type'        => 'pro',
-				'price'       => '$19',
-				'icon'        => 'dashicons-groups',
-				'description' => __( 'Calculate automatic staff commissions per service, generate performance reports, and handle payouts.', 'slotnova-booking' ),
-				'version'     => '1.0.0',
-				'file'        => 'slotnova-staff-commission/slotnova-staff-commission.php',
-			),
-			array(
-				'slug'        => 'slotnova-deposit-payments',
-				'title'       => __( 'Partial Deposits & Payments', 'slotnova-booking' ),
-				'type'        => 'pro',
-				'price'       => '$25',
-				'icon'        => 'dashicons-money-alt',
-				'description' => __( 'Allow customers to pay a deposit amount online during checkout and pay the remaining balance in person.', 'slotnova-booking' ),
-				'version'     => '1.0.0',
-				'file'        => 'slotnova-deposit-payments/slotnova-deposit-payments.php',
-			),
-			array(
-				'slug'        => 'slotnova-custom-fields',
-				'title'       => __( 'Custom Booking Form Fields', 'slotnova-booking' ),
-				'type'        => 'free',
-				'price'       => __( 'Free', 'slotnova-booking' ),
-				'icon'        => 'dashicons-forms',
-				'description' => __( 'Add custom input fields, textareas, checkboxes, and file upload inputs to customer booking forms.', 'slotnova-booking' ),
-				'version'     => '1.0.0',
-				'file'        => 'slotnova-custom-fields/slotnova-custom-fields.php',
-			),
-			array(
-				'slug'        => 'slotnova-multi-location',
-				'title'       => __( 'Multi-Location & Branches', 'slotnova-booking' ),
-				'type'        => 'pro',
-				'price'       => '$39',
-				'icon'        => 'dashicons-location-alt',
-				'description' => __( 'Manage multiple business branches, locations, working hours, and location-based staff assignments.', 'slotnova-booking' ),
-				'version'     => '1.0.0',
-				'file'        => 'slotnova-multi-location/slotnova-multi-location.php',
-			),
+				'timeout'   => 5,
+				'sslverify' => true,
+				'headers'   => array(
+					'Cache-Control' => 'no-cache',
+				),
+			)
 		);
+
+		$catalog = array();
+		if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
+			$body = wp_remote_retrieve_body( $response );
+			$data = json_decode( $body, true );
+			if ( is_array( $data ) ) {
+				$catalog = $data;
+			}
+		}
 
 		return apply_filters( 'slotnova_addons_catalog', $catalog );
 	}
@@ -111,6 +80,9 @@ class SlotNova_Addons {
 		$licenses = get_option( 'slotnova_addon_licenses', array() );
 		?>
 		<div class="wrap slotnova-addons-wrap">
+			<h1 class="wp-heading-inline" style="display:none;"><?php esc_html_e( 'SlotNova Addons', 'slotnova-booking' ); ?></h1>
+			<hr class="wp-header-end">
+
 			<!-- Hero Header -->
 			<div class="slotnova-hero-banner" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
 				<div class="slotnova-hero-content">
@@ -137,69 +109,77 @@ class SlotNova_Addons {
 
 			<!-- Addons Cards Grid -->
 			<div class="slotnova-addons-grid">
-				<?php foreach ( $catalog as $addon ) :
-					$is_installed = file_exists( WP_PLUGIN_DIR . '/' . $addon['file'] );
-					$is_active    = $is_installed && is_plugin_active( $addon['file'] );
-					$saved_key    = isset( $licenses[ $addon['slug'] ] ) ? $licenses[ $addon['slug'] ] : '';
-				?>
-					<div class="slotnova-addon-card" data-type="<?php echo esc_attr( $addon['type'] ); ?>" data-installed="<?php echo $is_installed ? '1' : '0'; ?>">
-						<div class="slotnova-addon-header">
-							<div class="slotnova-addon-icon-box">
-								<span class="dashicons <?php echo esc_attr( $addon['icon'] ); ?>"></span>
-							</div>
-							<div class="slotnova-addon-badge-wrap">
-								<?php if ( 'pro' === $addon['type'] ) : ?>
-									<span class="slotnova-badge status-on-hold"><?php esc_html_e( 'PRO', 'slotnova-booking' ); ?> &bull; <?php echo esc_html( $addon['price'] ); ?></span>
-								<?php else : ?>
-									<span class="slotnova-badge status-completed"><?php esc_html_e( 'FREE', 'slotnova-booking' ); ?></span>
-								<?php endif; ?>
-							</div>
-						</div>
-
-						<div class="slotnova-addon-body">
-							<h3><?php echo esc_html( $addon['title'] ); ?></h3>
-							<p><?php echo esc_html( $addon['description'] ); ?></p>
-						</div>
-
-						<div class="slotnova-addon-footer">
-							<?php if ( $is_active ) : ?>
-								<div class="slotnova-addon-status-active">
-									<span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Active', 'slotnova-booking' ); ?>
+				<?php if ( ! empty( $catalog ) ) : ?>
+					<?php foreach ( $catalog as $addon ) :
+						$is_installed = file_exists( WP_PLUGIN_DIR . '/' . $addon['file'] );
+						$is_active    = $is_installed && is_plugin_active( $addon['file'] );
+						$lic_entry    = isset( $licenses[ $addon['slug'] ] ) ? $licenses[ $addon['slug'] ] : null;
+						$has_license  = ! empty( $lic_entry );
+						$saved_key    = is_array( $lic_entry ) ? ( isset( $lic_entry['key'] ) ? $lic_entry['key'] : '' ) : (string) $lic_entry;
+					?>
+						<div class="slotnova-addon-card slotnova-card-classic" data-type="<?php echo esc_attr( $addon['type'] ); ?>" data-installed="<?php echo $is_installed ? '1' : '0'; ?>">
+							<div class="slotnova-classic-header">
+								<div class="slotnova-addon-icon-box">
+									<?php if ( ! empty( $addon['icon'] ) && ( 0 === strpos( $addon['icon'], 'http' ) || false !== strpos( $addon['icon'], '.' ) ) ) : ?>
+										<img src="<?php echo esc_url( $addon['icon'] ); ?>" alt="<?php echo esc_attr( $addon['title'] ); ?>" />
+									<?php else : ?>
+										<span class="dashicons <?php echo esc_attr( ! empty( $addon['icon'] ) ? $addon['icon'] : ( 'pro' === $addon['type'] ? 'dashicons-star-filled' : 'dashicons-admin-plugins' ) ); ?>"></span>
+									<?php endif; ?>
 								</div>
-								<button type="button" class="button button-secondary slotnova-toggle-addon-btn" data-file="<?php echo esc_attr( $addon['file'] ); ?>" data-action="deactivate">
-									<?php esc_html_e( 'Deactivate', 'slotnova-booking' ); ?>
-								</button>
-							<?php elseif ( $is_installed ) : ?>
-								<div class="slotnova-addon-status-installed">
-									<?php esc_html_e( 'Installed', 'slotnova-booking' ); ?>
+								<div class="slotnova-classic-title-area">
+									<div class="slotnova-title-row-top">
+										<h3><?php echo esc_html( $addon['title'] ); ?></h3>
+										<?php if ( 'pro' === $addon['type'] ) : ?>
+											<span class="slotnova-badge-classic slotnova-badge-pro">PRO</span>
+										<?php else : ?>
+											<span class="slotnova-badge-classic slotnova-badge-free">FREE</span>
+										<?php endif; ?>
+									</div>
+									<div class="slotnova-classic-author">
+										<?php esc_html_e( 'By SlotNova', 'slotnova-booking' ); ?> &bull; <span class="slotnova-classic-version"><?php echo esc_html( isset( $addon['version'] ) ? 'v' . $addon['version'] : 'v1.0.0' ); ?></span>
+									</div>
 								</div>
-								<button type="button" class="button button-primary slotnova-toggle-addon-btn" data-file="<?php echo esc_attr( $addon['file'] ); ?>" data-action="activate">
-									<?php esc_html_e( 'Activate', 'slotnova-booking' ); ?>
-								</button>
-							<?php else : ?>
-								<?php if ( 'pro' === $addon['type'] ) : ?>
-									<div class="slotnova-license-input-wrap">
-										<input type="text" class="slotnova-addon-license-field" data-slug="<?php echo esc_attr( $addon['slug'] ); ?>" value="<?php echo esc_attr( $saved_key ); ?>" placeholder="<?php esc_attr_e( 'Enter License Key...', 'slotnova-booking' ); ?>" />
-									</div>
-									<div class="slotnova-addon-actions-pair">
-										<button type="button" class="button button-primary slotnova-install-addon-btn" data-slug="<?php echo esc_attr( $addon['slug'] ); ?>">
-											<span class="dashicons dashicons-download" style="vertical-align: middle; margin-right: 3px;"></span>
-											<?php esc_html_e( 'Install Pro', 'slotnova-booking' ); ?>
-										</button>
-										<button type="button" class="button button-secondary slotnova-buy-addon-btn" data-slug="<?php echo esc_attr( $addon['slug'] ); ?>">
-											<?php esc_html_e( 'Buy Now', 'slotnova-booking' ); ?>
-										</button>
-									</div>
+							</div>
+
+							<div class="slotnova-classic-body">
+								<p><?php echo esc_html( $addon['description'] ); ?></p>
+							</div>
+
+							<div class="slotnova-classic-footer">
+								<div class="slotnova-addon-card-notice" style="display: none;"></div>
+								<?php if ( $is_active ) : ?>
+									<span class="slotnova-classic-status slotnova-status-active">
+										<span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Active', 'slotnova-booking' ); ?>
+									</span>
+									<button type="button" class="button button-secondary slotnova-toggle-addon-btn slotnova-btn-classic-deactivate" data-file="<?php echo esc_attr( $addon['file'] ); ?>" data-action="deactivate">
+										<?php esc_html_e( 'Deactivate', 'slotnova-booking' ); ?>
+									</button>
+								<?php elseif ( $is_installed ) : ?>
+									<span class="slotnova-classic-status slotnova-status-installed">
+										<span class="dashicons dashicons-download"></span> <?php esc_html_e( 'Installed', 'slotnova-booking' ); ?>
+									</span>
+									<button type="button" class="button button-primary slotnova-toggle-addon-btn slotnova-btn-classic-activate" data-file="<?php echo esc_attr( $addon['file'] ); ?>" data-action="activate">
+										<?php esc_html_e( 'Activate', 'slotnova-booking' ); ?>
+									</button>
 								<?php else : ?>
-									<button type="button" class="button button-primary slotnova-install-addon-btn" data-slug="<?php echo esc_attr( $addon['slug'] ); ?>" style="width: 100%;">
-										<span class="dashicons dashicons-download" style="vertical-align: middle; margin-right: 3px;"></span>
-										<?php esc_html_e( 'Download & Activate', 'slotnova-booking' ); ?>
+									<span class="slotnova-classic-price-label"><?php echo esc_html( 'pro' === $addon['type'] ? ( ! empty( $addon['price'] ) ? $addon['price'] : '$3.99/mo' ) : __( 'Free', 'slotnova-booking' ) ); ?></span>
+									<button type="button" class="button button-primary slotnova-install-addon-btn slotnova-btn-classic-install" data-slug="<?php echo esc_attr( $addon['slug'] ); ?>">
+										<span class="dashicons dashicons-download"></span>
+										<span><?php esc_html_e( 'Install Now', 'slotnova-booking' ); ?></span>
 									</button>
 								<?php endif; ?>
-							<?php endif; ?>
+							</div>
 						</div>
+					<?php endforeach; ?>
+				<?php else : ?>
+					<div class="slotnova-empty-state-card" style="grid-column: 1 / -1; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 40px; text-align: center;">
+						<div class="slotnova-empty-icon" style="margin-bottom: 12px; color: #94a3b8;">
+							<span class="dashicons dashicons-admin-plugins" style="font-size: 36px; width: 36px; height: 36px;"></span>
+						</div>
+						<h3 style="margin: 0 0 6px 0; color: #0f172a; font-weight: 700;"><?php esc_html_e( 'No Addons Available Right Now', 'slotnova-booking' ); ?></h3>
+						<p style="margin: 0; color: #64748b; font-size: 13px;"><?php esc_html_e( 'New extension packages will automatically appear here as soon as they are added to Cloudflare.', 'slotnova-booking' ); ?></p>
 					</div>
-				<?php endforeach; ?>
+				<?php endif; ?>
 			</div>
 		</div>
 		<?php
@@ -217,30 +197,19 @@ class SlotNova_Addons {
 
 		check_ajax_referer( 'slotnova_admin_nonce', 'security' );
 
-		$addon_slug  = isset( $_POST['addon_slug'] ) ? sanitize_key( wp_unslash( $_POST['addon_slug'] ) ) : '';
-		$license_key = isset( $_POST['license_key'] ) ? sanitize_text_field( wp_unslash( $_POST['license_key'] ) ) : '';
+		$addon_slug = isset( $_POST['addon_slug'] ) ? sanitize_key( wp_unslash( $_POST['addon_slug'] ) ) : '';
 
 		if ( empty( $addon_slug ) ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid addon requested.', 'slotnova-booking' ) ) );
 		}
 
-		// Save license key if provided
-		if ( ! empty( $license_key ) ) {
-			$licenses                = get_option( 'slotnova_addon_licenses', array() );
-			$licenses[ $addon_slug ] = $license_key;
-			update_option( 'slotnova_addon_licenses', $licenses );
-		}
-
-		$site_url     = get_site_url();
-		$domain       = wp_parse_url( $site_url, PHP_URL_HOST );
-		
-		// Cloudflare Worker API Download Gateway
-		$worker_endpoint = get_option( 'slotnova_cloudflare_worker_endpoint', 'https://api.slotnova.com/addons/download' );
+		$site_url        = get_site_url();
+		$domain          = wp_parse_url( $site_url, PHP_URL_HOST );
+		$worker_endpoint = get_option( 'slotnova_cloudflare_worker_endpoint', 'https://slotnova-booking.papan-biswas-bd.workers.dev/addons/download' );
 		$download_url    = add_query_arg(
 			array(
-				'slug'        => $addon_slug,
-				'license_key' => $license_key,
-				'domain'      => $domain,
+				'slug'   => $addon_slug,
+				'domain' => $domain,
 			),
 			$worker_endpoint
 		);
