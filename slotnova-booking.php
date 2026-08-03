@@ -97,6 +97,7 @@ final class Plugin {
 		require_once SLOTNOVA_BOOKING_PATH . 'includes/class-slotnova-cart.php';
 
 		if ( is_admin() ) {
+			require_once SLOTNOVA_BOOKING_PATH . 'includes/class-slotnova-addons.php';
 			require_once SLOTNOVA_BOOKING_PATH . 'includes/class-slotnova-admin.php';
 		}
 	}
@@ -110,6 +111,7 @@ final class Plugin {
 		$this->cart       = new Cart();
 
 		if ( is_admin() ) {
+			new SlotNova_Addons();
 			$this->admin = new Admin();
 		}
 

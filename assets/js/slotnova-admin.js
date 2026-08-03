@@ -471,6 +471,102 @@ jQuery(document).ready(function($) {
 		fetchWidgetStats();
 	});
 
+	/* -------------------------------------------------------------------------
+	 * Addons Marketplace Manager (1-Click Install via Cloudflare Worker & Freemius)
+	 * ------------------------------------------------------------------------- */
+	// Filter Addons Grid by Tab
+	$(document).on('click', '#slotnova-addon-filter-tabs .slotnova-preset-btn', function(e) {
+		e.preventDefault();
+		$('#slotnova-addon-filter-tabs .slotnova-preset-btn').removeClass('active');
+		$(this).addClass('active');
+
+		var filter = $(this).data('filter');
+		$('.slotnova-addon-card').each(function() {
+			var cardType = $(this).data('type');
+			var isInstalled = $(this).data('installed') == '1';
+
+			if (filter === 'free' && cardType !== 'free') {
+				$(this).hide();
+			} else if (filter === 'pro' && cardType !== 'pro') {
+				$(this).hide();
+			} else if (filter === 'installed' && !isInstalled) {
+				$(this).hide();
+			} else {
+				$(this).show();
+			}
+		});
+	});
+
+	// Install Addon (Free or Pro with License)
+	$(document).on('click', '.slotnova-install-addon-btn', function(e) {
+		e.preventDefault();
+		if (typeof slotnova_admin_data === 'undefined') return;
+
+		var $btn = $(this);
+		var addonSlug = $btn.data('slug');
+		var licenseKey = $('.slotnova-addon-license-field[data-slug="' + addonSlug + '"]').val() || '';
+
+		$btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Installing...');
+
+		$.ajax({
+			url: slotnova_admin_data.ajax_url,
+			type: 'POST',
+			data: {
+				action: 'slotnova_install_addon',
+				security: slotnova_admin_data.nonce,
+				addon_slug: addonSlug,
+				license_key: licenseKey
+			},
+			success: function(res) {
+				if (res.success) {
+					window.location.reload();
+				} else {
+					alert(res.data && res.data.message ? res.data.message : 'Installation failed.');
+					$btn.prop('disabled', false).html('<span class="dashicons dashicons-download"></span> Install');
+				}
+			},
+			error: function() {
+				alert('Server connection error. Please try again.');
+				$btn.prop('disabled', false).html('<span class="dashicons dashicons-download"></span> Install');
+			}
+		});
+	});
+
+	// Toggle Addon Active / Deactive State
+	$(document).on('click', '.slotnova-toggle-addon-btn', function(e) {
+		e.preventDefault();
+		if (typeof slotnova_admin_data === 'undefined') return;
+
+		var $btn = $(this);
+		var file = $btn.data('file');
+		var actionType = $btn.data('action');
+
+		$btn.prop('disabled', true).text('Processing...');
+
+		$.ajax({
+			url: slotnova_admin_data.ajax_url,
+			type: 'POST',
+			data: {
+				action: 'slotnova_toggle_addon',
+				security: slotnova_admin_data.nonce,
+				file: file,
+				action_type: actionType
+			},
+			success: function(res) {
+				if (res.success) {
+					window.location.reload();
+				} else {
+					alert(res.data && res.data.message ? res.data.message : 'Action failed.');
+					$btn.prop('disabled', false).text('Retry');
+				}
+			},
+			error: function() {
+				alert('Server connection error.');
+				$btn.prop('disabled', false).text('Retry');
+			}
+		});
+	});
+
 	function fetchWidgetStats() {
 		if (typeof slotnova_admin_data === 'undefined') return;
 

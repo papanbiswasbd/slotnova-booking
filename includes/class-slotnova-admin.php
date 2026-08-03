@@ -985,6 +985,25 @@ class Admin {
 			'slotnova-settings',
 			array( $this, 'render_settings' )
 		);
+
+		add_submenu_page(
+			'slotnova-dashboard',
+			__( 'Addons', 'slotnova-booking' ),
+			__( 'Addons', 'slotnova-booking' ),
+			'manage_woocommerce',
+			'slotnova-addons',
+			array( $this, 'render_addons' )
+		);
+	}
+
+	/**
+	 * Render Addons Marketplace Page
+	 *
+	 * @return void
+	 */
+	public function render_addons() {
+		$addons_manager = new SlotNova_Addons();
+		$addons_manager->render_addons_page();
 	}
 
 	/**
