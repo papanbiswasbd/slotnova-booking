@@ -2781,14 +2781,33 @@
 }
 
 .slotnova-hdr-btn {
-	height: 32px !important;
-	line-height: 30px !important;
-	padding: 0 12px !important;
-	font-size: 12px !important;
+	height: 34px !important;
+	line-height: 1 !important;
+	padding: 0 14px !important;
+	font-size: 13px !important;
+	font-weight: 600 !important;
 	display: inline-flex !important;
 	align-items: center !important;
-	gap: 5px !important;
-	border-radius: 4px !important;
+	justify-content: center !important;
+	gap: 6px !important;
+	border-radius: 6px !important;
+	vertical-align: middle !important;
+	box-sizing: border-box !important;
+}
+
+.slotnova-hdr-btn .dashicons {
+	font-size: 17px !important;
+	width: 17px !important;
+	height: 17px !important;
+	line-height: 17px !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	vertical-align: middle !important;
+	position: relative !important;
+	top: 0 !important;
 }
 
 .slotnova-stats-section {
@@ -2972,6 +2991,21 @@
 	color: #64748b;
 	cursor: pointer;
 	transition: all 0.2s ease;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.slotnova-toggle-btn .dashicons {
+	font-size: 15px;
+	width: 15px;
+	height: 15px;
+	line-height: 15px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	vertical-align: middle;
 }
 
 .slotnova-toggle-btn.active,
