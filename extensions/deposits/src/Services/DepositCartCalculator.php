@@ -225,15 +225,26 @@ class DepositCartCalculator {
 			}
 		}
 
-		$type   = function_exists( 'get_option' ) ? get_option( 'slotnova_deposit_type', 'percentage' ) : 'percentage';
-		$amount = function_exists( 'get_option' ) ? (float) get_option( 'slotnova_deposit_amount', 20 ) : 20;
+		// Calculate deposit using per-product config (same logic as calculateDeposit())
+		$total_deposit = 0;
+		foreach ( WC()->cart->get_cart() as $cart_item ) {
+			$line_subtotal = (float) ( $cart_item['line_subtotal'] ?? 0 );
+			$product_id    = $cart_item['product_id'] ?? 0;
+			$config        = self::getProductDepositConfig( $product_id );
 
-		$deposit_amount = 0;
-		if ( 'percentage' === $type ) {
-			$deposit_amount = ( $subtotal * $amount ) / 100;
-		} else {
-			$deposit_amount = min( $amount, $subtotal );
+			if ( 'yes' !== $config['enabled'] ) {
+				$total_deposit += $line_subtotal;
+				continue;
+			}
+
+			if ( 'percentage' === $config['type'] ) {
+				$total_deposit += ( $line_subtotal * $config['amount'] ) / 100;
+			} else {
+				$total_deposit += min( $config['amount'] * ( $cart_item['quantity'] ?? 1 ), $line_subtotal );
+			}
 		}
+
+		$deposit_amount = $total_deposit;
 
 		$primary_color = function_exists( 'get_option' ) ? get_option( 'slotnova_primary_color', '#2271b1' ) : '#2271b1';
 		$currency      = function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '$';
@@ -245,21 +256,21 @@ class DepositCartCalculator {
 			<td style="vertical-align: middle; padding-top: 12px; padding-bottom: 12px; text-align: left;">
 				<div style="display: flex; flex-direction: column; gap: 8px; width: 100%; text-align: left;">
 					<!-- Option 1: Full Payment -->
-					<label style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 8px; border: 1.5px solid <?php echo 'full' === $current_payment_type ? esc_attr( $primary_color ) : '#e2e8f0'; ?>; background: <?php echo 'full' === $current_payment_type ? '#f0f9ff' : '#ffffff'; ?>; cursor: pointer; margin: 0; transition: all 0.2s ease;">
+					<label id="slotnova-co-label-full" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 8px; border: 1.5px solid <?php echo 'full' === $current_payment_type ? esc_attr( $primary_color ) : '#e2e8f0'; ?>; background: <?php echo 'full' === $current_payment_type ? '#f0f9ff' : '#ffffff'; ?>; cursor: pointer; margin: 0; transition: all 0.2s ease;">
 						<span style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
 							<input type="radio" name="slotnova_payment_type" value="full" <?php checked( $current_payment_type, 'full' ); ?> class="slotnova-checkout-pay-radio" style="margin: 0; width: 16px; height: 16px; accent-color: <?php echo esc_attr( $primary_color ); ?>;" />
 							<span style="font-size: 13px; font-weight: 600; color: #0f172a; white-space: nowrap;"><?php esc_html_e( 'Full Payment', 'slotnova-booking' ); ?></span>
 						</span>
-						<span style="font-size: 13px; font-weight: 700; color: #0f172a; white-space: nowrap; margin-left: 12px;"><?php echo function_exists( 'wc_price' ) ? wp_kses_post( wc_price( $subtotal ) ) : esc_html( $currency . number_format( $subtotal, 2 ) ); ?></span>
+						<span id="slotnova-co-full-price" style="font-size: 13px; font-weight: 700; color: #0f172a; white-space: nowrap; margin-left: 12px;"><?php echo function_exists( 'wc_price' ) ? wp_kses_post( wc_price( $subtotal ) ) : esc_html( $currency . number_format( $subtotal, 2 ) ); ?></span>
 					</label>
 
 					<!-- Option 2: Partial Deposit -->
-					<label style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 8px; border: 1.5px solid <?php echo 'deposit' === $current_payment_type ? esc_attr( $primary_color ) : '#e2e8f0'; ?>; background: <?php echo 'deposit' === $current_payment_type ? '#f0f9ff' : '#ffffff'; ?>; cursor: pointer; margin: 0; transition: all 0.2s ease;">
+					<label id="slotnova-co-label-deposit" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 8px; border: 1.5px solid <?php echo 'deposit' === $current_payment_type ? esc_attr( $primary_color ) : '#e2e8f0'; ?>; background: <?php echo 'deposit' === $current_payment_type ? '#f0f9ff' : '#ffffff'; ?>; cursor: pointer; margin: 0; transition: all 0.2s ease;">
 						<span style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
 							<input type="radio" name="slotnova_payment_type" value="deposit" <?php checked( $current_payment_type, 'deposit' ); ?> class="slotnova-checkout-pay-radio" style="margin: 0; width: 16px; height: 16px; accent-color: <?php echo esc_attr( $primary_color ); ?>;" />
 							<span style="font-size: 13px; font-weight: 600; color: #0f172a; white-space: nowrap;"><?php esc_html_e( 'Pay Deposit', 'slotnova-booking' ); ?></span>
 						</span>
-						<span style="font-size: 13px; font-weight: 700; color: <?php echo esc_attr( $primary_color ); ?>; white-space: nowrap; margin-left: 12px;"><?php echo function_exists( 'wc_price' ) ? wp_kses_post( wc_price( $deposit_amount ) ) : esc_html( $currency . number_format( $deposit_amount, 2 ) ); ?></span>
+						<span id="slotnova-co-deposit-price" style="font-size: 13px; font-weight: 700; color: <?php echo esc_attr( $primary_color ); ?>; white-space: nowrap; margin-left: 12px;"><?php echo function_exists( 'wc_price' ) ? wp_kses_post( wc_price( $deposit_amount ) ) : esc_html( $currency . number_format( $deposit_amount, 2 ) ); ?></span>
 					</label>
 				</div>
 			</td>
@@ -267,6 +278,30 @@ class DepositCartCalculator {
 
 		<script>
 		if (typeof jQuery !== 'undefined') {
+			var slotnovaFullPrice    = <?php echo (float) $subtotal; ?>;
+			var slotnovaDepositPrice = <?php echo (float) $deposit_amount; ?>;
+			var slotnovaPrimaryColor = <?php echo wp_json_encode( $primary_color ); ?>;
+
+			function slotnovaUpdateCheckoutLabels() {
+				var selectedVal = jQuery('input[name="slotnova_payment_type"]:checked').val();
+				var labelFull    = document.getElementById('slotnova-co-label-full');
+				var labelDeposit = document.getElementById('slotnova-co-label-deposit');
+
+				if (!labelFull || !labelDeposit) return;
+
+				if (selectedVal === 'deposit') {
+					labelFull.style.borderColor    = '#e2e8f0';
+					labelFull.style.background     = '#ffffff';
+					labelDeposit.style.borderColor = slotnovaPrimaryColor;
+					labelDeposit.style.background  = '#f0f9ff';
+				} else {
+					labelFull.style.borderColor    = slotnovaPrimaryColor;
+					labelFull.style.background     = '#f0f9ff';
+					labelDeposit.style.borderColor = '#e2e8f0';
+					labelDeposit.style.background  = '#ffffff';
+				}
+			}
+
 			function hideSlotNovaFeeRows() {
 				jQuery('tr.fee').each(function() {
 					var text = jQuery(this).text();
@@ -275,11 +310,21 @@ class DepositCartCalculator {
 					}
 				});
 			}
-			hideSlotNovaFeeRows();
-			jQuery(document).on('updated_checkout updated_cart_totals change', hideSlotNovaFeeRows);
+
+			// On checkout updated (AJAX refresh), re-sync label styles
+			jQuery(document).on('updated_checkout updated_cart_totals', function() {
+				hideSlotNovaFeeRows();
+				slotnovaUpdateCheckoutLabels();
+			});
+
 			jQuery(document).on('change', '.slotnova-checkout-pay-radio', function() {
+				slotnovaUpdateCheckoutLabels();
 				jQuery(document.body).trigger('update_checkout');
 			});
+
+			// Init on load
+			hideSlotNovaFeeRows();
+			slotnovaUpdateCheckoutLabels();
 		}
 		</script>
 		<?php
