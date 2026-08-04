@@ -127,12 +127,13 @@ class FreemiusValidator {
 		$code = wp_remote_retrieve_response_code( $response );
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 
-		if ( 200 === $code && is_array( $body ) && ! empty( $body['success'] ) ) {
+		$isValid = ( ! empty( $body['success'] ) || ! empty( $body['valid'] ) );
+		if ( 200 === $code && is_array( $body ) && $isValid ) {
 			$licenseData = array(
 				'license_key'  => $licenseKey,
 				'status'       => 'active',
 				'plan_name'    => $body['plan_name'] ?? 'Pro',
-				'expires_at'   => $body['expires_at'] ?? '',
+				'expires_at'   => $body['expires_at'] ?? ( $body['expires'] ?? '' ),
 				'activated_at' => current_time( 'mysql' ),
 			);
 			update_option( 'slotnova_fs_license_' . $extensionId, $licenseData );
