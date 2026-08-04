@@ -113,6 +113,16 @@ class SlotNova_Addons {
 		}
 
 		$catalog = get_option( 'slotnova_extensions_known_catalog', array() );
+
+		// Clean up any stale cached URLs containing 80445
+		if ( is_array( $catalog ) ) {
+			foreach ( $catalog as &$cat_item ) {
+				if ( ! empty( $cat_item['purchase_url'] ) && false !== strpos( $cat_item['purchase_url'], '80445' ) ) {
+					$cat_item['purchase_url'] = 'https://checkout.freemius.com/plugin/36458/plan/60365/licenses/1/';
+					$cat_item['buy_url']      = $cat_item['purchase_url'];
+				}
+			}
+		}
 		return apply_filters( 'slotnova_extensions_catalog', $catalog );
 	}
 
@@ -239,6 +249,9 @@ class SlotNova_Addons {
 							$display_price = $raw_price;
 						}
 						$purchase_url   = ( $manifest && '' !== $manifest->getPurchaseUrl() ) ? $manifest->getPurchaseUrl() : ( ! empty( $item['purchase_url'] ) ? $item['purchase_url'] : ( $item['buy_url'] ?? '' ) );
+						if ( false !== strpos( $purchase_url, '80445' ) ) {
+							$purchase_url = str_replace( '80445/', '60365/licenses/1/', str_replace( '80445', '60365/licenses/1/', $purchase_url ) );
+						}
 						$demo_url       = ! empty( $item['demo_url'] ) ? $item['demo_url'] : ( $manifest ? $manifest->getDemoUrl() : '' );
 						$raw_sett_url   = ! empty( $item['settings_url'] ) ? $item['settings_url'] : ( $manifest ? $manifest->getSettingsUrl() : '' );
 						?>
@@ -334,6 +347,9 @@ class SlotNova_Addons {
 								<?php else : ?>
 									<?php if ( 'pro' === strtolower( $ext_type ) ) :
 										$buy_link = ( $manifest && '' !== $manifest->getPurchaseUrl() ) ? $manifest->getPurchaseUrl() : ( ! empty( $purchase_url ) ? $purchase_url : ( $item['purchase_url'] ?? ( $item['buy_url'] ?? '' ) ) );
+										if ( false !== strpos( $buy_link, '80445' ) ) {
+											$buy_link = str_replace( '80445/', '60365/licenses/1/', str_replace( '80445', '60365/licenses/1/', $buy_link ) );
+										}
 									?>
 										<a href="<?php echo esc_url( $buy_link ); ?>" target="_blank" rel="noopener noreferrer" class="button button-secondary" style="border-color: #6366f1; color: #4f46e5; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; height: 34px; padding: 0 12px; font-size: 12px; flex: 1; min-width: 0;">
 											<span class="dashicons dashicons-cart" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span>
