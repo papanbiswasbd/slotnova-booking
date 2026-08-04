@@ -144,6 +144,7 @@ class ExtensionManager implements ExtensionManagerInterface {
 					$this->loadedExtensions[ $cleanId ]  = $instance;
 					$bootedIds[ $cleanId ]               = true;
 				} catch ( \Throwable $e ) {
+					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 					error_log( "[SlotNova ExtensionManager] Failed to load active extension '{$id}': " . $e->getMessage() );
 					$this->repository->updateStatus( $id, 'error' );
 				}
@@ -196,6 +197,7 @@ class ExtensionManager implements ExtensionManagerInterface {
 					$this->loadedExtensions[ $extensionId ] = $instance;
 					$this->loadedExtensions[ $cleanId ]    = $instance;
 				} catch ( \Throwable $e ) {
+					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 					error_log( "[SlotNova ExtensionManager] Failed to activate extension '{$extensionId}': " . $e->getMessage() );
 				}
 			}
@@ -258,8 +260,18 @@ class ExtensionManager implements ExtensionManagerInterface {
 		$files = array_diff( scandir( $dir ), [ '.', '..' ] );
 		foreach ( $files as $file ) {
 			$path = $dir . '/' . $file;
-			( is_dir( $path ) ) ? $this->recursiveRmdir( $path ) : @unlink( $path );
+			if ( is_dir( $path ) ) {
+				$this->recursiveRmdir( $path );
+			} else {
+				if ( function_exists( 'wp_delete_file' ) ) {
+					wp_delete_file( $path );
+				} else {
+					// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+					@unlink( $path );
+				}
+			}
 		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
 		return @rmdir( $dir );
 	}
 
