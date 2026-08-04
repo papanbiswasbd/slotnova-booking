@@ -196,13 +196,16 @@ class SlotNova_Addons {
 					$clean_id = ( 0 === strpos( $raw_id, 'slotnova-' ) ) ? substr( $raw_id, 9 ) : $raw_id;
 
 					if ( isset( $all_items[ $clean_id ] ) ) {
-						if ( ! empty( $cat['title'] ) )        $all_items[ $clean_id ]['title']        = $cat['title'];
-						if ( ! empty( $cat['type'] ) )         $all_items[ $clean_id ]['type']         = $cat['type'];
-						if ( ! empty( $cat['price'] ) )        $all_items[ $clean_id ]['price']        = $cat['price'];
+						$has_manifest = isset( $installedManifests[ $clean_id ] ) || isset( $installedManifests[ 'slotnova-' . $clean_id ] );
+						if ( ! $has_manifest ) {
+							if ( ! empty( $cat['title'] ) )        $all_items[ $clean_id ]['title']        = $cat['title'];
+							if ( ! empty( $cat['type'] ) )         $all_items[ $clean_id ]['type']         = $cat['type'];
+							if ( ! empty( $cat['price'] ) )        $all_items[ $clean_id ]['price']        = $cat['price'];
+							if ( ! empty( $cat['description'] ) )  $all_items[ $clean_id ]['description']  = $cat['description'];
+						}
 						if ( ! empty( $cat['purchase_url'] ) ) $all_items[ $clean_id ]['purchase_url'] = $cat['purchase_url'];
 						if ( ! empty( $cat['demo_url'] ) )     $all_items[ $clean_id ]['demo_url']     = $cat['demo_url'];
 						if ( ! empty( $cat['settings_url'] ) ) $all_items[ $clean_id ]['settings_url'] = $cat['settings_url'];
-						if ( ! empty( $cat['description'] ) )  $all_items[ $clean_id ]['description']  = $cat['description'];
 					} else {
 						$all_items[ $clean_id ]       = $cat;
 						$all_items[ $clean_id ]['id'] = $clean_id;
@@ -222,8 +225,8 @@ class SlotNova_Addons {
 						$has_update     = $is_installed && version_compare( $remote_version, $local_version, '>' );
 						$icon           = $item['icon'] ?? 'dashicons-admin-plugins';
 						$is_image_icon  = ( 0 === strpos( $icon, 'http' ) || false !== strpos( $icon, '.' ) );
-						$ext_type       = $item['type'] ?? ( $manifest ? $manifest->getType() : 'free' );
-						$raw_price      = $item['price'] ?? ( $manifest ? $manifest->getPrice() : 'Free' );
+						$ext_type       = ( $manifest && '' !== $manifest->getType() ) ? $manifest->getType() : ( $item['type'] ?? 'free' );
+						$raw_price      = ( $manifest && '' !== $manifest->getPrice() ) ? $manifest->getPrice() : ( $item['price'] ?? 'Free' );
 						if ( 'free' === strtolower( $ext_type ) || '0' === (string) $raw_price || empty( $raw_price ) ) {
 							$display_price = 'FREE';
 						} elseif ( is_numeric( $raw_price ) ) {
