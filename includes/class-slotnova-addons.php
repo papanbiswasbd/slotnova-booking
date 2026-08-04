@@ -261,6 +261,11 @@ class SlotNova_Addons {
 										<div style="flex: 1; min-width: 0;">
 											<h3 style="margin: 0 0 2px 0; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.35; word-break: break-word;"><?php echo esc_html( $item['title'] ?? $item['name'] ); ?></h3>
 											<span style="font-size: 12px; color: #64748b; font-weight: 500;"><?php echo esc_html( 'v' . ( $is_installed ? $local_version : $remote_version ) ); ?></span>
+											<?php if ( $has_update ) : ?>
+												<span style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; border-radius: 12px; padding: 2px 8px; font-size: 10px; font-weight: 700; margin-left: 6px; text-transform: uppercase;">
+													<?php echo esc_html( 'v' . $remote_version . ' Available' ); ?>
+												</span>
+											<?php endif; ?>
 										</div>
 									</div>
 									<div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0; justify-content: flex-end;">
@@ -306,8 +311,9 @@ class SlotNova_Addons {
 								<?php endif; ?>
 
 								<?php if ( $has_update ) : ?>
-									<button type="button" class="button button-secondary slotnova-ext-btn" data-action="update" data-id="<?php echo esc_attr( $effective_id ); ?>" style="color: #d97706; border-color: #f59e0b; white-space: nowrap; height: 34px; padding: 0 12px; font-size: 12px; flex: 1; min-width: 0;">
-										<?php esc_html_e( 'Update Now', 'slotnova-booking' ); ?>
+									<button type="button" class="button button-primary slotnova-ext-btn" data-action="update" data-id="<?php echo esc_attr( $effective_id ); ?>" style="background: #f59e0b; border-color: #d97706; color: #ffffff; white-space: nowrap; height: 34px; padding: 0 12px; font-size: 12px; flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+										<span class="dashicons dashicons-update" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span>
+										<span><?php echo esc_html( sprintf( __( 'Update to v%s', 'slotnova-booking' ), $remote_version ) ); ?></span>
 									</button>
 								<?php endif; ?>
 
