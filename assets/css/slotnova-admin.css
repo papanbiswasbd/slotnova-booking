@@ -1614,7 +1614,8 @@
 	overflow: hidden;
 }
 
-.fc-theme-standard td, .fc-theme-standard th {
+.fc-theme-standard td,
+.fc-theme-standard th {
 	border-color: var(--sn-border);
 }
 
@@ -2834,7 +2835,7 @@
 	border: 1px solid #e2e8f0;
 	border-radius: 8px;
 	padding: 16px;
-	box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 	transition: border-color 0.2s ease;
 }
 
@@ -2897,17 +2898,41 @@
 	height: 22px;
 }
 
-.slotnova-pill-blue .slotnova-pill-icon-box { background: #e0f2fe; color: #0284c7; }
-.slotnova-pill-blue .slotnova-pill-icon-box .dashicons { color: #0284c7; }
+.slotnova-pill-blue .slotnova-pill-icon-box {
+	background: #e0f2fe;
+	color: #0284c7;
+}
 
-.slotnova-pill-green .slotnova-pill-icon-box { background: #dcfce7; color: #16a34a; }
-.slotnova-pill-green .slotnova-pill-icon-box .dashicons { color: #16a34a; }
+.slotnova-pill-blue .slotnova-pill-icon-box .dashicons {
+	color: #0284c7;
+}
 
-.slotnova-pill-purple .slotnova-pill-icon-box { background: #f3e8ff; color: #9333ea; }
-.slotnova-pill-purple .slotnova-pill-icon-box .dashicons { color: #9333ea; }
+.slotnova-pill-green .slotnova-pill-icon-box {
+	background: #dcfce7;
+	color: #16a34a;
+}
 
-.slotnova-pill-orange .slotnova-pill-icon-box { background: #ffedd5; color: #ea580c; }
-.slotnova-pill-orange .slotnova-pill-icon-box .dashicons { color: #ea580c; }
+.slotnova-pill-green .slotnova-pill-icon-box .dashicons {
+	color: #16a34a;
+}
+
+.slotnova-pill-purple .slotnova-pill-icon-box {
+	background: #f3e8ff;
+	color: #9333ea;
+}
+
+.slotnova-pill-purple .slotnova-pill-icon-box .dashicons {
+	color: #9333ea;
+}
+
+.slotnova-pill-orange .slotnova-pill-icon-box {
+	background: #ffedd5;
+	color: #ea580c;
+}
+
+.slotnova-pill-orange .slotnova-pill-icon-box .dashicons {
+	color: #ea580c;
+}
 
 .slotnova-pill-content {
 	display: flex;
@@ -2944,7 +2969,7 @@
 	border: 1px solid #e2e8f0;
 	border-radius: 8px;
 	padding: 20px;
-	box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 	margin-bottom: 24px;
 }
 
@@ -3012,7 +3037,7 @@
 .slotnova-toggle-btn:hover {
 	background: #ffffff;
 	color: #0284c7;
-	box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .slotnova-chart-wrapper {
@@ -3106,7 +3131,6 @@
 	flex-wrap: wrap;
 	gap: 6px;
 	padding-bottom: 12px;
-	margin-bottom: 12px;
 	border-bottom: 1px solid #f0f0f1;
 }
 
@@ -3304,7 +3328,7 @@
 	font-size: 10px;
 	font-weight: 700;
 	color: #ffffff;
-	text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .slotnova-report-footnote {
@@ -3330,13 +3354,22 @@
 }
 
 @media print {
-	#adminmenumain, #wpadminbar, #wpfooter, .slotnova-stats-footer-links, #screen-meta-links, .notice, .slotnova-stats-filter-bar {
+
+	#adminmenumain,
+	#wpadminbar,
+	#wpfooter,
+	.slotnova-stats-footer-links,
+	#screen-meta-links,
+	.notice,
+	.slotnova-stats-filter-bar {
 		display: none !important;
 	}
+
 	#wpcontent {
 		margin: 0 !important;
 		padding: 0 !important;
 	}
+
 	.slotnova-stats-dashboard-container {
 		box-shadow: none !important;
 		border: none !important;
