@@ -149,18 +149,24 @@ class SlotNova_Addons {
 			</div>
 
 			<!-- Filter Bar -->
-			<div class="slotnova-stats-filter-bar" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 24px;">
-				<div class="slotnova-filter-preset-row" id="slotnova-extension-filter-tabs" style="display: flex; gap: 8px; align-items: center;">
-					<span style="font-weight: 600; color: #475569; font-size: 13px; margin-right: 8px;"><?php esc_html_e( 'Filter:', 'slotnova-booking' ); ?></span>
-					<button type="button" class="button slotnova-filter-btn active" data-filter="all"><?php esc_html_e( 'All Extensions', 'slotnova-booking' ); ?></button>
-					<button type="button" class="button slotnova-filter-btn" data-filter="installed"><?php esc_html_e( 'Installed', 'slotnova-booking' ); ?></button>
-					<button type="button" class="button slotnova-filter-btn" data-filter="available"><?php esc_html_e( 'Available', 'slotnova-booking' ); ?></button>
-					<button type="button" class="button slotnova-filter-btn" data-filter="updates"><?php esc_html_e( 'Updates', 'slotnova-booking' ); ?></button>
+			<div class="slotnova-stats-filter-bar" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+				<div style="display: flex; gap: 12px; align-items: center;">
+					<span style="font-weight: 700; color: #0f172a; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;"><?php esc_html_e( 'Filter:', 'slotnova-booking' ); ?></span>
+					<div class="slotnova-filter-preset-row" id="slotnova-extension-filter-tabs" style="display: inline-flex; background: #f1f5f9; padding: 4px; border-radius: 10px; gap: 4px;">
+						<button type="button" class="slotnova-filter-btn active" data-filter="all" style="background: #4f46e5; color: #ffffff; border: none; border-radius: 7px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(79,70,229,0.3);"><?php esc_html_e( 'All Extensions', 'slotnova-booking' ); ?></button>
+						<button type="button" class="slotnova-filter-btn" data-filter="installed" style="background: transparent; color: #64748b; border: none; border-radius: 7px; padding: 6px 14px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;"><?php esc_html_e( 'Installed', 'slotnova-booking' ); ?></button>
+						<button type="button" class="slotnova-filter-btn" data-filter="available" style="background: transparent; color: #64748b; border: none; border-radius: 7px; padding: 6px 14px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;"><?php esc_html_e( 'Available', 'slotnova-booking' ); ?></button>
+						<button type="button" class="slotnova-filter-btn" data-filter="updates" style="background: transparent; color: #64748b; border: none; border-radius: 7px; padding: 6px 14px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;"><?php esc_html_e( 'Updates', 'slotnova-booking' ); ?></button>
+					</div>
+				</div>
+				<div style="position: relative; width: 240px;">
+					<span class="dashicons dashicons-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 16px; width: 16px; height: 16px;"></span>
+					<input type="text" id="slotnova-extension-search" placeholder="<?php esc_attr_e( 'Search extensions...', 'slotnova-booking' ); ?>" style="width: 100%; padding: 6px 10px 6px 32px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; background: #fafafa;" />
 				</div>
 			</div>
 
 			<!-- Extension Grid -->
-			<div class="slotnova-addons-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 24px;">
+			<div class="slotnova-addons-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px;">
 				<?php
 				$all_items = [];
 				foreach ( $installedManifests as $id => $manifest ) {
@@ -228,7 +234,7 @@ class SlotNova_Addons {
 						$demo_url       = ! empty( $item['demo_url'] ) ? $item['demo_url'] : ( $manifest ? $manifest->getDemoUrl() : '' );
 						$raw_sett_url   = ! empty( $item['settings_url'] ) ? $item['settings_url'] : ( $manifest ? $manifest->getSettingsUrl() : '' );
 						?>
-						<div class="slotnova-addon-card" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05);"
+						<div class="slotnova-addon-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02); transition: transform 0.15s ease, box-shadow 0.15s ease;"
 							 data-id="<?php echo esc_attr( $id ); ?>"
 							 data-installed="<?php echo $is_installed ? '1' : '0'; ?>"
 							 data-active="<?php echo $is_active ? '1' : '0'; ?>"
@@ -237,7 +243,7 @@ class SlotNova_Addons {
 							<div>
 								<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px;">
 									<div style="display: flex; gap: 12px; align-items: flex-start; flex: 1; min-width: 0;">
-										<div style="width: 44px; height: 44px; min-width: 44px; border-radius: 10px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; color: #4f46e5; margin-top: 2px;">
+										<div style="width: 44px; height: 44px; min-width: 44px; border-radius: 10px; background: linear-gradient(135deg, #e0e7ff 0%, #f0fdf4 100%); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; color: #4f46e5; margin-top: 2px;">
 											<?php if ( $is_image_icon ) : ?>
 												<img src="<?php echo esc_url( $icon ); ?>" alt="<?php echo esc_attr( $item['title'] ); ?>" style="width: 100%; height: 100%; object-fit: contain; padding: 6px;" />
 											<?php else : ?>
@@ -249,30 +255,35 @@ class SlotNova_Addons {
 											<span style="font-size: 12px; color: #64748b; font-weight: 500;"><?php echo esc_html( 'v' . ( $is_installed ? $local_version : $remote_version ) ); ?></span>
 										</div>
 									</div>
-									<div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end;">
+									<div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0; justify-content: flex-end;">
 										<?php if ( $is_active ) : ?>
-											<span style="background: #dcfce7; color: #15803d; border-radius: 12px; padding: 2px 8px; font-size: 11px; font-weight: 600; white-space: nowrap;"><?php esc_html_e( 'Active', 'slotnova-booking' ); ?></span>
+											<span style="background: #dcfce7; color: #15803d; border-radius: 12px; padding: 3px 9px; font-size: 11px; font-weight: 700; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.3px;"><?php esc_html_e( 'Active', 'slotnova-booking' ); ?></span>
 										<?php elseif ( $is_installed ) : ?>
-											<span style="background: #f1f5f9; color: #64748b; border-radius: 12px; padding: 2px 8px; font-size: 11px; font-weight: 600; white-space: nowrap;"><?php esc_html_e( 'Disabled', 'slotnova-booking' ); ?></span>
+											<span style="background: #f1f5f9; color: #64748b; border-radius: 12px; padding: 3px 9px; font-size: 11px; font-weight: 700; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.3px;"><?php esc_html_e( 'Disabled', 'slotnova-booking' ); ?></span>
 										<?php endif; ?>
-										<span style="background: #e0e7ff; color: #4338ca; border-radius: 12px; padding: 2px 8px; font-size: 11px; font-weight: 600; white-space: nowrap;"><?php echo esc_html( $display_price ); ?></span>
+										<span style="background: #e0e7ff; color: #4338ca; border-radius: 12px; padding: 3px 9px; font-size: 11px; font-weight: 700; white-space: nowrap;"><?php echo esc_html( $display_price ); ?></span>
 									</div>
 								</div>
 
-								<p style="color: #475569; font-size: 13px; line-height: 1.5; margin: 0 0 16px 0;"><?php echo esc_html( $item['description'] ?? '' ); ?></p>
+								<p style="color: #475569; font-size: 13px; line-height: 1.5; margin: 0 0 16px 0; min-height: 40px;"><?php echo esc_html( $item['description'] ?? '' ); ?></p>
 
 								<?php if ( ! $is_installed && 'pro' === strtolower( $ext_type ) ) : ?>
-									<div style="margin-bottom: 12px;">
-										<input type="text" class="slotnova-license-input" placeholder="<?php esc_attr_e( 'Enter License Key...', 'slotnova-booking' ); ?>" style="width: 100%; font-size: 12px; padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1;" />
+									<div style="margin-bottom: 10px;">
+										<input type="text" class="slotnova-license-input" placeholder="<?php esc_attr_e( 'Enter License Key...', 'slotnova-booking' ); ?>" style="width: 100%; font-size: 12px; padding: 7px 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fafafa; transition: all 0.2s ease;" />
 									</div>
 								<?php endif; ?>
+
+								<div class="slotnova-card-notice" style="display: none; margin-bottom: 12px; padding: 8px 12px; border-radius: 6px; background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; font-size: 12px; font-weight: 500; align-items: center; gap: 6px; line-height: 1.4;">
+									<span class="dashicons dashicons-warning" style="font-size: 16px; width: 16px; height: 16px; color: #dc2626; flex-shrink: 0;"></span>
+									<span class="slotnova-notice-text"></span>
+								</div>
 							</div>
 
-							<div style="border-top: 1px solid #f1f5f9; padding-top: 12px; display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
+							<div style="border-top: 1px solid #f1f5f9; padding-top: 14px; margin-top: auto; display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-wrap: nowrap; width: 100%;">
 								<?php
 								$effective_demo_url = ! empty( $demo_url ) ? $demo_url : 'https://slotnova.com/demo/' . esc_attr( $id ) . '/';
 								?>
-								<a href="<?php echo esc_url( $effective_demo_url ); ?>" target="_blank" rel="noopener noreferrer" class="button button-secondary" style="color: #475569; border-color: #cbd5e1; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+								<a href="<?php echo esc_url( $effective_demo_url ); ?>" target="_blank" rel="noopener noreferrer" class="button button-secondary" style="color: #475569; border-color: #cbd5e1; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; height: 34px; padding: 0 12px; font-size: 12px; flex: 1; min-width: 0;">
 									<span class="dashicons dashicons-external" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span>
 									<span><?php esc_html_e( 'Live Demo', 'slotnova-booking' ); ?></span>
 								</a>
@@ -280,14 +291,14 @@ class SlotNova_Addons {
 								<?php if ( $is_active ) :
 									$target_settings_url = ! empty( $raw_sett_url ) ? ( 0 === strpos( $raw_sett_url, 'http' ) ? $raw_sett_url : admin_url( $raw_sett_url ) ) : admin_url( 'admin.php?page=slotnova-settings#slotnova-' . esc_attr( $id ) . '-settings' );
 								?>
-									<a href="<?php echo esc_url( $target_settings_url ); ?>" class="button button-secondary" style="color: #4f46e5; border-color: #a5b4fc; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+									<a href="<?php echo esc_url( $target_settings_url ); ?>" class="button button-secondary" style="color: #4f46e5; border-color: #a5b4fc; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; height: 34px; padding: 0 12px; font-size: 12px; flex: 1; min-width: 0;">
 										<span class="dashicons dashicons-admin-generic" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span>
 										<span><?php esc_html_e( 'Settings', 'slotnova-booking' ); ?></span>
 									</a>
 								<?php endif; ?>
 
 								<?php if ( $has_update ) : ?>
-									<button type="button" class="button button-secondary slotnova-ext-btn" data-action="update" data-id="<?php echo esc_attr( $effective_id ); ?>" style="color: #d97706; border-color: #f59e0b;">
+									<button type="button" class="button button-secondary slotnova-ext-btn" data-action="update" data-id="<?php echo esc_attr( $effective_id ); ?>" style="color: #d97706; border-color: #f59e0b; white-space: nowrap; height: 34px; padding: 0 12px; font-size: 12px; flex: 1; min-width: 0;">
 										<?php esc_html_e( 'Update Now', 'slotnova-booking' ); ?>
 									</button>
 								<?php endif; ?>
@@ -296,29 +307,29 @@ class SlotNova_Addons {
 								$toggle_nonce = wp_create_nonce( 'slotnova_toggle_' . $effective_id );
 								?>
 								<?php if ( $is_active ) : ?>
-									<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-addons&action=disable&extension_id=' . esc_attr( $effective_id ) . '&_wpnonce=' . $toggle_nonce ) ); ?>" class="button slotnova-ext-btn" data-action="disable" data-id="<?php echo esc_attr( $effective_id ); ?>">
+									<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-addons&action=disable&extension_id=' . esc_attr( $effective_id ) . '&_wpnonce=' . $toggle_nonce ) ); ?>" class="button slotnova-ext-btn" data-action="disable" data-id="<?php echo esc_attr( $effective_id ); ?>" style="white-space: nowrap; height: 34px; padding: 0 12px; font-size: 12px; flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center;">
 										<?php esc_html_e( 'Deactive', 'slotnova-booking' ); ?>
 									</a>
 								<?php elseif ( $is_installed ) : ?>
-									<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-addons&action=enable&extension_id=' . esc_attr( $effective_id ) . '&_wpnonce=' . $toggle_nonce ) ); ?>" class="button button-primary slotnova-ext-btn" data-action="enable" data-id="<?php echo esc_attr( $effective_id ); ?>">
+									<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-addons&action=enable&extension_id=' . esc_attr( $effective_id ) . '&_wpnonce=' . $toggle_nonce ) ); ?>" class="button button-primary slotnova-ext-btn" data-action="enable" data-id="<?php echo esc_attr( $effective_id ); ?>" style="white-space: nowrap; height: 34px; padding: 0 12px; font-size: 12px; flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center;">
 										<?php esc_html_e( 'Active', 'slotnova-booking' ); ?>
 									</a>
-									<button type="button" class="button slotnova-ext-btn" data-action="remove" data-id="<?php echo esc_attr( $effective_id ); ?>" style="color: #dc2626; border-color: #fca5a5;">
+									<button type="button" class="button slotnova-ext-btn" data-action="remove" data-id="<?php echo esc_attr( $effective_id ); ?>" style="color: #dc2626; border-color: #fca5a5; white-space: nowrap; height: 34px; padding: 0 12px; font-size: 12px; flex: 1; min-width: 0;">
 										<?php esc_html_e( 'Remove', 'slotnova-booking' ); ?>
 									</button>
 								<?php else : ?>
 									<?php if ( 'pro' === strtolower( $ext_type ) ) :
 										$buy_link = ! empty( $purchase_url ) ? $purchase_url : 'https://slotnova.com/pricing';
 									?>
-										<a href="<?php echo esc_url( $buy_link ); ?>" target="_blank" rel="noopener noreferrer" class="button button-secondary" style="border-color: #6366f1; color: #4f46e5; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+										<a href="<?php echo esc_url( $buy_link ); ?>" target="_blank" rel="noopener noreferrer" class="button button-secondary" style="border-color: #6366f1; color: #4f46e5; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; height: 34px; padding: 0 12px; font-size: 12px; flex: 1; min-width: 0;">
 											<span class="dashicons dashicons-cart" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span>
 											<span><?php esc_html_e( 'Get License', 'slotnova-booking' ); ?></span>
 										</a>
-										<button type="button" class="button button-primary slotnova-ext-btn" data-action="install" data-id="<?php echo esc_attr( $id ); ?>">
+										<button type="button" class="button button-primary slotnova-ext-btn" data-action="install" data-id="<?php echo esc_attr( $id ); ?>" style="white-space: nowrap; height: 34px; padding: 0 12px; font-size: 12px; flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center;">
 											<?php esc_html_e( 'Verify & Install', 'slotnova-booking' ); ?>
 										</button>
 									<?php else : ?>
-										<button type="button" class="button button-primary slotnova-ext-btn" data-action="install" data-id="<?php echo esc_attr( $id ); ?>">
+										<button type="button" class="button button-primary slotnova-ext-btn" data-action="install" data-id="<?php echo esc_attr( $id ); ?>" style="white-space: nowrap; height: 34px; padding: 0 12px; font-size: 12px; flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center;">
 											<?php esc_html_e( 'Install', 'slotnova-booking' ); ?>
 										</button>
 									<?php endif; ?>
@@ -342,10 +353,22 @@ class SlotNova_Addons {
 		jQuery(document).ready(function($) {
 			const nonce = '<?php echo esc_js( $nonce ); ?>';
 
-			// Filter tabs
+			// Filter tabs styling update on click
 			$('#slotnova-extension-filter-tabs button').on('click', function() {
-				$('#slotnova-extension-filter-tabs button').removeClass('button-primary').addClass('button');
-				$(this).removeClass('button').addClass('button-primary');
+				$('#slotnova-extension-filter-tabs button').css({
+					'background': 'transparent',
+					'color': '#64748b',
+					'font-weight': '500',
+					'box-shadow': 'none'
+				}).removeClass('active');
+
+				$(this).css({
+					'background': '#4f46e5',
+					'color': '#ffffff',
+					'font-weight': '600',
+					'box-shadow': '0 1px 2px rgba(79,70,229,0.3)'
+				}).addClass('active');
+
 				const filter = $(this).data('filter');
 
 				$('.slotnova-addon-card').each(function() {
@@ -367,6 +390,20 @@ class SlotNova_Addons {
 				});
 			});
 
+			// Real-time search filter input
+			$('#slotnova-extension-search').on('input', function() {
+				const query = $(this).val().toLowerCase().trim();
+				$('.slotnova-addon-card').each(function() {
+					const title = $(this).find('h3').text().toLowerCase();
+					const desc  = $(this).find('p').text().toLowerCase();
+					if (title.indexOf(query) !== -1 || desc.indexOf(query) !== -1) {
+						$(this).show();
+					} else {
+						$(this).hide();
+					}
+				});
+			});
+
 			// Action buttons
 			$(document).on('click', '.slotnova-ext-btn', function(e) {
 				e.preventDefault();
@@ -374,7 +411,21 @@ class SlotNova_Addons {
 				const action = $btn.attr('data-action') || $btn.data('action');
 				const id = $btn.attr('data-id') || $btn.data('id');
 				const $card = $btn.closest('.slotnova-addon-card');
-				const licenseKey = $card.find('.slotnova-license-input').val() || '';
+				const $licenseInput = $card.find('.slotnova-license-input');
+				const licenseKey = $licenseInput.length ? $licenseInput.val().trim() : '';
+				const $notice = $card.find('.slotnova-card-notice');
+
+				// Reset previous warning notice state
+				$notice.hide().find('.slotnova-notice-text').text('');
+				if ($licenseInput.length) {
+					$licenseInput.css({'border': '1px solid #cbd5e1', 'background': '#fafafa'});
+				}
+
+				if (action === 'install' && $licenseInput.length && !licenseKey) {
+					$licenseInput.css({'border': '1px solid #ef4444', 'background': '#fff5f5'}).focus();
+					$notice.css('display', 'flex').find('.slotnova-notice-text').text('Please enter a valid license key before installing.');
+					return;
+				}
 
 				$btn.prop('disabled', true).text('Processing...');
 
@@ -398,11 +449,15 @@ class SlotNova_Addons {
 					if (res && res.success) {
 						location.reload();
 					} else {
-						alert((res && res.data && res.data.message) ? res.data.message : 'Operation failed.');
-						$btn.prop('disabled', false).text('Try Again');
+						const errorMsg = (res && res.data && res.data.message) ? res.data.message : 'Invalid license or unauthorized extension download from Cloudflare.';
+						if ($licenseInput.length) {
+							$licenseInput.css({'border': '1px solid #ef4444', 'background': '#fff5f5'});
+						}
+						$notice.css('display', 'flex').find('.slotnova-notice-text').text(errorMsg);
+						$btn.prop('disabled', false).text(action === 'install' ? 'Verify & Install' : 'Try Again');
 					}
 				}, 'json').fail(function(xhr, status, err) {
-					alert('Network error occurred: ' + (err || status));
+					$notice.css('display', 'flex').find('.slotnova-notice-text').text('Network request failed. Please verify your connection or license.');
 					$btn.prop('disabled', false).text('Try Again');
 				});
 			});
