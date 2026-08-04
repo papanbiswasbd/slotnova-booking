@@ -76,6 +76,7 @@ class Updater {
 				if ( is_dir( $currentPath ) ) {
 					$this->recursiveRmdir( $currentPath );
 				}
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
 				rename( $backupPath, $currentPath );
 			}
 			throw new ExtensionException( esc_html( sprintf( "Update failed for '%s': %s. Previous version restored.", $extensionId, $e->getMessage() ) ) );
@@ -83,7 +84,12 @@ class Updater {
 	}
 
 	private function copyDir( string $src, string $dst ): void {
-		@mkdir( $dst, 0755, true );
+		if ( function_exists( 'wp_mkdir_p' ) ) {
+			wp_mkdir_p( $dst );
+		} else {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir
+			@mkdir( $dst, 0755, true );
+		}
 		$files = array_diff( scandir( $src ), [ '.', '..' ] );
 		foreach ( $files as $file ) {
 			$s = $src . '/' . $file;
@@ -99,8 +105,18 @@ class Updater {
 		$files = array_diff( scandir( $dir ), [ '.', '..' ] );
 		foreach ( $files as $file ) {
 			$path = $dir . '/' . $file;
-			( is_dir( $path ) ) ? $this->recursiveRmdir( $path ) : unlink( $path );
+			if ( is_dir( $path ) ) {
+				$this->recursiveRmdir( $path );
+			} else {
+				if ( function_exists( 'wp_delete_file' ) ) {
+					wp_delete_file( $path );
+				} else {
+					// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+					@unlink( $path );
+				}
+			}
 		}
-		return rmdir( $dir );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
+		return @rmdir( $dir );
 	}
 }
