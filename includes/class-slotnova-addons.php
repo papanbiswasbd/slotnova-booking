@@ -303,40 +303,41 @@ class SlotNova_Addons {
 									$lic_key     = ! empty( $licenseData['license_key'] ) ? $licenseData['license_key'] : '';
 									$masked_key  = ( strlen( $lic_key ) > 12 ) ? substr( $lic_key, 0, 7 ) . '...' . substr( $lic_key, -5 ) : $lic_key;
 								?>
-									<div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 12px; color: #334155;">
-										<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">
-											<span style="font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 5px;">
-												<span class="dashicons dashicons-id-alt" style="font-size: 15px; width: 15px; height: 15px; color: #4f46e5;"></span>
-												<?php esc_html_e( 'License Information', 'slotnova-booking' ); ?>
+									<div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;">
+										<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0;">
+											<span style="font-size: 13px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+												<span class="dashicons dashicons-shield-alt" style="font-size: 16px; width: 16px; height: 16px; color: #4f46e5;"></span>
+												<?php esc_html_e( 'License Details', 'slotnova-booking' ); ?>
 											</span>
-											<span style="background: #dcfce7; color: #15803d; border-radius: 10px; padding: 1px 7px; font-size: 10px; font-weight: 700; text-transform: uppercase;">
-												<?php echo esc_html( $lic_plan ); ?>
+											<span style="background: #dcfce7; color: #15803d; border-radius: 12px; padding: 2px 9px; font-size: 11px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase;">
+												✓ <?php echo esc_html( $lic_plan ); ?>
 											</span>
 										</div>
-										<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; line-height: 1.4;">
-											<?php if ( $lic_name ) : ?>
-												<div>
-													<span style="color: #64748b; font-size: 11px; font-weight: 500; display: block;"><?php esc_html_e( 'Licensed To', 'slotnova-booking' ); ?></span>
-													<strong style="color: #0f172a; font-size: 12px;"><?php echo esc_html( $lic_name ); ?></strong>
+										<div style="display: flex; flex-direction: column; gap: 8px;">
+											<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+												<?php if ( $lic_name ) : ?>
+													<div style="flex: 1; min-width: 0;">
+														<span style="color: #64748b; font-size: 11px; font-weight: 500; display: block; margin-bottom: 1px;"><?php esc_html_e( 'Licensed To', 'slotnova-booking' ); ?></span>
+														<strong style="color: #0f172a; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;"><?php echo esc_html( $lic_name ); ?></strong>
+													</div>
+												<?php endif; ?>
+												<div style="text-align: right; flex-shrink: 0;">
+													<span style="color: #64748b; font-size: 11px; font-weight: 500; display: block; margin-bottom: 1px;"><?php esc_html_e( 'Expiration', 'slotnova-booking' ); ?></span>
+													<strong style="color: #059669; font-size: 12px; font-weight: 700;"><?php echo esc_html( $lic_expires ); ?></strong>
 												</div>
-											<?php endif; ?>
-
-											<?php if ( $lic_email ) : ?>
-												<div>
-													<span style="color: #64748b; font-size: 11px; font-weight: 500; display: block;"><?php esc_html_e( 'Customer Email', 'slotnova-booking' ); ?></span>
-													<strong style="color: #0f172a; font-size: 12px; word-break: break-all;"><?php echo esc_html( $lic_email ); ?></strong>
-												</div>
-											<?php endif; ?>
-
-											<div>
-												<span style="color: #64748b; font-size: 11px; font-weight: 500; display: block;"><?php esc_html_e( 'Expiration', 'slotnova-booking' ); ?></span>
-												<strong style="color: #059669; font-size: 12px;"><?php echo esc_html( $lic_expires ); ?></strong>
 											</div>
 
+											<?php if ( $lic_email ) : ?>
+												<div style="border-top: 1px dashed #e2e8f0; padding-top: 6px;">
+													<span style="color: #64748b; font-size: 11px; font-weight: 500; display: block; margin-bottom: 1px;"><?php esc_html_e( 'Email Address', 'slotnova-booking' ); ?></span>
+													<span style="color: #334155; font-size: 12px; font-weight: 600; word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;"><?php echo esc_html( $lic_email ); ?></span>
+												</div>
+											<?php endif; ?>
+
 											<?php if ( $lic_key ) : ?>
-												<div>
-													<span style="color: #64748b; font-size: 11px; font-weight: 500; display: block;"><?php esc_html_e( 'License Key', 'slotnova-booking' ); ?></span>
-													<code style="background: #ffffff; border: 1px solid #cbd5e1; padding: 1px 5px; border-radius: 4px; font-size: 11px; font-family: monospace; color: #475569;" title="<?php echo esc_attr( $lic_key ); ?>"><?php echo esc_html( $masked_key ); ?></code>
+												<div style="border-top: 1px dashed #e2e8f0; padding-top: 6px; display: flex; justify-content: space-between; align-items: center;">
+													<span style="color: #64748b; font-size: 11px; font-weight: 500;"><?php esc_html_e( 'License Key', 'slotnova-booking' ); ?></span>
+													<code style="background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 7px; border-radius: 6px; font-size: 11px; font-family: monospace; color: #475569; font-weight: 600;" title="<?php echo esc_attr( $lic_key ); ?>"><?php echo esc_html( $masked_key ); ?></code>
 												</div>
 											<?php endif; ?>
 										</div>
