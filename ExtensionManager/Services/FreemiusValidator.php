@@ -80,6 +80,10 @@ class FreemiusValidator {
 	 * @throws ExtensionException On validation failure.
 	 */
 	public function validateLicense( string $extensionId, string $licenseKey, string $domain = '' ): array {
+		$licenseKey = trim( rawurldecode( $licenseKey ) );
+		if ( 0 === strpos( $licenseKey, 'sk_' ) && false !== strpos( $licenseKey, ' ' ) ) {
+			$licenseKey = str_replace( ' ', '+', $licenseKey );
+		}
 		if ( empty( $licenseKey ) ) {
 			throw new ExtensionException( esc_html__( 'Please enter a valid Freemius license key.', 'slotnova-booking' ) );
 		}
@@ -96,7 +100,7 @@ class FreemiusValidator {
 				'slug'            => $extensionId,
 				'extension_id'    => $extensionId,
 				'freemius_app_id' => $freemiusAppId,
-				'license_key'     => rawurlencode( $licenseKey ),
+				'license_key'     => $licenseKey,
 				'domain'          => $domain,
 			),
 			$this->apiEndpoint

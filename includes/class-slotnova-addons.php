@@ -471,7 +471,7 @@ class SlotNova_Addons {
 					security: nonce,
 					extension_id: id,
 					action_type: (action === 'enable' || action === 'activate' ? 'activate' : 'deactivate'),
-					license_key: licenseKey
+					license_key: encodeURIComponent(licenseKey)
 				}, function(res) {
 					if (typeof res === 'string') {
 						try { res = JSON.parse(res); } catch(err) {}
@@ -542,7 +542,11 @@ class SlotNova_Addons {
 		check_ajax_referer( 'slotnova_extensions_nonce', 'security' );
 
 		$extensionId = isset( $_POST['extension_id'] ) ? sanitize_key( wp_unslash( $_POST['extension_id'] ) ) : ( isset( $_POST['addon_slug'] ) ? sanitize_key( wp_unslash( $_POST['addon_slug'] ) ) : '' );
-		$licenseKey  = isset( $_POST['license_key'] ) ? sanitize_text_field( wp_unslash( $_POST['license_key'] ) ) : '';
+		$rawKey     = isset( $_POST['license_key'] ) ? wp_unslash( $_POST['license_key'] ) : '';
+		$licenseKey = trim( rawurldecode( $rawKey ) );
+		if ( 0 === strpos( $licenseKey, 'sk_' ) && false !== strpos( $licenseKey, ' ' ) ) {
+			$licenseKey = str_replace( ' ', '+', $licenseKey );
+		}
 
 		if ( empty( $extensionId ) ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid extension ID.', 'slotnova-booking' ) ) );
