@@ -130,9 +130,11 @@ class FreemiusValidator {
 			return $licenseData;
 		}
 
-		$errorMessage = is_array( $body ) && ! empty( $body['message'] )
-			? $body['message']
-			: __( 'Invalid license key or unauthorized download from Freemius / Cloudflare.', 'slotnova-booking' );
+		$errorMessage = is_array( $body ) && ! empty( $body['error'] )
+			? $body['error']
+			: ( is_array( $body ) && ! empty( $body['message'] )
+				? $body['message']
+				: __( 'Invalid license key or unauthorized download for this specific extension.', 'slotnova-booking' ) );
 
 		// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 		throw new ExtensionException( esc_html( $errorMessage ) );

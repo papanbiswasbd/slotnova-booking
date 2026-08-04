@@ -144,7 +144,11 @@ class Installer {
 			// Direct URL via request parameters
 			$downloadUrl = $requestUrl;
 		} else {
-			$msg = is_array( $body ) && isset( $body['message'] ) ? $body['message'] : 'Invalid license or unauthorized extension download from Cloudflare.';
+			$msg = is_array( $body ) && ! empty( $body['error'] )
+				? $body['error']
+				: ( is_array( $body ) && ! empty( $body['message'] )
+					? $body['message']
+					: 'Invalid or expired license key.' );
 			throw new ExtensionException( esc_html( $msg ) );
 		}
 
