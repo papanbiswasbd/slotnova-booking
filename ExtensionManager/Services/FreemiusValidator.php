@@ -105,7 +105,7 @@ class FreemiusValidator {
 				'slug'            => $extensionId,
 				'extension_id'    => $extensionId,
 				'freemius_app_id' => $freemiusAppId,
-				'license_key'     => $licenseKey,
+				'license_key'     => rawurlencode( $licenseKey ),
 				'domain'          => $domain,
 			),
 			$verifyEndpoint
