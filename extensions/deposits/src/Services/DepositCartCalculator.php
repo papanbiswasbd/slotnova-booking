@@ -265,21 +265,21 @@ class DepositCartCalculator {
 					</label>
 
 					<!-- Option 2: Partial Deposit -->
-				<label id="slotnova-co-label-deposit" style="display: flex; flex-direction: column; padding: 10px 12px; border-radius: 8px; border: 1.5px solid <?php echo 'deposit' === $current_payment_type ? esc_attr( $primary_color ) : '#e2e8f0'; ?>; background: <?php echo 'deposit' === $current_payment_type ? '#f0f9ff' : '#ffffff'; ?>; cursor: pointer; margin: 0; transition: all 0.2s ease;">
-					<span style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+					<label id="slotnova-co-label-deposit" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 8px; border: 1.5px solid <?php echo 'deposit' === $current_payment_type ? esc_attr( $primary_color ) : '#e2e8f0'; ?>; background: <?php echo 'deposit' === $current_payment_type ? '#f0f9ff' : '#ffffff'; ?>; cursor: pointer; margin: 0; transition: all 0.2s ease;">
 						<span style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
 							<input type="radio" name="slotnova_payment_type" value="deposit" <?php checked( $current_payment_type, 'deposit' ); ?> class="slotnova-checkout-pay-radio" style="margin: 0; width: 16px; height: 16px; accent-color: <?php echo esc_attr( $primary_color ); ?>;" />
 							<span style="font-size: 13px; font-weight: 600; color: #0f172a; white-space: nowrap;"><?php esc_html_e( 'Pay Deposit', 'slotnova-booking' ); ?></span>
 						</span>
 						<span id="slotnova-co-deposit-price" style="font-size: 13px; font-weight: 700; color: <?php echo esc_attr( $primary_color ); ?>; white-space: nowrap; margin-left: 12px;"><?php echo function_exists( 'wc_price' ) ? wp_kses_post( wc_price( $deposit_amount ) ) : esc_html( $currency . number_format( $deposit_amount, 2 ) ); ?></span>
-					</span>
-					<span style="display: flex; justify-content: space-between; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e2e8f0; padding-left: 24px;">
-						<span style="font-size: 11px; color: #64748b;"><?php esc_html_e( 'Due at Appointment', 'slotnova-booking' ); ?></span>
-						<span id="slotnova-co-due-price" style="font-size: 11px; color: #64748b; font-weight: 600;"><?php echo function_exists( 'wc_price' ) ? wp_kses_post( wc_price( max( 0, $subtotal - $deposit_amount ) ) ) : esc_html( $currency . number_format( max( 0, $subtotal - $deposit_amount ), 2 ) ); ?></span>
-					</span>
-				</label>
+					</label>
 				</div>
 			</td>
+		</tr>
+
+		<!-- Due at Appointment row — hidden until Pay Deposit is selected -->
+		<tr id="slotnova-co-due-row" style="<?php echo 'deposit' === $current_payment_type ? '' : 'display:none;'; ?>">
+			<th><?php esc_html_e( 'Due at Appointment', 'slotnova-booking' ); ?></th>
+			<td><span class="woocommerce-Price-amount amount"><?php echo function_exists( 'wc_price' ) ? wp_kses_post( wc_price( max( 0, $subtotal - $deposit_amount ) ) ) : esc_html( $currency . number_format( max( 0, $subtotal - $deposit_amount ), 2 ) ); ?></span></td>
 		</tr>
 
 		<script>
@@ -305,6 +305,11 @@ class DepositCartCalculator {
 					labelFull.style.background     = '#f0f9ff';
 					labelDeposit.style.borderColor = '#e2e8f0';
 					labelDeposit.style.background  = '#ffffff';
+				}
+				// Also show/hide the Due at Appointment row
+				var dueRow = document.getElementById('slotnova-co-due-row');
+				if (dueRow) {
+					dueRow.style.display = (selectedVal === 'deposit') ? '' : 'none';
 				}
 			}
 
