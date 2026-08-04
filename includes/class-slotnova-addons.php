@@ -202,8 +202,8 @@ class SlotNova_Addons {
 							if ( ! empty( $cat['type'] ) )         $all_items[ $clean_id ]['type']         = $cat['type'];
 							if ( ! empty( $cat['price'] ) )        $all_items[ $clean_id ]['price']        = $cat['price'];
 							if ( ! empty( $cat['description'] ) )  $all_items[ $clean_id ]['description']  = $cat['description'];
+							if ( ! empty( $cat['purchase_url'] ) ) $all_items[ $clean_id ]['purchase_url'] = $cat['purchase_url'];
 						}
-						if ( ! empty( $cat['purchase_url'] ) ) $all_items[ $clean_id ]['purchase_url'] = $cat['purchase_url'];
 						if ( ! empty( $cat['demo_url'] ) )     $all_items[ $clean_id ]['demo_url']     = $cat['demo_url'];
 						if ( ! empty( $cat['settings_url'] ) ) $all_items[ $clean_id ]['settings_url'] = $cat['settings_url'];
 					} else {
@@ -333,7 +333,7 @@ class SlotNova_Addons {
 									</button>
 								<?php else : ?>
 									<?php if ( 'pro' === strtolower( $ext_type ) ) :
-										$buy_link = ! empty( $purchase_url ) ? $purchase_url : 'https://checkout.freemius.com/plugin/36458/plan/80445/';
+										$buy_link = ( $manifest && '' !== $manifest->getPurchaseUrl() ) ? $manifest->getPurchaseUrl() : ( ! empty( $purchase_url ) ? $purchase_url : '' );
 									?>
 										<a href="<?php echo esc_url( $buy_link ); ?>" target="_blank" rel="noopener noreferrer" class="button button-secondary" style="border-color: #6366f1; color: #4f46e5; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; height: 34px; padding: 0 12px; font-size: 12px; flex: 1; min-width: 0;">
 											<span class="dashicons dashicons-cart" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span>
