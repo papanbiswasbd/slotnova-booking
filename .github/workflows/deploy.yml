@@ -24,6 +24,8 @@ jobs:
             **/.git*
             **/.git*/**
             **/.github/**
+            extensions/**
+            extensions/
             .ftpquota
             .ftp-deploy-sync-state.json
 
