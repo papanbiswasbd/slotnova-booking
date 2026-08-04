@@ -471,7 +471,7 @@ class SlotNova_Addons {
 					security: nonce,
 					extension_id: id,
 					action_type: (action === 'enable' || action === 'activate' ? 'activate' : 'deactivate'),
-					license_key: encodeURIComponent(licenseKey)
+					license_key: licenseKey
 				}, function(res) {
 					if (typeof res === 'string') {
 						try { res = JSON.parse(res); } catch(err) {}
@@ -544,8 +544,8 @@ class SlotNova_Addons {
 		$extensionId = isset( $_POST['extension_id'] ) ? sanitize_key( wp_unslash( $_POST['extension_id'] ) ) : ( isset( $_POST['addon_slug'] ) ? sanitize_key( wp_unslash( $_POST['addon_slug'] ) ) : '' );
 		$rawKey     = isset( $_POST['license_key'] ) ? wp_unslash( $_POST['license_key'] ) : '';
 		$licenseKey = trim( rawurldecode( $rawKey ) );
-		if ( 0 === strpos( $licenseKey, 'sk_' ) && false !== strpos( $licenseKey, ' ' ) ) {
-			$licenseKey = str_replace( ' ', '+', $licenseKey );
+		if ( 0 === strpos( $licenseKey, 'sk_' ) ) {
+			$licenseKey = str_replace( array( '%2B', '%2b', ' ' ), '+', $licenseKey );
 		}
 
 		if ( empty( $extensionId ) ) {
