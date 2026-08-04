@@ -42,14 +42,14 @@ class Updater {
 	public function update( string $extensionId ): bool {
 		$state = $this->repository->get( $extensionId );
 		if ( ! $state ) {
-			throw new ExtensionException( "Extension '{$extensionId}' is not installed." );
+			throw new ExtensionException( esc_html( sprintf( "Extension '%s' is not installed.", $extensionId ) ) );
 		}
 
 		$currentPath = $state->getInstalledPath();
 		$backupPath  = $currentPath . '.bak';
 
 		if ( ! is_dir( $currentPath ) ) {
-			throw new ExtensionException( "Extension path does not exist: {$currentPath}" );
+			throw new ExtensionException( esc_html( sprintf( 'Extension path does not exist: %s', $currentPath ) ) );
 		}
 
 		// Create backup
@@ -62,7 +62,7 @@ class Updater {
 			// Perform remote download & extraction
 			$success = $this->installer->installFromRemote( $extensionId, $state->getLicenseKey() );
 			if ( ! $success ) {
-				throw new ExtensionException( "Failed to download update package." );
+				throw new ExtensionException( esc_html__( 'Failed to download update package.', 'slotnova-booking' ) );
 			}
 
 			// Clean backup folder on success
@@ -78,7 +78,7 @@ class Updater {
 				}
 				rename( $backupPath, $currentPath );
 			}
-			throw new ExtensionException( "Update failed for '{$extensionId}': " . $e->getMessage() . ". Previous version restored." );
+			throw new ExtensionException( esc_html( sprintf( "Update failed for '%s': %s. Previous version restored.", $extensionId, $e->getMessage() ) ) );
 		}
 	}
 
