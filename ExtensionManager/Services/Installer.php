@@ -104,7 +104,7 @@ class Installer {
 				'slug'         => $extensionId,
 				'extension_id' => $extensionId,
 				'domain'       => $domain,
-				'license_key'  => $licenseKey,
+				'license_key'  => rawurlencode( $licenseKey ),
 			],
 			$apiEndpoint
 		);
