@@ -24,7 +24,9 @@ class EventBus implements EventBusInterface {
 	 * @return void
 	 */
 	public function listen( string $eventName, callable $listener, int $priority = 10 ): void {
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 		add_action( $eventName, $listener, $priority, 99 );
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 		add_filter( $eventName, $listener, $priority, 99 );
 	}
 
@@ -36,7 +38,9 @@ class EventBus implements EventBusInterface {
 	 * @return mixed Filtered payload.
 	 */
 	public function dispatch( string $eventName, $payload = null ) {
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 		do_action( $eventName, $payload );
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 		return apply_filters( $eventName, $payload );
 	}
 }
