@@ -52,6 +52,10 @@ class SlotNova_Addons {
 	 * @return array
 	 */
 	public function get_extensions_catalog(): array {
+		if ( isset( $_GET['sync_cloudflare'] ) || isset( $_GET['force_sync'] ) ) {
+			delete_option( 'slotnova_extensions_known_catalog' );
+		}
+
 		$worker_endpoint = get_option( 'slotnova_cloudflare_worker_endpoint', get_option( 'slotnova_api_endpoint', 'https://slotnova-booking.papan-biswas-bd.workers.dev/addons/download' ) );
 
 		// Format Cloudflare Worker List URL (/addons/list)
@@ -70,7 +74,7 @@ class SlotNova_Addons {
 				'timeout'   => 8,
 				'sslverify' => true,
 				'headers'   => array(
-					'Cache-Control' => 'no-cache',
+					'Cache-Control' => 'no-cache, no-store, must-revalidate',
 				),
 			)
 		);
@@ -86,7 +90,7 @@ class SlotNova_Addons {
 					if ( empty( $id ) ) {
 						continue;
 					}
-					$catalog[] = [
+					$catalog[] = array(
 						'id'           => $id,
 						'slug'         => $id,
 						'title'        => $item['title'] ?? ( $item['name'] ?? $id ),
@@ -100,13 +104,16 @@ class SlotNova_Addons {
 						'buy_url'      => $item['purchase_url'] ?? ( $item['buy_url'] ?? '' ),
 						'demo_url'     => $item['demo_url'] ?? '',
 						'settings_url' => $item['settings_url'] ?? '',
-					];
+					);
 				}
+				// Save live catalog (wipes deleted items instantly)
 				update_option( 'slotnova_extensions_known_catalog', $catalog );
+				return $catalog;
 			}
-		} elseif ( empty( $catalog ) ) {
-			$catalog = get_option( 'slotnova_extensions_known_catalog', array() );
 		}
+
+		return get_option( 'slotnova_extensions_known_catalog', array() );
+	}
 
 		return apply_filters( 'slotnova_extensions_catalog', $catalog );
 	}
@@ -142,9 +149,9 @@ class SlotNova_Addons {
 					<p style="color: #94a3b8; margin: 0; font-size: 14px;"><?php esc_html_e( 'Modular extensions loaded inside SlotNova core without cluttering your WordPress plugins list.', 'slotnova-booking' ); ?></p>
 				</div>
 				<div>
-					<button type="button" class="button button-secondary" onclick="location.reload();" style="border-radius: 6px; background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2);">
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-addons&sync_cloudflare=1' ) ); ?>" class="button button-secondary" style="border-radius: 6px; background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2); text-decoration: none; display: inline-flex; align-items: center;">
 						🔄 <?php esc_html_e( 'Sync Cloudflare', 'slotnova-booking' ); ?>
-					</button>
+					</a>
 				</div>
 			</div>
 
