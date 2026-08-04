@@ -1,2 +1,7 @@
 # Exclude bundled extensions directory (served via Cloudflare R2)
 extensions/
+
+# macOS metadata hidden files
+.DS_Store
+*.DS_Store
+
