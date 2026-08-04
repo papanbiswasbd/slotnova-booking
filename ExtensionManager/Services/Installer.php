@@ -205,8 +205,14 @@ class Installer {
 		// Locate extension.json or bootstrap.php in extracted files
 		$manifestPath = $tempExtractDir . '/extension.json';
 		if ( ! file_exists( $manifestPath ) ) {
-			// Check one level deep inside extracted folder
-			$subdirs = array_filter( glob( $tempExtractDir . '/*' ), 'is_dir' );
+			// Check one level deep inside extracted folder (ignoring __MACOSX)
+			$subdirs = array_filter(
+				glob( $tempExtractDir . '/*' ),
+				function( $p ) {
+					return is_dir( $p ) && '__MACOSX' !== basename( $p );
+				}
+			);
+			$subdirs = array_values( $subdirs );
 			if ( ! empty( $subdirs ) && file_exists( $subdirs[0] . '/extension.json' ) ) {
 				$tempExtractDir = $subdirs[0];
 				$manifestPath   = $tempExtractDir . '/extension.json';
