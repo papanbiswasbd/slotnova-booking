@@ -239,14 +239,17 @@ class SlotNova_Addons {
 						$raw_price      = ( $manifest && '' !== $manifest->getPrice() ) ? $manifest->getPrice() : ( $item['price'] ?? 'Free' );
 						if ( 'free' === strtolower( $ext_type ) || '0' === (string) $raw_price || empty( $raw_price ) ) {
 							$display_price = 'FREE';
-						} elseif ( is_numeric( $raw_price ) ) {
-							$val           = (float) $raw_price;
-							$formatted     = ( floor( $val ) == $val ) ? number_format( $val, 0 ) : number_format( $val, 2 );
-							$display_price = '$' . $formatted . '/mo';
-						} elseif ( false === strpos( $raw_price, '$' ) && 'free' !== strtolower( $raw_price ) ) {
-							$display_price = '$' . $raw_price;
 						} else {
-							$display_price = $raw_price;
+							$price_str = (string) $raw_price;
+							if ( is_numeric( $price_str ) ) {
+								$val           = (float) $price_str;
+								$formatted     = ( floor( $val ) == $val ) ? number_format( $val, 0 ) : number_format( $val, 2 );
+								$display_price = '$' . $formatted . '/mo';
+							} elseif ( false === strpos( $price_str, '$' ) && 'free' !== strtolower( $price_str ) ) {
+								$display_price = '$' . $price_str;
+							} else {
+								$display_price = $price_str;
+							}
 						}
 						$purchase_url   = ( $manifest && '' !== $manifest->getPurchaseUrl() ) ? $manifest->getPurchaseUrl() : ( ! empty( $item['purchase_url'] ) ? $item['purchase_url'] : ( $item['buy_url'] ?? 'https://checkout.freemius.com/plugin/36458/plan/60365/' ) );
 						if ( false !== strpos( $purchase_url, '80445' ) ) {
