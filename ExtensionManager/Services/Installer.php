@@ -186,7 +186,12 @@ class Installer {
 			}
 		}
 
-		@unlink( $tempFile ); // Remove temp zip
+		if ( function_exists( 'wp_delete_file' ) ) {
+			wp_delete_file( $tempFile );
+		} else {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+			@unlink( $tempFile );
+		}
 
 		if ( true !== $unzipped && is_wp_error( $unzipped ) ) {
 			$this->recursiveRmdir( $tempExtractDir );
@@ -238,6 +243,7 @@ class Installer {
 			$this->recursiveRmdir( $targetDir );
 		}
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
 		rename( $tempExtractDir, $targetDir );
 
 		// Register in DB
@@ -263,8 +269,18 @@ class Installer {
 		$files = array_diff( scandir( $dir ), [ '.', '..' ] );
 		foreach ( $files as $file ) {
 			$path = $dir . '/' . $file;
-			( is_dir( $path ) ) ? $this->recursiveRmdir( $path ) : unlink( $path );
+			if ( is_dir( $path ) ) {
+				$this->recursiveRmdir( $path );
+			} else {
+				if ( function_exists( 'wp_delete_file' ) ) {
+					wp_delete_file( $path );
+				} else {
+					// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+					@unlink( $path );
+				}
+			}
 		}
-		return rmdir( $dir );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
+		return @rmdir( $dir );
 	}
 }
