@@ -96,20 +96,20 @@ document.addEventListener('DOMContentLoaded', function() {
 		var rowPayable    = document.getElementById('summary-payable-row');
 		var rowDue        = document.getElementById('summary-due-row');
 
-		if (payType === 'deposit') {
-			// Update Total Amount to show deposit (payable now)
-			if (totalAmountEl) totalAmountEl.textContent = currencySymbol + depositVal.toFixed(2);
+		// Total Amount always shows the full service price
+		if (totalAmountEl) {
+			totalAmountEl.textContent = servicePrice > 0 ? currencySymbol + servicePrice.toFixed(2) : '-';
+		}
 
-			// Fill payable and due rows
+		if (payType === 'deposit') {
+			// Show deposit breakdown rows below
 			if (valPayable) valPayable.textContent = currencySymbol + depositVal.toFixed(2);
 			if (valDue)     valDue.textContent     = currencySymbol + dueVal.toFixed(2);
 
 			if (rowPayable) rowPayable.classList.remove('slotnova-is-hidden');
 			if (rowDue)     rowDue.classList.remove('slotnova-is-hidden');
 		} else {
-			// Restore Total Amount to full service price
-			if (totalAmountEl) totalAmountEl.textContent = servicePrice > 0 ? currencySymbol + servicePrice.toFixed(2) : '-';
-
+			// Hide breakdown rows for Full Payment
 			if (rowPayable) rowPayable.classList.add('slotnova-is-hidden');
 			if (rowDue)     rowDue.classList.add('slotnova-is-hidden');
 		}
