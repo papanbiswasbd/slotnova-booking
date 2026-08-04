@@ -458,6 +458,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					// Update hidden input and trigger search input
 					if (hiddenInput) {
 						hiddenInput.value = value;
+						// Store the price so the deposits extension can read it
+						if (isServiceDropdown && !isNaN(priceVal)) {
+							hiddenInput.setAttribute('data-price', priceVal);
+						}
 					}
 					if (searchInput) {
 						searchInput.value = displayName;

@@ -16,22 +16,28 @@ document.addEventListener('DOMContentLoaded', function() {
 	var primaryColor = box.getAttribute('data-primary-color') || '#2271b1';
 
 	function getSelectedServicePrice() {
-		var serviceSelect = document.getElementById('slotnova_service');
-		if (!serviceSelect) return 0;
+		var serviceInput = document.getElementById('slotnova_service');
+		if (!serviceInput) return 0;
 
-		var selectedOpt = serviceSelect.options ? serviceSelect.options[serviceSelect.selectedIndex] : null;
-		if (!selectedOpt) {
-			selectedOpt = document.querySelector('.slotnova-select-option.selected');
+		// Primary: price stored on the hidden input by slotnova-frontend.js on service selection
+		var inputPrice = parseFloat(serviceInput.getAttribute('data-price'));
+		if (!isNaN(inputPrice) && inputPrice > 0) {
+			return inputPrice;
 		}
 
+		// Fallback 1: currently highlighted/selected custom dropdown option
+		var selectedOpt = document.querySelector('.slotnova-select-option.selected');
 		if (selectedOpt && selectedOpt.getAttribute('data-price')) {
-			return parseFloat(selectedOpt.getAttribute('data-price')) || 0;
+			var optPrice = parseFloat(selectedOpt.getAttribute('data-price'));
+			if (!isNaN(optPrice)) return optPrice;
 		}
 
+		// Fallback 2: a calculated price hidden input
 		var priceInput = document.getElementById('slotnova_calculated_price');
 		if (priceInput && priceInput.value) {
 			return parseFloat(priceInput.value) || 0;
 		}
+
 		return 0;
 	}
 
@@ -128,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			checkRevealPaymentBox();
 			updateDepositSummary();
 		});
-		observer.observe(serviceInput, { attributes: true, attributeFilter: ['value'] });
+		observer.observe(serviceInput, { attributes: true, attributeFilter: ['value', 'data-price'] });
 	}
 
 	checkRevealPaymentBox();
