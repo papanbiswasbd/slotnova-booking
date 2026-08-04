@@ -1,0 +1,15 @@
+{
+    "id": "deposits",
+    "name": "SlotNova Deposits & Partial Payments",
+    "version": "1.0.0",
+    "requires_core": "1.0.0",
+    "requires_php": "7.4",
+    "type": "pro",
+    "price": "2.99",
+    "purchase_url": "https://checkout.freemius.com/plugin/36458/plan/60365/",
+    "demo_url": "https://livelang.pro/slotnova/product/massage-packages/",
+    "settings_url": "admin.php?page=slotnova-settings#slotnova-deposits-settings",
+    "autoload": "bootstrap.php",
+    "namespace": "SlotNova\\Extensions\\Deposits\\",
+    "description": "Accept percentage or fixed upfront deposit payments during WooCommerce booking checkout."
+}
