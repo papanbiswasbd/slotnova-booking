@@ -125,7 +125,7 @@ class Installer {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			throw new ExtensionException( "Cloudflare Worker request failed: " . $response->get_error_message() );
+			throw new ExtensionException( esc_html( sprintf( 'Cloudflare Worker request failed: %s', $response->get_error_message() ) ) );
 		}
 
 		$code        = wp_remote_retrieve_response_code( $response );
@@ -145,14 +145,14 @@ class Installer {
 			$downloadUrl = $requestUrl;
 		} else {
 			$msg = is_array( $body ) && isset( $body['message'] ) ? $body['message'] : 'Invalid license or unauthorized extension download from Cloudflare.';
-			throw new ExtensionException( $msg );
+			throw new ExtensionException( esc_html( $msg ) );
 		}
 
 		// Download ZIP archive from Cloudflare R2 / CDN to temp
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		$tempFile = download_url( $downloadUrl, 300 );
 		if ( is_wp_error( $tempFile ) ) {
-			throw new ExtensionException( "Failed to download extension package: " . $tempFile->get_error_message() );
+			throw new ExtensionException( esc_html( sprintf( 'Failed to download extension package: %s', $tempFile->get_error_message() ) ) );
 		}
 
 		// Verify SHA-256 Checksum
@@ -190,7 +190,7 @@ class Installer {
 
 		if ( true !== $unzipped && is_wp_error( $unzipped ) ) {
 			$this->recursiveRmdir( $tempExtractDir );
-			throw new ExtensionException( "Failed to extract extension package: " . $unzipped->get_error_message() );
+			throw new ExtensionException( esc_html( sprintf( 'Failed to extract extension package: %s', $unzipped->get_error_message() ) ) );
 		}
 
 		// Locate extension.json or bootstrap.php in extracted files
