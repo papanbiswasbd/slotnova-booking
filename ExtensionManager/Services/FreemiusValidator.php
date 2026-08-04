@@ -31,9 +31,9 @@ class FreemiusValidator {
 	 * @var array
 	 */
 	private array $freemiusAppMap = array(
-		'deposits'           => '12345',
-		'google-calendar'   => '12346',
-		'sms-notifications'  => '12347',
+		'deposits'           => '36458',
+		'google-calendar'   => '36449',
+		'sms-notifications'  => '36449',
 	);
 
 	/**
