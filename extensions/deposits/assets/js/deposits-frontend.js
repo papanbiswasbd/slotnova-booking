@@ -88,20 +88,30 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 
 		var dueVal = Math.max(0, servicePrice - depositVal);
-		var valPayable = document.getElementById('slotnova-summary-payable-val');
-		var valDue = document.getElementById('slotnova-summary-due-val');
-		var rowPayable = document.getElementById('slotnova-summary-row-payable');
-		var rowDue = document.getElementById('slotnova-summary-row-due');
+
+		// Correct element IDs matching class-slotnova-frontend.php HTML output
+		var totalAmountEl = document.getElementById('summary-service-price');
+		var valPayable    = document.getElementById('summary-payable-amount');
+		var valDue        = document.getElementById('summary-due-amount');
+		var rowPayable    = document.getElementById('summary-payable-row');
+		var rowDue        = document.getElementById('summary-due-row');
 
 		if (payType === 'deposit') {
+			// Update Total Amount to show deposit (payable now)
+			if (totalAmountEl) totalAmountEl.textContent = currencySymbol + depositVal.toFixed(2);
+
+			// Fill payable and due rows
 			if (valPayable) valPayable.textContent = currencySymbol + depositVal.toFixed(2);
-			if (valDue) valDue.textContent = currencySymbol + dueVal.toFixed(2);
+			if (valDue)     valDue.textContent     = currencySymbol + dueVal.toFixed(2);
 
 			if (rowPayable) rowPayable.classList.remove('slotnova-is-hidden');
-			if (rowDue) rowDue.classList.remove('slotnova-is-hidden');
+			if (rowDue)     rowDue.classList.remove('slotnova-is-hidden');
 		} else {
+			// Restore Total Amount to full service price
+			if (totalAmountEl) totalAmountEl.textContent = servicePrice > 0 ? currencySymbol + servicePrice.toFixed(2) : '-';
+
 			if (rowPayable) rowPayable.classList.add('slotnova-is-hidden');
-			if (rowDue) rowDue.classList.add('slotnova-is-hidden');
+			if (rowDue)     rowDue.classList.add('slotnova-is-hidden');
 		}
 	}
 
