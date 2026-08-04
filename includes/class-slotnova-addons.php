@@ -238,7 +238,7 @@ class SlotNova_Addons {
 						} else {
 							$display_price = $raw_price;
 						}
-						$purchase_url   = ! empty( $item['purchase_url'] ) ? $item['purchase_url'] : ( $item['buy_url'] ?? ( $manifest ? $manifest->getPurchaseUrl() : '' ) );
+						$purchase_url   = ( $manifest && '' !== $manifest->getPurchaseUrl() ) ? $manifest->getPurchaseUrl() : ( ! empty( $item['purchase_url'] ) ? $item['purchase_url'] : ( $item['buy_url'] ?? '' ) );
 						$demo_url       = ! empty( $item['demo_url'] ) ? $item['demo_url'] : ( $manifest ? $manifest->getDemoUrl() : '' );
 						$raw_sett_url   = ! empty( $item['settings_url'] ) ? $item['settings_url'] : ( $manifest ? $manifest->getSettingsUrl() : '' );
 						?>
