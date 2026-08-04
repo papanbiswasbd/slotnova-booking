@@ -78,6 +78,7 @@ class ExtensionManager implements ExtensionManagerInterface {
 	 */
 	private function registerBindings(): void {
 		$this->container->singleton( ExtensionRepository::class, $this->repository );
+		$this->container->singleton( FreemiusValidator::class, FreemiusValidator::class );
 		$this->container->singleton( BookingServiceInterface::class, BookingService::class );
 		$this->container->singleton( StaffServiceInterface::class, StaffService::class );
 		$this->container->singleton( ServiceServiceInterface::class, ServiceService::class );

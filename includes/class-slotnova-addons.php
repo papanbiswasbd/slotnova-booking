@@ -528,6 +528,11 @@ class SlotNova_Addons {
 				return;
 			}
 
+			if ( ! empty( $licenseKey ) ) {
+				$freemiusValidator = \SlotNova\Booking\ExtensionManager\Container\Container::getInstance()->make( \SlotNova\Booking\ExtensionManager\Services\FreemiusValidator::class );
+				$freemiusValidator->validateLicense( $extensionId, $licenseKey );
+			}
+
 			$success = $this->extensionManager->install( $extensionId, $licenseKey );
 			if ( $success ) {
 				$this->repository->updateStatus( $extensionId, 'inactive' );
