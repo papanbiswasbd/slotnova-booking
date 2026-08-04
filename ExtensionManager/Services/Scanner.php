@@ -66,6 +66,7 @@ class Scanner {
 					}
 					$manifests[ $manifest->getId() ] = $manifest;
 				} catch ( ManifestValidationException $e ) {
+					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 					error_log( "[SlotNova ExtensionScanner] Invalid manifest in {$extensionPath}: " . $e->getMessage() );
 				}
 			}
