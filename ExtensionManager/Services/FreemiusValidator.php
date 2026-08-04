@@ -26,6 +26,15 @@ class FreemiusValidator {
 	private $apiEndpoint;
 
 	/**
+	 * Freemius Developer Credentials.
+	 *
+	 * @var string
+	 */
+	private string $developerId        = '26826';
+	private string $developerPublicKey = 'pk_efbfa191a3cf8b19526d29f189177';
+	private string $developerSecretKey = 'sk_cDv*k{6VRH:m<{>6ts-1o;#*IubhO';
+
+	/**
 	 * Map of Extension ID -> Freemius App / Product ID.
 	 *
 	 * @var array
