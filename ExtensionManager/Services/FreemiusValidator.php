@@ -26,6 +26,17 @@ class FreemiusValidator {
 	private $apiEndpoint;
 
 	/**
+	 * Map of Extension ID -> Freemius App / Product ID.
+	 *
+	 * @var array
+	 */
+	private array $freemiusAppMap = array(
+		'deposits'           => '12345',
+		'google-calendar'   => '12346',
+		'sms-notifications'  => '12347',
+	);
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
@@ -33,6 +44,21 @@ class FreemiusValidator {
 			'slotnova_api_endpoint',
 			get_option( 'slotnova_cloudflare_worker_endpoint', 'https://slotnova-booking.papan-biswas-bd.workers.dev/addons/download' )
 		);
+	}
+
+	/**
+	 * Get Freemius App ID for a specific extension.
+	 *
+	 * @param string $extensionId Extension ID.
+	 * @return string
+	 */
+	public function getFreemiusAppId( string $extensionId ): string {
+		$cleanId = ( 0 === strpos( $extensionId, 'slotnova-' ) ) ? substr( $extensionId, 9 ) : $extensionId;
+		$customMap = get_option( 'slotnova_freemius_app_map', array() );
+		if ( is_array( $customMap ) && ! empty( $customMap[ $cleanId ] ) ) {
+			return (string) $customMap[ $cleanId ];
+		}
+		return $this->freemiusAppMap[ $cleanId ] ?? '';
 	}
 
 	/**
@@ -53,13 +79,16 @@ class FreemiusValidator {
 			$domain = wp_parse_url( get_site_url(), PHP_URL_HOST );
 		}
 
+		$freemiusAppId = $this->getFreemiusAppId( $extensionId );
+
 		$requestUrl = add_query_arg(
 			array(
-				'action'       => 'validate_license',
-				'slug'         => $extensionId,
-				'extension_id' => $extensionId,
-				'license_key'  => $licenseKey,
-				'domain'       => $domain,
+				'action'          => 'validate_license',
+				'slug'            => $extensionId,
+				'extension_id'    => $extensionId,
+				'freemius_app_id' => $freemiusAppId,
+				'license_key'     => $licenseKey,
+				'domain'          => $domain,
 			),
 			$this->apiEndpoint
 		);
@@ -70,12 +99,13 @@ class FreemiusValidator {
 				'timeout'   => 30,
 				'sslverify' => true,
 				'body'      => array(
-					'action'       => 'validate_license',
-					'extension_id' => $extensionId,
-					'slug'         => $extensionId,
-					'license_key'  => $licenseKey,
-					'domain'       => $domain,
-					'core_version' => defined( 'SLOTNOVA_BOOKING_VERSION' ) ? SLOTNOVA_BOOKING_VERSION : '1.0.0',
+					'action'          => 'validate_license',
+					'extension_id'    => $extensionId,
+					'slug'            => $extensionId,
+					'freemius_app_id' => $freemiusAppId,
+					'license_key'     => $licenseKey,
+					'domain'          => $domain,
+					'core_version'    => defined( 'SLOTNOVA_BOOKING_VERSION' ) ? SLOTNOVA_BOOKING_VERSION : '1.0.0',
 				),
 			)
 		);
