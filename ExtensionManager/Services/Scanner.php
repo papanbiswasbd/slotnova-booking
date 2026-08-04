@@ -85,12 +85,12 @@ class Scanner {
 	public function parseManifest( string $jsonFile, string $path ): ExtensionManifest {
 		$content = file_get_contents( $jsonFile );
 		if ( false === $content ) {
-			throw new ManifestValidationException( "Unable to read manifest file: {$jsonFile}" );
+			throw new ManifestValidationException( esc_html( sprintf( 'Unable to read manifest file: %s', $jsonFile ) ) );
 		}
 
 		$data = json_decode( $content, true );
 		if ( ! is_array( $data ) ) {
-			throw new ManifestValidationException( "Invalid JSON structure in manifest file: {$jsonFile}" );
+			throw new ManifestValidationException( esc_html( sprintf( 'Invalid JSON structure in manifest file: %s', $jsonFile ) ) );
 		}
 
 		$this->validator->validate( $data );
