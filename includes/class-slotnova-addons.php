@@ -52,7 +52,7 @@ class SlotNova_Addons {
 	 * @return array
 	 */
 	public function get_extensions_catalog(): array {
-		if ( isset( $_GET['sync_cloudflare'] ) || isset( $_GET['force_sync'] ) ) {
+		if ( ( isset( $_GET['sync_cloudflare'] ) || isset( $_GET['force_sync'] ) ) && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'slotnova_sync_cloudflare' ) ) {
 			delete_option( 'slotnova_extensions_known_catalog' );
 		}
 
@@ -157,7 +157,7 @@ class SlotNova_Addons {
 					<p style="color: #94a3b8; margin: 0; font-size: 14px;"><?php esc_html_e( 'Modular extensions loaded inside SlotNova core without cluttering your WordPress plugins list.', 'slotnova-booking' ); ?></p>
 				</div>
 				<div>
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=slotnova-addons&sync_cloudflare=1' ) ); ?>" class="button button-secondary" style="border-radius: 6px; background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2); text-decoration: none; display: inline-flex; align-items: center;">
+					<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=slotnova-addons&sync_cloudflare=1' ), 'slotnova_sync_cloudflare' ) ); ?>" class="button button-secondary" style="border-radius: 6px; background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2); text-decoration: none; display: inline-flex; align-items: center;">
 						🔄 <?php esc_html_e( 'Sync Cloudflare', 'slotnova-booking' ); ?>
 					</a>
 				</div>
@@ -378,6 +378,7 @@ class SlotNova_Addons {
 								<?php if ( $has_update ) : ?>
 									<button type="button" class="button button-primary slotnova-ext-btn" data-action="update" data-id="<?php echo esc_attr( $effective_id ); ?>" style="background: #f59e0b; border-color: #d97706; color: #ffffff; white-space: nowrap; height: 34px; padding: 0 12px; font-size: 12px; flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
 										<span class="dashicons dashicons-update" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span>
+										<?php /* translators: %s: Extension version number */ ?>
 										<span><?php echo esc_html( sprintf( __( 'Update to v%s', 'slotnova-booking' ), $remote_version ) ); ?></span>
 									</button>
 								<?php endif; ?>
@@ -594,7 +595,7 @@ class SlotNova_Addons {
 		check_ajax_referer( 'slotnova_extensions_nonce', 'security' );
 
 		$extensionId = isset( $_POST['extension_id'] ) ? sanitize_key( wp_unslash( $_POST['extension_id'] ) ) : ( isset( $_POST['addon_slug'] ) ? sanitize_key( wp_unslash( $_POST['addon_slug'] ) ) : '' );
-		$rawKey     = isset( $_POST['license_key'] ) ? wp_unslash( $_POST['license_key'] ) : '';
+		$rawKey     = isset( $_POST['license_key'] ) ? sanitize_text_field( wp_unslash( $_POST['license_key'] ) ) : '';
 		$licenseKey = trim( rawurldecode( $rawKey ) );
 		if ( 0 === strpos( $licenseKey, 'sk_' ) ) {
 			$licenseKey = str_replace( array( '%2B', '%2b', ' ' ), '+', $licenseKey );
