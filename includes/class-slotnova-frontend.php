@@ -693,7 +693,7 @@ class Frontend {
 
 		?>
 		<a href="<?php echo esc_url( $order->get_view_order_url() ); ?>" style="font-weight: 700; color: #4f46e5; text-decoration: none;">
-			<?php echo esc_html( _x( '#', 'hash before order number', 'woocommerce' ) . $order->get_order_number() ); ?>
+			<?php echo esc_html( _x( '#', 'hash before order number', 'slotnova-booking' ) . $order->get_order_number() ); ?>
 		</a>
 		<?php
 
