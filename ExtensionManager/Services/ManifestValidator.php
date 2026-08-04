@@ -29,23 +29,25 @@ class ManifestValidator {
 
 		foreach ( $requiredKeys as $key ) {
 			if ( empty( $data[ $key ] ) ) {
-				throw new ManifestValidationException( "Manifest is missing required field: '{$key}'" );
+				throw new ManifestValidationException( esc_html( sprintf( "Manifest is missing required field: '%s'", $key ) ) );
 			}
 		}
 
 		if ( ! preg_match( '/^[a-z0-9\-_]+$/i', $data['id'] ) ) {
-			throw new ManifestValidationException( "Extension ID must contain only alphanumeric characters, dashes, or underscores." );
+			throw new ManifestValidationException( esc_html__( 'Extension ID must contain only alphanumeric characters, dashes, or underscores.', 'slotnova-booking' ) );
 		}
 
 		// Validate PHP version compatibility
 		if ( ! empty( $data['requires_php'] ) ) {
 			if ( version_compare( PHP_VERSION, $data['requires_php'], '<' ) ) {
 				throw new IncompatibleVersionException(
-					sprintf(
-						"Extension '%s' requires PHP version %s or higher (Current: %s).",
-						esc_html( $data['name'] ),
-						esc_html( $data['requires_php'] ),
-						PHP_VERSION
+					esc_html(
+						sprintf(
+							"Extension '%s' requires PHP version %s or higher (Current: %s).",
+							$data['name'],
+							$data['requires_php'],
+							PHP_VERSION
+						)
 					)
 				);
 			}
@@ -55,11 +57,13 @@ class ManifestValidator {
 		if ( ! empty( $data['requires_core'] ) && defined( 'SLOTNOVA_BOOKING_VERSION' ) ) {
 			if ( version_compare( SLOTNOVA_BOOKING_VERSION, $data['requires_core'], '<' ) ) {
 				throw new IncompatibleVersionException(
-					sprintf(
-						"Extension '%s' requires SlotNova Core version %s or higher (Current: %s).",
-						esc_html( $data['name'] ),
-						esc_html( $data['requires_core'] ),
-						SLOTNOVA_BOOKING_VERSION
+					esc_html(
+						sprintf(
+							"Extension '%s' requires SlotNova Core version %s or higher (Current: %s).",
+							$data['name'],
+							$data['requires_core'],
+							SLOTNOVA_BOOKING_VERSION
+						)
 					)
 				);
 			}
