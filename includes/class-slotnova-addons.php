@@ -299,7 +299,7 @@ class SlotNova_Addons {
 									$lic_name    = ! empty( $licenseData['customer_name'] ) ? $licenseData['customer_name'] : 'Valued Customer';
 									$lic_email   = ! empty( $licenseData['customer_email'] ) ? $licenseData['customer_email'] : '';
 									$lic_plan    = ! empty( $licenseData['plan_name'] ) ? $licenseData['plan_name'] : 'Pro Plan';
-									$lic_expires = ! empty( $licenseData['expires_at'] ) ? $licenseData['expires_at'] : ( ! empty( $licenseData['expires'] ) ? $licenseData['expires'] : 'Lifetime' );
+									$lic_expires = ! empty( $licenseData['expires_at'] ) ? $licenseData['expires_at'] : ( ! empty( $licenseData['expires'] ) ? $licenseData['expires'] : 'Renews Monthly' );
 									$lic_key     = ! empty( $licenseData['license_key'] ) ? $licenseData['license_key'] : '';
 									$masked_key  = ( strlen( $lic_key ) > 12 ) ? substr( $lic_key, 0, 7 ) . '...' . substr( $lic_key, -5 ) : $lic_key;
 								?>
