@@ -64,7 +64,7 @@ class ExtensionRepository {
 		// Direct fallback if dbDelta did not create the table
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $this->table ) ) !== $this->table ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 			$wpdb->query( $sql );
 		}
 	}
@@ -78,12 +78,12 @@ class ExtensionRepository {
 	public function get( string $id ): ?ExtensionState {
 		global $wpdb;
 		$outputType = defined( 'ARRAY_A' ) ? ARRAY_A : 'ARRAY_A';
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$this->table} WHERE id = %s", $id ), $outputType );
 
 		if ( ! $row ) {
 			$altId = ( 0 === strpos( $id, 'slotnova-' ) ) ? substr( $id, 9 ) : 'slotnova-' . $id;
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$row   = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$this->table} WHERE id = %s", $altId ), $outputType );
 		}
 
@@ -118,7 +118,7 @@ class ExtensionRepository {
 	public function getAllInstalled(): array {
 		global $wpdb;
 		$outputType = defined( 'ARRAY_A' ) ? ARRAY_A : 'ARRAY_A';
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$rows = $wpdb->get_results( "SELECT * FROM {$this->table}", $outputType );
 		$list = [];
 		if ( is_array( $rows ) ) {
@@ -208,7 +208,7 @@ class ExtensionRepository {
 		$outputType = defined( 'ARRAY_A' ) ? ARRAY_A : 'ARRAY_A';
 		$list       = [];
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$rows = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$this->table} WHERE status = %s", ExtensionState::STATUS_ACTIVE ), $outputType );
 		if ( is_array( $rows ) ) {
 			foreach ( $rows as $row ) {
@@ -351,8 +351,9 @@ class ExtensionRepository {
 		$result = $wpdb->replace( $this->table, $data );
 
 		if ( false === $result ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			error_log( "[SlotNova ExtensionRepository] DB Replace failed for '{$state->getId()}': " . $wpdb->last_error );
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$existing = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$this->table} WHERE id = %s", $state->getId() ) );
 			if ( $existing ) {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching

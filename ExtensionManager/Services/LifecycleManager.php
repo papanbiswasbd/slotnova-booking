@@ -68,11 +68,24 @@ class LifecycleManager {
 	}
 
 	private function recursiveRmdir( string $dir ): bool {
+		if ( ! is_dir( $dir ) ) {
+			return false;
+		}
 		$files = array_diff( scandir( $dir ), [ '.', '..' ] );
 		foreach ( $files as $file ) {
 			$path = $dir . '/' . $file;
-			( is_dir( $path ) ) ? $this->recursiveRmdir( $path ) : unlink( $path );
+			if ( is_dir( $path ) ) {
+				$this->recursiveRmdir( $path );
+			} else {
+				if ( function_exists( 'wp_delete_file' ) ) {
+					wp_delete_file( $path );
+				} else {
+					// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+					@unlink( $path );
+				}
+			}
 		}
-		return rmdir( $dir );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
+		return @rmdir( $dir );
 	}
 }
