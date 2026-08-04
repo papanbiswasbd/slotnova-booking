@@ -754,6 +754,8 @@ class Admin {
 		register_setting( 'slotnova_settings_group', 'slotnova_bg_color', array( 'sanitize_callback' => 'sanitize_hex_color' ) );
 		register_setting( 'slotnova_settings_group', 'slotnova_text_color', array( 'sanitize_callback' => 'sanitize_hex_color' ) );
 		register_setting( 'slotnova_settings_group', 'slotnova_border_radius', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+
+		do_action( 'slotnova_register_settings' );
 	}
 
 	/**
@@ -1587,8 +1589,10 @@ class Admin {
 	 * @return array
 	 */
 	private function get_all_bookings_data( $search = '', $service_filter = '', $employee_filter = '', $status_filter = '' ) {
-		$args   = array(
-			'status' => array( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-pending', 'wc-cancelled', 'wc-refunded' ),
+		$default_statuses = array( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-pending', 'wc-cancelled', 'wc-refunded', 'wc-partial-deposit', 'partial-deposit' );
+		$statuses         = apply_filters( 'slotnova_bookings_query_statuses', $default_statuses );
+		$args             = array(
+			'status' => $statuses,
 			'limit'  => -1,
 		);
 		$orders = wc_get_orders( $args );
@@ -1635,21 +1639,26 @@ class Admin {
 						}
 					}
 
+					$order_total_val = $order->get_subtotal();
+					if ( $order_total_val <= 0 ) {
+						$order_total_val = $order->get_total();
+					}
+
 					$list_data[] = array(
-						'order_id'   => $order->get_id(),
-						'order_url'  => $order->get_edit_order_url(),
-						'customer'   => $customer_name,
-						'email'      => $email,
-						'phone'      => $phone,
-						'address'    => str_replace( '<br/>', ', ', $order->get_formatted_billing_address() ),
-						'service'    => ! empty( $service ) ? $service : __( 'General Service', 'slotnova-booking' ),
-						'employee'   => ! empty( $employee ) ? $employee : __( 'Any Staff', 'slotnova-booking' ),
-						'date'       => $booking_date,
-						'time'       => ! empty( $time ) ? $time : __( 'All Day', 'slotnova-booking' ),
+						'order_id'        => $order->get_id(),
+						'order_url'       => $order->get_edit_order_url(),
+						'customer'        => $customer_name,
+						'email'           => $email,
+						'phone'           => $phone,
+						'address'         => str_replace( '<br/>', ', ', $order->get_formatted_billing_address() ),
+						'service'         => ! empty( $service ) ? $service : __( 'General Service', 'slotnova-booking' ),
+						'employee'        => ! empty( $employee ) ? $employee : __( 'Any Staff', 'slotnova-booking' ),
+						'date'            => $booking_date,
+						'time'            => ! empty( $time ) ? $time : __( 'All Day', 'slotnova-booking' ),
 						'status'          => wc_get_order_status_name( $order_status ),
 						'status_raw'      => $order_status,
-						'total'           => $item->get_total(),
-						'total_formatted' => wp_kses_post( wc_price( $item->get_total() ) ),
+						'total'           => $order_total_val,
+						'total_formatted' => function_exists( 'wc_price' ) ? wc_price( $order_total_val ) : '$' . number_format( $order_total_val, 2 ),
 					);
 
 					$event_title = $customer_name . ' - ' . ( ! empty( $service ) ? $service : __( 'Booking', 'slotnova-booking' ) );
@@ -1772,6 +1781,7 @@ class Admin {
 						<select name="status" class="slotnova-select-styled">
 							<option value=""><?php esc_html_e( 'All Statuses', 'slotnova-booking' ); ?></option>
 							<option value="processing" <?php selected( $status_filter, 'processing' ); ?>><?php esc_html_e( 'Processing', 'slotnova-booking' ); ?></option>
+							<option value="partial-deposit" <?php selected( $status_filter, 'partial-deposit' ); ?>><?php esc_html_e( 'Partial Deposit', 'slotnova-booking' ); ?></option>
 							<option value="completed" <?php selected( $status_filter, 'completed' ); ?>><?php esc_html_e( 'Completed', 'slotnova-booking' ); ?></option>
 							<option value="on-hold" <?php selected( $status_filter, 'on-hold' ); ?>><?php esc_html_e( 'On Hold', 'slotnova-booking' ); ?></option>
 							<option value="cancelled" <?php selected( $status_filter, 'cancelled' ); ?>><?php esc_html_e( 'Cancelled', 'slotnova-booking' ); ?></option>
@@ -1800,6 +1810,7 @@ class Admin {
 								<th><?php esc_html_e( 'Service', 'slotnova-booking' ); ?></th>
 								<th><?php esc_html_e( 'Assigned Staff', 'slotnova-booking' ); ?></th>
 								<th><?php esc_html_e( 'Booking Date & Time', 'slotnova-booking' ); ?></th>
+								<th><?php esc_html_e( 'Amount', 'slotnova-booking' ); ?></th>
 								<th><?php esc_html_e( 'Status', 'slotnova-booking' ); ?></th>
 								<th style="width: 110px; text-align: right;"><?php esc_html_e( 'Action', 'slotnova-booking' ); ?></th>
 							</tr>
@@ -1807,7 +1818,7 @@ class Admin {
 						<tbody>
 							<?php if ( empty( $data['list'] ) ) : ?>
 								<tr>
-									<td colspan="7" class="slotnova-empty-table-cell">
+									<td colspan="8" class="slotnova-empty-table-cell">
 										<div class="slotnova-empty-state">
 											<div class="slotnova-empty-icon"><span class="dashicons dashicons-calendar-alt"></span></div>
 											<p><?php esc_html_e( 'No bookings matching your criteria.', 'slotnova-booking' ); ?></p>
@@ -1855,7 +1866,24 @@ class Admin {
 											</div>
 										</td>
 										<td>
-											<span class="slotnova-badge status-<?php echo sanitize_html_class( strtolower( $booking['status_raw'] ) ); ?>">
+											<div style="font-weight: 700; color: #0f172a; font-size: 13.5px;">
+												<?php echo wp_kses_post( $booking['total_formatted'] ); ?>
+											</div>
+											<?php if ( ! empty( $booking['is_deposit'] ) ) : ?>
+												<?php if ( ! empty( $booking['deposit_paid_formatted'] ) ) : ?>
+													<div style="font-size: 11px; color: #166534; font-weight: 600; margin-top: 2px;">
+														<?php esc_html_e( 'Paid:', 'slotnova-booking' ); ?> <?php echo wp_kses_post( $booking['deposit_paid_formatted'] ); ?>
+													</div>
+												<?php endif; ?>
+												<?php if ( ! empty( $booking['deposit_due_formatted'] ) ) : ?>
+													<div style="font-size: 11px; color: #dc2626; font-weight: 700; margin-top: 2px;">
+														<?php esc_html_e( 'Due:', 'slotnova-booking' ); ?> <?php echo wp_kses_post( $booking['deposit_due_formatted'] ); ?>
+													</div>
+												<?php endif; ?>
+											<?php endif; ?>
+										</td>
+										<td>
+											<span class="slotnova-badge status-<?php echo sanitize_html_class( strtolower( str_replace( 'wc-', '', $booking['status_raw'] ) ) ); ?>">
 												<?php echo esc_html( $booking['status'] ); ?>
 											</span>
 										</td>
@@ -2212,143 +2240,258 @@ class Admin {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'slotnova-booking' ) );
 		}
-		?>
-		<div class="wrap">
-			<h1><?php esc_html_e( 'SlotNova Global Settings', 'slotnova-booking' ); ?></h1>
-			<form method="post" action="options.php">
-				<?php
-				settings_fields( 'slotnova_settings_group' );
-				do_settings_sections( 'slotnova_settings_group' );
 
-				$opening_time  = get_option( 'slotnova_opening_time', '09:00' );
-				$closing_time  = get_option( 'slotnova_closing_time', '17:00' );
-				$weekly_off    = get_option( 'slotnova_weekly_off_days', array() );
-				if ( ! is_array( $weekly_off ) ) {
-					$weekly_off = array();
+		$opening_time = get_option( 'slotnova_opening_time', '09:00' );
+		$closing_time = get_option( 'slotnova_closing_time', '17:00' );
+		$weekly_off   = get_option( 'slotnova_weekly_off_days', array() );
+		if ( ! is_array( $weekly_off ) ) {
+			$weekly_off = array();
+		}
+
+		$days_of_week = array(
+			'Sunday'    => __( 'Sunday', 'slotnova-booking' ),
+			'Monday'    => __( 'Monday', 'slotnova-booking' ),
+			'Tuesday'   => __( 'Tuesday', 'slotnova-booking' ),
+			'Wednesday' => __( 'Wednesday', 'slotnova-booking' ),
+			'Thursday'  => __( 'Thursday', 'slotnova-booking' ),
+			'Friday'    => __( 'Friday', 'slotnova-booking' ),
+			'Saturday'  => __( 'Saturday', 'slotnova-booking' ),
+		);
+
+		$ext_tabs = apply_filters( 'slotnova_settings_vertical_tabs', array() );
+		?>
+		<div class="wrap slotnova-vsettings-wrap">
+			<h1 class="wp-heading-inline" style="font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 16px;"><?php esc_html_e( 'SlotNova Settings', 'slotnova-booking' ); ?></h1>
+			<hr class="wp-header-end">
+
+			<div class="slotnova-vtabs-layout" style="display: flex; gap: 24px; margin-top: 20px; align-items: flex-start;">
+
+				<!-- Left Vertical Tab Sidebar -->
+				<div class="slotnova-vtabs-sidebar" style="width: 250px; min-width: 250px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); flex-shrink: 0;">
+					<ul class="slotnova-vtabs-list" style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px;">
+						<li>
+							<a href="#general" class="slotnova-vtab-link active" data-tab="general" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 600; font-size: 13px; color: #4f46e5; background: #e0e7ff; text-decoration: none; transition: all 0.2s ease;">
+								<span class="dashicons dashicons-admin-generic" style="font-size: 18px; width: 18px; height: 18px;"></span>
+								<span><?php esc_html_e( 'General & Schedule', 'slotnova-booking' ); ?></span>
+							</a>
+						</li>
+						<li>
+							<a href="#styling" class="slotnova-vtab-link" data-tab="styling" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 600; font-size: 13px; color: #64748b; text-decoration: none; transition: all 0.2s ease;">
+								<span class="dashicons dashicons-admin-appearance" style="font-size: 18px; width: 18px; height: 18px;"></span>
+								<span><?php esc_html_e( 'Style & Theme', 'slotnova-booking' ); ?></span>
+							</a>
+						</li>
+						<?php if ( ! empty( $ext_tabs ) && is_array( $ext_tabs ) ) : ?>
+							<?php foreach ( $ext_tabs as $tab_id => $tab_data ) :
+								$tab_title = $tab_data['title'] ?? ucfirst( $tab_id );
+								$tab_icon  = $tab_data['icon'] ?? 'dashicons-admin-plugins';
+								?>
+								<li>
+									<a href="#<?php echo esc_attr( $tab_id ); ?>" class="slotnova-vtab-link" data-tab="<?php echo esc_attr( $tab_id ); ?>" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 600; font-size: 13px; color: #64748b; text-decoration: none; transition: all 0.2s ease;">
+										<span class="dashicons <?php echo esc_attr( $tab_icon ); ?>" style="font-size: 18px; width: 18px; height: 18px;"></span>
+										<span><?php echo esc_html( $tab_title ); ?></span>
+									</a>
+								</li>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					</ul>
+				</div>
+
+				<!-- Right Main Panel Area -->
+				<div class="slotnova-vtabs-content" style="flex: 1; min-width: 0;">
+					<form method="post" action="options.php">
+						<?php
+						settings_fields( 'slotnova_settings_group' );
+						do_settings_sections( 'slotnova_settings_group' );
+						?>
+
+						<!-- Panel 1: General & Schedule -->
+						<div class="slotnova-vtab-panel" id="slotnova-vtab-general" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+							<h2 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;"><?php esc_html_e( 'Smart Time Slot Generator', 'slotnova-booking' ); ?></h2>
+							<table class="form-table" style="margin-top: 0;">
+								<tr valign="top">
+									<th scope="row"><?php esc_html_e( 'Enable Time Slots', 'slotnova-booking' ); ?></th>
+									<td>
+										<fieldset>
+											<label>
+												<input type="checkbox" name="slotnova_enable_time_slots" value="yes" <?php checked( get_option( 'slotnova_enable_time_slots', 'yes' ), 'yes' ); ?> />
+												<strong><?php esc_html_e( 'Enable time slot selection for bookings', 'slotnova-booking' ); ?></strong>
+											</label>
+										</fieldset>
+										<p class="description"><?php esc_html_e( 'If disabled, customers will only select a Date for their booking.', 'slotnova-booking' ); ?></p>
+									</td>
+								</tr>
+								<tr valign="top">
+									<th scope="row"><?php esc_html_e( 'Opening Time', 'slotnova-booking' ); ?></th>
+									<td>
+										<input type="time" name="slotnova_opening_time" value="<?php echo esc_attr( $opening_time ); ?>" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1;" />
+										<p class="description"><?php esc_html_e( 'When does your business open? (e.g. 09:00 AM)', 'slotnova-booking' ); ?></p>
+									</td>
+								</tr>
+								<tr valign="top">
+									<th scope="row"><?php esc_html_e( 'Closing Time', 'slotnova-booking' ); ?></th>
+									<td>
+										<input type="time" name="slotnova_closing_time" value="<?php echo esc_attr( $closing_time ); ?>" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1;" />
+										<p class="description"><?php esc_html_e( 'When does your business close? (e.g. 05:00 PM)', 'slotnova-booking' ); ?></p>
+									</td>
+								</tr>
+								<tr>
+									<th scope="row"><?php esc_html_e( 'Slot Duration (Minutes)', 'slotnova-booking' ); ?></th>
+									<td>
+										<input type="number" name="slotnova_slot_duration" value="<?php echo esc_attr( get_option( 'slotnova_slot_duration', '60' ) ); ?>" class="regular-text" step="5" min="5" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1;" />
+										<p class="description"><?php esc_html_e( 'Duration of each booking slot (e.g., 60 for 1 hour).', 'slotnova-booking' ); ?></p>
+									</td>
+								</tr>
+							</table>
+
+							<h2 style="margin: 24px 0 16px 0; font-size: 18px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;"><?php esc_html_e( 'Off-Days & Vacations', 'slotnova-booking' ); ?></h2>
+							<table class="form-table" style="margin-top: 0;">
+								<tr valign="top">
+									<th scope="row"><?php esc_html_e( 'Weekly Off-Days', 'slotnova-booking' ); ?></th>
+									<td>
+										<fieldset>
+											<?php foreach ( $days_of_week as $day_key => $day_label ) : ?>
+												<label class="slotnova-checkbox-label" style="display: inline-block; margin-right: 12px; margin-bottom: 6px;">
+													<input type="checkbox" name="slotnova_weekly_off_days[]" value="<?php echo esc_attr( $day_key ); ?>" class="slotnova-checkbox-input" <?php checked( in_array( $day_key, $weekly_off, true ) ); ?> />
+													<?php echo esc_html( $day_label ); ?>
+												</label>
+											<?php endforeach; ?>
+										</fieldset>
+										<p class="description"><?php esc_html_e( 'Select days of the week when your business is always closed.', 'slotnova-booking' ); ?></p>
+									</td>
+								</tr>
+								<tr>
+									<th scope="row"><?php esc_html_e( 'Specific Vacations', 'slotnova-booking' ); ?></th>
+									<td>
+										<input type="text" name="slotnova_specific_off_days" id="slotnova_specific_off_days" class="large-text" value="<?php echo esc_attr( get_option( 'slotnova_specific_off_days' ) ); ?>" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1;" />
+										<p class="description"><?php esc_html_e( 'Select multiple specific dates you will be closed.', 'slotnova-booking' ); ?></p>
+									</td>
+								</tr>
+							</table>
+						</div>
+
+						<!-- Panel 2: Style & Theme -->
+						<div class="slotnova-vtab-panel" id="slotnova-vtab-styling" style="display: none; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+							<h2 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700; color: #0f172a;"><?php esc_html_e( 'Style & Theme Controls', 'slotnova-booking' ); ?></h2>
+							<p style="color: #64748b; font-size: 13px; margin: 0 0 20px 0; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;"><?php esc_html_e( 'Customize colors and visual styling of your booking forms.', 'slotnova-booking' ); ?></p>
+
+							<table class="form-table" style="margin-top: 0;">
+								<tr valign="top">
+									<th scope="row"><?php esc_html_e( 'Primary Theme Color', 'slotnova-booking' ); ?></th>
+									<td>
+										<input type="text" name="slotnova_primary_color" value="<?php echo esc_attr( get_option( 'slotnova_primary_color', '#2271b1' ) ); ?>" class="slotnova-color-picker" data-default-color="#2271b1" />
+										<p class="description"><?php esc_html_e( 'Primary accent color for active buttons, time pills, focus borders, and calendar selections.', 'slotnova-booking' ); ?></p>
+									</td>
+								</tr>
+								<tr valign="top">
+									<th scope="row"><?php esc_html_e( 'Hover / Accent Color', 'slotnova-booking' ); ?></th>
+									<td>
+										<input type="text" name="slotnova_accent_color" value="<?php echo esc_attr( get_option( 'slotnova_accent_color', '#135e96' ) ); ?>" class="slotnova-color-picker" data-default-color="#135e96" />
+										<p class="description"><?php esc_html_e( 'Hover state color for interactive buttons and pills.', 'slotnova-booking' ); ?></p>
+									</td>
+								</tr>
+								<tr valign="top">
+									<th scope="row"><?php esc_html_e( 'Card & Container Background', 'slotnova-booking' ); ?></th>
+									<td>
+										<input type="text" name="slotnova_bg_color" value="<?php echo esc_attr( get_option( 'slotnova_bg_color', '#ffffff' ) ); ?>" class="slotnova-color-picker" data-default-color="#ffffff" />
+										<p class="description"><?php esc_html_e( 'Background color for booking summary cards and dropdown popups.', 'slotnova-booking' ); ?></p>
+									</td>
+								</tr>
+								<tr valign="top">
+									<th scope="row"><?php esc_html_e( 'Text & Title Color', 'slotnova-booking' ); ?></th>
+									<td>
+										<input type="text" name="slotnova_text_color" value="<?php echo esc_attr( get_option( 'slotnova_text_color', '#0f172a' ) ); ?>" class="slotnova-color-picker" data-default-color="#0f172a" />
+										<p class="description"><?php esc_html_e( 'Color for text labels, service names, and section titles.', 'slotnova-booking' ); ?></p>
+									</td>
+								</tr>
+								<tr valign="top">
+									<th scope="row"><?php esc_html_e( 'Corner Rounding (Border Radius)', 'slotnova-booking' ); ?></th>
+									<td>
+										<?php $radius = get_option( 'slotnova_border_radius', '12px' ); ?>
+										<select name="slotnova_border_radius" style="min-width: 200px; padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1;">
+											<option value="6px" <?php selected( $radius, '6px' ); ?>><?php esc_html_e( 'Compact (6px)', 'slotnova-booking' ); ?></option>
+											<option value="8px" <?php selected( $radius, '8px' ); ?>><?php esc_html_e( 'Medium (8px)', 'slotnova-booking' ); ?></option>
+											<option value="12px" <?php selected( $radius, '12px' ); ?>><?php esc_html_e( 'Rounded (12px)', 'slotnova-booking' ); ?></option>
+											<option value="16px" <?php selected( $radius, '16px' ); ?>><?php esc_html_e( 'Extra Rounded (16px)', 'slotnova-booking' ); ?></option>
+											<option value="24px" <?php selected( $radius, '24px' ); ?>><?php esc_html_e( 'Pill (24px)', 'slotnova-booking' ); ?></option>
+										</select>
+										<p class="description"><?php esc_html_e( 'Controls the roundness of buttons, summary cards, and dropdown triggers.', 'slotnova-booking' ); ?></p>
+									</td>
+								</tr>
+							</table>
+						</div>
+
+						<!-- Dynamic Extension Panels -->
+						<?php
+						do_action( 'slotnova_settings_tab_content' );
+						do_action( 'slotnova_after_settings_sections' );
+						?>
+
+						<div style="margin-top: 20px; padding-top: 16px;">
+							<?php submit_button(); ?>
+						</div>
+					</form>
+				</div>
+
+			</div>
+		</div>
+
+		<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			function activateVTab(targetId) {
+				if (!targetId) return;
+				var cleanId = targetId.replace('#', '');
+				if (cleanId.indexOf('slotnova-') === 0) {
+					cleanId = cleanId.replace('slotnova-', '').replace('-settings', '');
 				}
 
-				$days_of_week = array(
-					'Sunday'    => __( 'Sunday', 'slotnova-booking' ),
-					'Monday'    => __( 'Monday', 'slotnova-booking' ),
-					'Tuesday'   => __( 'Tuesday', 'slotnova-booking' ),
-					'Wednesday' => __( 'Wednesday', 'slotnova-booking' ),
-					'Thursday'  => __( 'Thursday', 'slotnova-booking' ),
-					'Friday'    => __( 'Friday', 'slotnova-booking' ),
-					'Saturday'  => __( 'Saturday', 'slotnova-booking' ),
-				);
-				?>
-				<h2><?php esc_html_e( 'Smart Time Slot Generator', 'slotnova-booking' ); ?></h2>
-				<table class="form-table">
-					<tr valign="top">
-						<th scope="row"><?php esc_html_e( 'Enable Time Slots', 'slotnova-booking' ); ?></th>
-						<td>
-							<fieldset>
-								<label>
-									<input type="checkbox" name="slotnova_enable_time_slots" value="yes" <?php checked( get_option( 'slotnova_enable_time_slots', 'yes' ), 'yes' ); ?> />
-									<?php esc_html_e( 'Enable time slot selection for bookings.', 'slotnova-booking' ); ?>
-								</label>
-							</fieldset>
-							<p class="description"><?php esc_html_e( 'If disabled, customers will only select a Date for their booking.', 'slotnova-booking' ); ?></p>
-						</td>
-					</tr>
-					<tr valign="top">
-						<th scope="row"><?php esc_html_e( 'Opening Time', 'slotnova-booking' ); ?></th>
-						<td>
-							<input type="time" name="slotnova_opening_time" value="<?php echo esc_attr( $opening_time ); ?>" />
-							<p class="description"><?php esc_html_e( 'When does your business open? (e.g. 09:00 AM)', 'slotnova-booking' ); ?></p>
-						</td>
-					</tr>
-					<tr valign="top">
-						<th scope="row"><?php esc_html_e( 'Closing Time', 'slotnova-booking' ); ?></th>
-						<td>
-							<input type="time" name="slotnova_closing_time" value="<?php echo esc_attr( $closing_time ); ?>" />
-							<p class="description"><?php esc_html_e( 'When does your business close? (e.g. 05:00 PM)', 'slotnova-booking' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Slot Duration (Minutes)', 'slotnova-booking' ); ?></th>
-						<td>
-							<input type="number" name="slotnova_slot_duration" value="<?php echo esc_attr( get_option( 'slotnova_slot_duration', '60' ) ); ?>" class="regular-text" step="5" min="5" />
-							<p class="description"><?php esc_html_e( 'Duration of each booking slot (e.g., 60 for 1 hour).', 'slotnova-booking' ); ?></p>
-						</td>
-					</tr>
-				</table>
+				var links = document.querySelectorAll('.slotnova-vtab-link');
+				var panels = document.querySelectorAll('.slotnova-vtab-panel');
+				var found = false;
 
-				<h2><?php esc_html_e( 'Off-Days & Vacations', 'slotnova-booking' ); ?></h2>
-				<table class="form-table">
-					<tr valign="top">
-						<th scope="row"><?php esc_html_e( 'Weekly Off-Days', 'slotnova-booking' ); ?></th>
-						<td>
-							<fieldset>
-								<?php foreach ( $days_of_week as $day_key => $day_label ) : ?>
-									<label class="slotnova-checkbox-label">
-										<input type="checkbox" name="slotnova_weekly_off_days[]" value="<?php echo esc_attr( $day_key ); ?>" class="slotnova-checkbox-input" <?php checked( in_array( $day_key, $weekly_off, true ) ); ?> />
-										<?php echo esc_html( $day_label ); ?>
-									</label>
-								<?php endforeach; ?>
-							</fieldset>
-							<p class="description"><?php esc_html_e( 'Select days of the week when your business is always closed.', 'slotnova-booking' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Specific Vacations', 'slotnova-booking' ); ?></th>
-						<td>
-							<input type="text" name="slotnova_specific_off_days" id="slotnova_specific_off_days" class="large-text" value="<?php echo esc_attr( get_option( 'slotnova_specific_off_days' ) ); ?>" />
-							<p class="description"><?php esc_html_e( 'Select multiple specific dates you will be closed.', 'slotnova-booking' ); ?></p>
-						</td>
-					</tr>
-				</table>
+				links.forEach(function(link) {
+					var tabName = link.getAttribute('data-tab');
+					if (tabName === cleanId) {
+						link.classList.add('active');
+						link.style.background = '#e0e7ff';
+						link.style.color = '#4f46e5';
+						found = true;
+					} else {
+						link.classList.remove('active');
+						link.style.background = 'transparent';
+						link.style.color = '#64748b';
+					}
+				});
 
-				<h2><?php esc_html_e( 'Style & Theme Controls', 'slotnova-booking' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Customize colors and visual styling of your booking forms.', 'slotnova-booking' ); ?></p>
-				<table class="form-table">
-					<tr valign="top">
-						<th scope="row"><?php esc_html_e( 'Primary Theme Color', 'slotnova-booking' ); ?></th>
-						<td>
-							<input type="text" name="slotnova_primary_color" value="<?php echo esc_attr( get_option( 'slotnova_primary_color', '#2271b1' ) ); ?>" class="slotnova-color-picker" data-default-color="#2271b1" />
-							<p class="description"><?php esc_html_e( 'Primary accent color for active buttons, time pills, focus borders, and calendar selections.', 'slotnova-booking' ); ?></p>
-						</td>
-					</tr>
-					<tr valign="top">
-						<th scope="row"><?php esc_html_e( 'Hover / Accent Color', 'slotnova-booking' ); ?></th>
-						<td>
-							<input type="text" name="slotnova_accent_color" value="<?php echo esc_attr( get_option( 'slotnova_accent_color', '#135e96' ) ); ?>" class="slotnova-color-picker" data-default-color="#135e96" />
-							<p class="description"><?php esc_html_e( 'Hover state color for interactive buttons and pills.', 'slotnova-booking' ); ?></p>
-						</td>
-					</tr>
-					<tr valign="top">
-						<th scope="row"><?php esc_html_e( 'Card & Container Background', 'slotnova-booking' ); ?></th>
-						<td>
-							<input type="text" name="slotnova_bg_color" value="<?php echo esc_attr( get_option( 'slotnova_bg_color', '#ffffff' ) ); ?>" class="slotnova-color-picker" data-default-color="#ffffff" />
-							<p class="description"><?php esc_html_e( 'Background color for booking summary cards and dropdown popups.', 'slotnova-booking' ); ?></p>
-						</td>
-					</tr>
-					<tr valign="top">
-						<th scope="row"><?php esc_html_e( 'Text & Title Color', 'slotnova-booking' ); ?></th>
-						<td>
-							<input type="text" name="slotnova_text_color" value="<?php echo esc_attr( get_option( 'slotnova_text_color', '#0f172a' ) ); ?>" class="slotnova-color-picker" data-default-color="#0f172a" />
-							<p class="description"><?php esc_html_e( 'Color for text labels, service names, and section titles.', 'slotnova-booking' ); ?></p>
-						</td>
-					</tr>
-					<tr valign="top">
-						<th scope="row"><?php esc_html_e( 'Corner Rounding (Border Radius)', 'slotnova-booking' ); ?></th>
-						<td>
-							<?php $radius = get_option( 'slotnova_border_radius', '12px' ); ?>
-							<select name="slotnova_border_radius">
-								<option value="6px" <?php selected( $radius, '6px' ); ?>><?php esc_html_e( 'Compact (6px)', 'slotnova-booking' ); ?></option>
-								<option value="8px" <?php selected( $radius, '8px' ); ?>><?php esc_html_e( 'Medium (8px)', 'slotnova-booking' ); ?></option>
-								<option value="12px" <?php selected( $radius, '12px' ); ?>><?php esc_html_e( 'Rounded (12px)', 'slotnova-booking' ); ?></option>
-								<option value="16px" <?php selected( $radius, '16px' ); ?>><?php esc_html_e( 'Extra Rounded (16px)', 'slotnova-booking' ); ?></option>
-								<option value="24px" <?php selected( $radius, '24px' ); ?>><?php esc_html_e( 'Pill (24px)', 'slotnova-booking' ); ?></option>
-							</select>
-							<p class="description"><?php esc_html_e( 'Controls the roundness of buttons, summary cards, and dropdown triggers.', 'slotnova-booking' ); ?></p>
-						</td>
-					</tr>
-				</table>
+				if (found) {
+					panels.forEach(function(panel) {
+						var panelId = panel.id.replace('slotnova-vtab-', '').replace('slotnova-', '').replace('-settings', '');
+						if (panelId === cleanId) {
+							panel.style.display = 'block';
+						} else {
+							panel.style.display = 'none';
+						}
+					});
+					try {
+						localStorage.setItem('slotnova_active_settings_tab', cleanId);
+						if (history.replaceState) {
+							history.replaceState(null, null, '#' + cleanId);
+						}
+					} catch(e) {}
+				}
+			}
 
-				<?php submit_button(); ?>
-			</form>
-		</div>
+			var initialHash = window.location.hash ? window.location.hash : (localStorage.getItem('slotnova_active_settings_tab') || 'general');
+			activateVTab(initialHash);
+
+			document.querySelectorAll('.slotnova-vtab-link').forEach(function(link) {
+				link.addEventListener('click', function(e) {
+					var tabId = this.getAttribute('data-tab');
+					activateVTab(tabId);
+				});
+			});
+		});
+		</script>
 		<?php
 	}
 

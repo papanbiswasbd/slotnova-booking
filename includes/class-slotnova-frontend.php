@@ -37,6 +37,9 @@ class Frontend {
 		// AJAX endpoint for fetching booked time slots
 		add_action( 'wp_ajax_slotnova_get_booked_slots', array( $this, 'ajax_get_booked_slots' ) );
 		add_action( 'wp_ajax_nopriv_slotnova_get_booked_slots', array( $this, 'ajax_get_booked_slots' ) );
+
+		// WooCommerce My Account Orders Table Column Enhancement (Core Plugin Feature)
+		add_action( 'woocommerce_my_account_my_orders_column_order-number', array( $this, 'render_account_order_number_column' ) );
 	}
 
 	/**
@@ -653,9 +656,17 @@ class Frontend {
 					</div>
 					<?php endif; ?>
 					<div class="slotnova-summary-divider"></div>
-					<div class="slotnova-summary-row slotnova-summary-total">
+					<div class="slotnova-summary-row slotnova-summary-total" id="summary-total-row">
 						<span class="slotnova-summary-label"><?php esc_html_e( 'Total Amount', 'slotnova-booking' ); ?></span>
-						<span class="slotnova-summary-value" id="summary-service-price">-</span>
+						<span class="slotnova-summary-value" id="summary-service-price" style="font-weight: 700; color: #0f172a;">-</span>
+					</div>
+					<div class="slotnova-summary-row slotnova-is-hidden" id="summary-payable-row" style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed #cbd5e1;">
+						<span class="slotnova-summary-label" style="color: #4f46e5; font-weight: 700;"><?php esc_html_e( 'Payable Now (Deposit)', 'slotnova-booking' ); ?></span>
+						<span class="slotnova-summary-value" id="summary-payable-amount" style="color: #4f46e5; font-weight: 700; font-size: 15px;">-</span>
+					</div>
+					<div class="slotnova-summary-row slotnova-is-hidden" id="summary-due-row" style="margin-top: 4px;">
+						<span class="slotnova-summary-label" style="color: #64748b; font-size: 12px;"><?php esc_html_e( 'Due at Appointment', 'slotnova-booking' ); ?></span>
+						<span class="slotnova-summary-value" id="summary-due-amount" style="color: #64748b; font-size: 12px; font-weight: 600;">-</span>
 					</div>
 				</div>
 			</div>
@@ -668,4 +679,69 @@ class Frontend {
 		</form>
 		<?php
 	}
+
+	/**
+	 * Render custom Order column content in WooCommerce My Account > Orders tab (Core Plugin Feature).
+	 * Displays Order # along with Service name, Staff, Booking date, and Time.
+	 *
+	 * @param \WC_Order $order Order object.
+	 */
+	public function render_account_order_number_column( $order ) {
+		if ( ! $order instanceof \WC_Order ) {
+			return;
+		}
+
+		?>
+		<a href="<?php echo esc_url( $order->get_view_order_url() ); ?>" style="font-weight: 700; color: #4f46e5; text-decoration: none;">
+			<?php echo esc_html( _x( '#', 'hash before order number', 'woocommerce' ) . $order->get_order_number() ); ?>
+		</a>
+		<?php
+
+		$bookings = array();
+		foreach ( $order->get_items() as $item ) {
+			$booking_date = $item->get_meta( 'Date' );
+			$service      = $item->get_meta( 'Service' ) ?: $item->get_name();
+			$employee     = $item->get_meta( 'Employee' );
+			$time         = $item->get_meta( 'Time' );
+
+			if ( ! empty( $booking_date ) || ! empty( $service ) ) {
+				$bookings[] = array(
+					'service'  => $service,
+					'employee' => $employee,
+					'date'     => $booking_date,
+					'time'     => $time,
+				);
+			}
+		}
+
+		if ( ! empty( $bookings ) ) :
+			?>
+			<div class="slotnova-order-booking-info" style="margin-top: 6px; font-size: 13px; line-height: 1.45; color: #334155;">
+				<?php foreach ( $bookings as $b ) : ?>
+					<div style="margin-top: 4px; padding-top: 4px; border-top: 1px dashed #cbd5e1;">
+						<div style="font-weight: 700; color: #0f172a; font-size: 13.5px;">
+							<?php echo esc_html( $b['service'] ); ?>
+						</div>
+						<?php if ( ! empty( $b['employee'] ) ) : ?>
+							<div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+								<span style="font-weight: 600; color: #475569;"><?php esc_html_e( 'Staff:', 'slotnova-booking' ); ?></span> <?php echo esc_html( $b['employee'] ); ?>
+							</div>
+						<?php endif; ?>
+						<?php if ( ! empty( $b['date'] ) || ! empty( $b['time'] ) ) : ?>
+							<div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+								<span style="font-weight: 600; color: #475569;"><?php esc_html_e( 'Booking:', 'slotnova-booking' ); ?></span>
+								<?php
+								$date_fmt = ! empty( $b['date'] ) ? wp_date( get_option( 'date_format', 'M d, Y' ), strtotime( $b['date'] ) ) : '';
+								$time_fmt = ! empty( $b['time'] ) ? $b['time'] : '';
+								echo esc_html( trim( $date_fmt . ( $date_fmt && $time_fmt ? ' • ' : '' ) . $time_fmt ) );
+								?>
+							</div>
+						<?php endif; ?>
+					</div>
+				<?php endforeach; ?>
+			</div>
+			<?php
+		endif;
+	}
+
 }

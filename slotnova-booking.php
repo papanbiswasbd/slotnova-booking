@@ -66,6 +66,13 @@ final class Plugin {
 	public $admin;
 
 	/**
+	 * Extension Manager component.
+	 *
+	 * @var \SlotNova\Booking\ExtensionManager\ExtensionManager
+	 */
+	public $extensionManager;
+
+	/**
 	 * Main Plugin Instance.
 	 *
 	 * @return Plugin
@@ -81,9 +88,32 @@ final class Plugin {
 	 * Constructor.
 	 */
 	public function __construct() {
+		$this->register_autoloader();
 		$this->includes();
 		$this->init_hooks();
 		do_action( 'slotnova_booking_loaded', $this );
+	}
+
+	/**
+	 * Register PSR-4 Autoloader for ExtensionManager components.
+	 */
+	private function register_autoloader() {
+		spl_autoload_register( function ( $class ) {
+			$prefix = 'SlotNova\\Booking\\ExtensionManager\\';
+			$base_dir = SLOTNOVA_BOOKING_PATH . 'ExtensionManager/';
+
+			$len = strlen( $prefix );
+			if ( 0 !== strncmp( $prefix, $class, $len ) ) {
+				return;
+			}
+
+			$relative_class = substr( $class, $len );
+			$file = $base_dir . str_replace( '\\', '/', $relative_class ) . '.php';
+
+			if ( file_exists( $file ) ) {
+				require_once $file;
+			}
+		} );
 	}
 
 	/**
@@ -109,6 +139,10 @@ final class Plugin {
 		$this->taxonomies = new Taxonomies();
 		$this->frontend   = new Frontend();
 		$this->cart       = new Cart();
+
+		// Boot Extension Manager Architecture
+		$this->extensionManager = new \SlotNova\Booking\ExtensionManager\ExtensionManager();
+		$this->extensionManager->boot();
 
 		if ( is_admin() ) {
 			new SlotNova_Addons();

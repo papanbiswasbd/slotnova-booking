@@ -1,0 +1,2 @@
+# Exclude bundled extensions directory (served via Cloudflare R2)
+extensions/

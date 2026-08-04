@@ -23,6 +23,17 @@ if ( ! function_exists( 'slotnova_booking' ) ) {
 	}
 }
 
+if ( ! function_exists( 'slotnova' ) ) {
+	/**
+	 * Main public API facade accessor for SlotNova Booking extensions.
+	 *
+	 * @return \SlotNova\Booking\ExtensionManager\API\SlotNovaApi
+	 */
+	function slotnova(): \SlotNova\Booking\ExtensionManager\API\SlotNovaApi {
+		return \SlotNova\Booking\ExtensionManager\Container\Container::getInstance()->make( \SlotNova\Booking\ExtensionManager\API\SlotNovaApi::class );
+	}
+}
+
 if ( ! function_exists( 'slotnova_parse_date' ) ) {
 	/**
 	 * Parse date string and format to Y-m-d reliably across all formats and ordinal suffixes.
