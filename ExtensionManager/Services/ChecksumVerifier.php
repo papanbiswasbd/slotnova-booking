@@ -29,16 +29,18 @@ class ChecksumVerifier {
 		}
 
 		if ( ! file_exists( $filePath ) ) {
-			throw new ChecksumMismatchException( "File not found for checksum verification: {$filePath}" );
+			throw new ChecksumMismatchException( esc_html( sprintf( 'File not found for checksum verification: %s', $filePath ) ) );
 		}
 
 		$actualHash = hash_file( 'sha256', $filePath );
 		if ( 0 !== strcasecmp( $actualHash, $expectedHash ) ) {
 			throw new ChecksumMismatchException(
-				sprintf(
-					"Checksum mismatch! Expected SHA-256 hash '%s', got '%s'. Download may be corrupted or tampered with.",
-					$expectedHash,
-					$actualHash
+				esc_html(
+					sprintf(
+						"Checksum mismatch! Expected SHA-256 hash '%s', got '%s'. Download may be corrupted or tampered with.",
+						$expectedHash,
+						$actualHash
+					)
 				)
 			);
 		}
