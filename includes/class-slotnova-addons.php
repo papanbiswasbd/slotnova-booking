@@ -248,9 +248,9 @@ class SlotNova_Addons {
 						} else {
 							$display_price = $raw_price;
 						}
-						$purchase_url   = ( $manifest && '' !== $manifest->getPurchaseUrl() ) ? $manifest->getPurchaseUrl() : ( ! empty( $item['purchase_url'] ) ? $item['purchase_url'] : ( $item['buy_url'] ?? '' ) );
+						$purchase_url   = ( $manifest && '' !== $manifest->getPurchaseUrl() ) ? $manifest->getPurchaseUrl() : ( ! empty( $item['purchase_url'] ) ? $item['purchase_url'] : ( $item['buy_url'] ?? 'https://checkout.freemius.com/plugin/36458/plan/60365/' ) );
 						if ( false !== strpos( $purchase_url, '80445' ) ) {
-							$purchase_url = str_replace( '80445/', '60365/', str_replace( '80445', '60365/', $purchase_url ) );
+							$purchase_url = 'https://checkout.freemius.com/plugin/36458/plan/60365/';
 						}
 						$demo_url       = ! empty( $item['demo_url'] ) ? $item['demo_url'] : ( $manifest ? $manifest->getDemoUrl() : '' );
 						$raw_sett_url   = ! empty( $item['settings_url'] ) ? $item['settings_url'] : ( $manifest ? $manifest->getSettingsUrl() : '' );
@@ -346,9 +346,9 @@ class SlotNova_Addons {
 									</button>
 								<?php else : ?>
 									<?php if ( 'pro' === strtolower( $ext_type ) ) :
-										$buy_link = ( $manifest && '' !== $manifest->getPurchaseUrl() ) ? $manifest->getPurchaseUrl() : ( ! empty( $purchase_url ) ? $purchase_url : ( $item['purchase_url'] ?? ( $item['buy_url'] ?? '' ) ) );
+										$buy_link = ( $manifest && '' !== $manifest->getPurchaseUrl() ) ? $manifest->getPurchaseUrl() : ( ! empty( $purchase_url ) ? $purchase_url : 'https://checkout.freemius.com/plugin/36458/plan/60365/' );
 										if ( false !== strpos( $buy_link, '80445' ) ) {
-											$buy_link = str_replace( '80445/', '60365/', str_replace( '80445', '60365/', $buy_link ) );
+											$buy_link = 'https://checkout.freemius.com/plugin/36458/plan/60365/';
 										}
 									?>
 										<a href="<?php echo esc_url( $buy_link ); ?>" target="_blank" rel="noopener noreferrer" class="button button-secondary" style="border-color: #6366f1; color: #4f46e5; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; height: 34px; padding: 0 12px; font-size: 12px; flex: 1; min-width: 0;">
