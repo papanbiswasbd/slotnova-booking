@@ -93,7 +93,7 @@ class DepositFrontendRenderer {
 			'label'    => __( 'Deposits & Payments', 'slotnova-booking' ),
 			'target'   => 'slotnova_deposit_product_data',
 			'class'    => array( 'show_if_slotnova' ),
-			'priority' => 65,
+			'priority' => 2,
 		);
 		return $tabs;
 	}
