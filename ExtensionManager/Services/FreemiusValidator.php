@@ -94,31 +94,30 @@ class FreemiusValidator {
 
 		$freemiusAppId = $this->getFreemiusAppId( $extensionId );
 
+		$verifyEndpoint = str_replace( '/addons/download', '/verify', $this->apiEndpoint );
+		if ( false === strpos( $verifyEndpoint, '/verify' ) ) {
+			$verifyEndpoint = str_replace( '/download', '/verify', $verifyEndpoint );
+		}
+
 		$requestUrl = add_query_arg(
 			array(
-				'action'          => 'validate_license',
+				'action'          => 'verify',
 				'slug'            => $extensionId,
 				'extension_id'    => $extensionId,
 				'freemius_app_id' => $freemiusAppId,
 				'license_key'     => $licenseKey,
 				'domain'          => $domain,
 			),
-			$this->apiEndpoint
+			$verifyEndpoint
 		);
 
-		$response = wp_remote_post(
+		$response = wp_remote_get(
 			$requestUrl,
 			array(
 				'timeout'   => 30,
 				'sslverify' => true,
-				'body'      => array(
-					'action'          => 'validate_license',
-					'extension_id'    => $extensionId,
-					'slug'            => $extensionId,
-					'freemius_app_id' => $freemiusAppId,
-					'license_key'     => $licenseKey,
-					'domain'          => $domain,
-					'core_version'    => defined( 'SLOTNOVA_BOOKING_VERSION' ) ? SLOTNOVA_BOOKING_VERSION : '1.0.0',
+				'headers'   => array(
+					'Cache-Control' => 'no-cache, no-store, must-revalidate',
 				),
 			)
 		);
