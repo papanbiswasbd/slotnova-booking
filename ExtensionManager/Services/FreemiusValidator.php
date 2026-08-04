@@ -133,11 +133,13 @@ class FreemiusValidator {
 		$isValid = ( ! empty( $body['success'] ) || ! empty( $body['valid'] ) );
 		if ( 200 === $code && is_array( $body ) && $isValid ) {
 			$licenseData = array(
-				'license_key'  => $licenseKey,
-				'status'       => 'active',
-				'plan_name'    => $body['plan_name'] ?? 'Pro',
-				'expires_at'   => $body['expires_at'] ?? ( $body['expires'] ?? '' ),
-				'activated_at' => current_time( 'mysql' ),
+				'license_key'    => $licenseKey,
+				'status'         => 'active',
+				'customer_name'  => $body['name'] ?? ( $body['user_name'] ?? ( $body['customer_name'] ?? '' ) ),
+				'customer_email' => $body['email'] ?? ( $body['user_email'] ?? ( $body['customer_email'] ?? '' ) ),
+				'plan_name'      => $body['plan_name'] ?? ( $body['plan'] ?? 'Pro' ),
+				'expires_at'     => $body['expires_at'] ?? ( $body['expires'] ?? 'Lifetime' ),
+				'activated_at'   => current_time( 'mysql' ),
 			);
 			update_option( 'slotnova_fs_license_' . $extensionId, $licenseData );
 			return $licenseData;

@@ -293,6 +293,56 @@ class SlotNova_Addons {
 
 								<p style="color: #475569; font-size: 13px; line-height: 1.5; margin: 0 0 16px 0; min-height: 40px;"><?php echo esc_html( $item['description'] ?? '' ); ?></p>
 
+								<?php
+								$licenseData = get_option( 'slotnova_fs_license_' . $effective_id, get_option( 'slotnova_fs_license_' . $id, null ) );
+								if ( $is_installed && is_array( $licenseData ) ) :
+									$lic_name    = ! empty( $licenseData['customer_name'] ) ? $licenseData['customer_name'] : 'Valued Customer';
+									$lic_email   = ! empty( $licenseData['customer_email'] ) ? $licenseData['customer_email'] : '';
+									$lic_plan    = ! empty( $licenseData['plan_name'] ) ? $licenseData['plan_name'] : 'Pro Plan';
+									$lic_expires = ! empty( $licenseData['expires_at'] ) ? $licenseData['expires_at'] : ( ! empty( $licenseData['expires'] ) ? $licenseData['expires'] : 'Lifetime' );
+									$lic_key     = ! empty( $licenseData['license_key'] ) ? $licenseData['license_key'] : '';
+									$masked_key  = ( strlen( $lic_key ) > 12 ) ? substr( $lic_key, 0, 7 ) . '...' . substr( $lic_key, -5 ) : $lic_key;
+								?>
+									<div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 12px; color: #334155;">
+										<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">
+											<span style="font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 5px;">
+												<span class="dashicons dashicons-id-alt" style="font-size: 15px; width: 15px; height: 15px; color: #4f46e5;"></span>
+												<?php esc_html_e( 'License Information', 'slotnova-booking' ); ?>
+											</span>
+											<span style="background: #dcfce7; color: #15803d; border-radius: 10px; padding: 1px 7px; font-size: 10px; font-weight: 700; text-transform: uppercase;">
+												<?php echo esc_html( $lic_plan ); ?>
+											</span>
+										</div>
+										<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; line-height: 1.4;">
+											<?php if ( $lic_name ) : ?>
+												<div>
+													<span style="color: #64748b; font-size: 11px; font-weight: 500; display: block;"><?php esc_html_e( 'Licensed To', 'slotnova-booking' ); ?></span>
+													<strong style="color: #0f172a; font-size: 12px;"><?php echo esc_html( $lic_name ); ?></strong>
+												</div>
+											<?php endif; ?>
+
+											<?php if ( $lic_email ) : ?>
+												<div>
+													<span style="color: #64748b; font-size: 11px; font-weight: 500; display: block;"><?php esc_html_e( 'Customer Email', 'slotnova-booking' ); ?></span>
+													<strong style="color: #0f172a; font-size: 12px; word-break: break-all;"><?php echo esc_html( $lic_email ); ?></strong>
+												</div>
+											<?php endif; ?>
+
+											<div>
+												<span style="color: #64748b; font-size: 11px; font-weight: 500; display: block;"><?php esc_html_e( 'Expiration', 'slotnova-booking' ); ?></span>
+												<strong style="color: #059669; font-size: 12px;"><?php echo esc_html( $lic_expires ); ?></strong>
+											</div>
+
+											<?php if ( $lic_key ) : ?>
+												<div>
+													<span style="color: #64748b; font-size: 11px; font-weight: 500; display: block;"><?php esc_html_e( 'License Key', 'slotnova-booking' ); ?></span>
+													<code style="background: #ffffff; border: 1px solid #cbd5e1; padding: 1px 5px; border-radius: 4px; font-size: 11px; font-family: monospace; color: #475569;" title="<?php echo esc_attr( $lic_key ); ?>"><?php echo esc_html( $masked_key ); ?></code>
+												</div>
+											<?php endif; ?>
+										</div>
+									</div>
+								<?php endif; ?>
+
 								<?php if ( ! $is_installed && 'pro' === strtolower( $ext_type ) ) : ?>
 									<div style="margin-bottom: 10px;">
 										<input type="text" class="slotnova-license-input" placeholder="<?php esc_attr_e( 'Enter License Key...', 'slotnova-booking' ); ?>" style="width: 100%; font-size: 12px; padding: 7px 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fafafa; transition: all 0.2s ease;" />
