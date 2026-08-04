@@ -37,13 +37,13 @@ class Loader {
 
 		$bootstrapPath = $manifest->getBootstrapPath();
 		if ( ! file_exists( $bootstrapPath ) ) {
-			throw new \Exception( "Bootstrap file not found for extension {$manifest->getId()} at: {$bootstrapPath}" );
+			throw new \Exception( esc_html( sprintf( 'Bootstrap file not found for extension %s at: %s', $manifest->getId(), $bootstrapPath ) ) );
 		}
 
 		$instance = $this->isolatedRequire( $bootstrapPath );
 
 		if ( ! $instance instanceof ExtensionInterface ) {
-			throw new \Exception( "Bootstrap file for extension {$manifest->getId()} must return an instance of ExtensionInterface." );
+			throw new \Exception( esc_html( sprintf( 'Bootstrap file for extension %s must return an instance of ExtensionInterface.', $manifest->getId() ) ) );
 		}
 
 		// Boot extension passing public API facade
