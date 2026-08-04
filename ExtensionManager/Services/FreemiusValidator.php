@@ -124,6 +124,7 @@ class FreemiusValidator {
 
 		if ( is_wp_error( $response ) ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+			/* translators: %s: Error message details */
 			throw new ExtensionException( esc_html( sprintf( __( 'Freemius license server request failed: %s', 'slotnova-booking' ), $response->get_error_message() ) ) );
 		}
 

@@ -1,0 +1,41 @@
+/**
+ * SlotNova Deposits Extension - Frontend Stylesheet
+ *
+ * @package SlotNova\Extensions\Deposits
+ */
+
+.slotnova-payment-options-wrapper {
+	margin-top: 24px;
+	margin-bottom: 24px;
+}
+
+.slotnova-payment-cards-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 12px;
+}
+
+.slotnova-payment-card {
+	border: 1.5px solid #e2e8f0;
+	background: #ffffff;
+	border-radius: 10px;
+	padding: 14px 16px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	transition: all 0.2s ease;
+	box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.slotnova-payment-card.active {
+	border-color: #2271b1;
+	background: #ffffff;
+}
+
+.slotnova-order-payment-info {
+	margin-top: 6px;
+	font-size: 12px;
+	line-height: 1.45;
+}

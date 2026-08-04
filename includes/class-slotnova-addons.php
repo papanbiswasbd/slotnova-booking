@@ -52,7 +52,8 @@ class SlotNova_Addons {
 	 * @return array
 	 */
 	public function get_extensions_catalog(): array {
-		if ( ( isset( $_GET['sync_cloudflare'] ) || isset( $_GET['force_sync'] ) ) && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'slotnova_sync_cloudflare' ) ) {
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+		if ( ( isset( $_GET['sync_cloudflare'] ) || isset( $_GET['force_sync'] ) ) && $nonce && wp_verify_nonce( $nonce, 'slotnova_sync_cloudflare' ) ) {
 			delete_option( 'slotnova_extensions_known_catalog' );
 		}
 

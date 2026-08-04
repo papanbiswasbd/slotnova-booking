@@ -1,0 +1,112 @@
+/**
+ * SlotNova Deposits Extension - Admin Stylesheet
+ *
+ * @package SlotNova\Extensions\Deposits
+ */
+
+/* Partial Deposit Badges */
+.slotnova-badge.status-partial-deposit,
+.slotnova-badge.status-wc-partial-deposit,
+.mark-partial-deposit {
+	background: #f3e8ff !important;
+	color: #6b21a8 !important;
+	border: 1px solid #e9d5ff !important;
+}
+
+.order-status.status-wc-partial-deposit {
+	background: #f3e8ff !important;
+	color: #6b21a8 !important;
+}
+
+/* Extension Settings Panel Toggle Switch */
+.slotnova-toggle-wrapper {
+	position: relative;
+	display: inline-block;
+	width: 46px;
+	height: 24px;
+	flex-shrink: 0;
+	cursor: pointer;
+}
+
+.slotnova-toggle-track {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #cbd5e1;
+	transition: background-color 0.3s ease;
+	border-radius: 24px;
+}
+
+.slotnova-toggle-track.active {
+	background-color: #4f46e5;
+}
+
+.slotnova-toggle-knob {
+	position: absolute;
+	content: '';
+	height: 18px;
+	width: 18px;
+	left: 3px;
+	bottom: 3px;
+	background-color: #ffffff;
+	transition: left 0.3s ease;
+	border-radius: 50%;
+	box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.slotnova-toggle-track.active .slotnova-toggle-knob {
+	left: 24px;
+}
+
+/* Settings Calculation Method Cards */
+.slotnova-type-card {
+	border: 2px solid #e2e8f0;
+	background: #ffffff;
+	border-radius: 10px;
+	padding: 16px;
+	cursor: pointer;
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	transition: all 0.2s ease;
+}
+
+.slotnova-type-card.active {
+	border-color: #4f46e5;
+	background: #f5f3ff;
+}
+
+/* Admin Modal Deposit Breakdown Box */
+#slotnova-modal-deposit-box {
+	margin-top: 16px;
+	margin-bottom: 20px;
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 18px 20px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.slotnova-modal-deposit-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	border-bottom: 1px dashed #e2e8f0;
+	padding-bottom: 12px;
+	margin-bottom: 14px;
+}
+
+.slotnova-modal-deposit-title-group {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.slotnova-modal-deposit-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	gap: 16px;
+}
