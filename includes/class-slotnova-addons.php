@@ -112,9 +112,7 @@ class SlotNova_Addons {
 			}
 		}
 
-		return get_option( 'slotnova_extensions_known_catalog', array() );
-	}
-
+		$catalog = get_option( 'slotnova_extensions_known_catalog', array() );
 		return apply_filters( 'slotnova_extensions_catalog', $catalog );
 	}
 
