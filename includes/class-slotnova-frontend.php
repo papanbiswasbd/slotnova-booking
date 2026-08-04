@@ -658,15 +658,15 @@ class Frontend {
 					<div class="slotnova-summary-divider"></div>
 				<div class="slotnova-summary-row slotnova-summary-total" id="summary-total-row">
 					<span class="slotnova-summary-label"><?php esc_html_e( 'Total Amount', 'slotnova-booking' ); ?></span>
-					<span class="slotnova-summary-value" id="summary-service-price" style="font-weight: 700; color: #0f172a;">-</span>
+					<span class="slotnova-summary-value" id="summary-service-price">-</span>
 				</div>
-				<div class="slotnova-summary-row slotnova-is-hidden" id="summary-payable-row" style="margin-top: 8px; padding: 8px 10px; background: #eff6ff; border-radius: 8px; border: 1px solid #bfdbfe;">
-					<span class="slotnova-summary-label" style="color: #1d4ed8; font-weight: 700; font-size: 12px;"><?php esc_html_e( 'Deposit (Pay Now)', 'slotnova-booking' ); ?></span>
-					<span class="slotnova-summary-value" id="summary-payable-amount" style="color: #1d4ed8; font-weight: 700; font-size: 14px;">-</span>
+				<div class="slotnova-summary-row slotnova-is-hidden" id="summary-payable-row">
+					<span class="slotnova-summary-label"><?php esc_html_e( 'Deposit (Pay Now)', 'slotnova-booking' ); ?></span>
+					<span class="slotnova-summary-value" id="summary-payable-amount">-</span>
 				</div>
-				<div class="slotnova-summary-row slotnova-is-hidden" id="summary-due-row" style="margin-top: 4px; padding: 6px 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-					<span class="slotnova-summary-label" style="color: #64748b; font-size: 12px;"><?php esc_html_e( 'Due at Appointment', 'slotnova-booking' ); ?></span>
-					<span class="slotnova-summary-value" id="summary-due-amount" style="color: #64748b; font-size: 12px; font-weight: 600;">-</span>
+				<div class="slotnova-summary-row slotnova-is-hidden" id="summary-due-row">
+					<span class="slotnova-summary-label"><?php esc_html_e( 'Due at Appointment', 'slotnova-booking' ); ?></span>
+					<span class="slotnova-summary-value" id="summary-due-amount">-</span>
 				</div>
 				</div>
 			</div>
