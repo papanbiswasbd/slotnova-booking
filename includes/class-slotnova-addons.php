@@ -287,8 +287,6 @@ class SlotNova_Addons {
 									<div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0; justify-content: flex-end;">
 										<?php if ( $is_active ) : ?>
 											<span style="background: #dcfce7; color: #15803d; border-radius: 12px; padding: 3px 9px; font-size: 11px; font-weight: 700; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.3px;"><?php esc_html_e( 'Active', 'slotnova-booking' ); ?></span>
-										<?php elseif ( $is_installed ) : ?>
-											<span style="background: #f1f5f9; color: #64748b; border-radius: 12px; padding: 3px 9px; font-size: 11px; font-weight: 700; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.3px;"><?php esc_html_e( 'Disabled', 'slotnova-booking' ); ?></span>
 										<?php endif; ?>
 										<span style="background: #e0e7ff; color: #4338ca; border-radius: 12px; padding: 3px 9px; font-size: 11px; font-weight: 700; white-space: nowrap;"><?php echo esc_html( $display_price ); ?></span>
 									</div>
