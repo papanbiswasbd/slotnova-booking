@@ -32,6 +32,7 @@ class ExtensionRepository {
 		global $wpdb;
 
 		// Quick check if table exists
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $this->table ) ) === $this->table ) {
 			return;
 		}
@@ -61,7 +62,9 @@ class ExtensionRepository {
 		}
 
 		// Direct fallback if dbDelta did not create the table
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $this->table ) ) !== $this->table ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->query( $sql );
 		}
 	}
@@ -75,10 +78,12 @@ class ExtensionRepository {
 	public function get( string $id ): ?ExtensionState {
 		global $wpdb;
 		$outputType = defined( 'ARRAY_A' ) ? ARRAY_A : 'ARRAY_A';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$this->table} WHERE id = %s", $id ), $outputType );
 
 		if ( ! $row ) {
 			$altId = ( 0 === strpos( $id, 'slotnova-' ) ) ? substr( $id, 9 ) : 'slotnova-' . $id;
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$row   = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$this->table} WHERE id = %s", $altId ), $outputType );
 		}
 
@@ -113,6 +118,7 @@ class ExtensionRepository {
 	public function getAllInstalled(): array {
 		global $wpdb;
 		$outputType = defined( 'ARRAY_A' ) ? ARRAY_A : 'ARRAY_A';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$rows = $wpdb->get_results( "SELECT * FROM {$this->table}", $outputType );
 		$list = [];
 		if ( is_array( $rows ) ) {
@@ -122,6 +128,7 @@ class ExtensionRepository {
 				if ( ! empty( $path ) && ( file_exists( $path . '/extension.json' ) || file_exists( $path . '/bootstrap.php' ) || is_dir( $path ) ) ) {
 					$list[ $row['id'] ] = $state;
 				} else {
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 					$wpdb->delete( $this->table, [ 'id' => $row['id'] ] );
 				}
 			}
@@ -201,6 +208,7 @@ class ExtensionRepository {
 		$outputType = defined( 'ARRAY_A' ) ? ARRAY_A : 'ARRAY_A';
 		$list       = [];
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$rows = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$this->table} WHERE status = %s", ExtensionState::STATUS_ACTIVE ), $outputType );
 		if ( is_array( $rows ) ) {
 			foreach ( $rows as $row ) {
@@ -209,6 +217,7 @@ class ExtensionRepository {
 				if ( ! empty( $path ) && ( file_exists( $path . '/extension.json' ) || file_exists( $path . '/bootstrap.php' ) || is_dir( $path ) ) ) {
 					$list[ $row['id'] ] = $state;
 				} else {
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 					$wpdb->delete( $this->table, [ 'id' => $row['id'] ] );
 				}
 			}
@@ -338,14 +347,18 @@ class ExtensionRepository {
 		}
 		update_option( 'slotnova_active_extensions_list', $activeList );
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$result = $wpdb->replace( $this->table, $data );
 
 		if ( false === $result ) {
 			error_log( "[SlotNova ExtensionRepository] DB Replace failed for '{$state->getId()}': " . $wpdb->last_error );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$existing = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$this->table} WHERE id = %s", $state->getId() ) );
 			if ( $existing ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->update( $this->table, $data, [ 'id' => $state->getId() ] );
 			} else {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->insert( $this->table, $data );
 			}
 		}
@@ -428,8 +441,11 @@ class ExtensionRepository {
 		$cleanId = ( 0 === strpos( $id, 'slotnova-' ) ) ? substr( $id, 9 ) : $id;
 		$altId   = ( 0 === strpos( $id, 'slotnova-' ) ) ? $id : 'slotnova-' . $id;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->delete( $this->table, [ 'id' => $cleanId ] );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->delete( $this->table, [ 'id' => $altId ] );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->delete( $this->table, [ 'id' => $id ] );
 
 		$activeList = get_option( 'slotnova_active_extensions_list', array() );
