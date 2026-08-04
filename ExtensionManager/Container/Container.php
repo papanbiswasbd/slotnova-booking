@@ -94,7 +94,7 @@ final class Container implements ContainerInterface {
 				$object = $this->buildClass( $abstract );
 				return $object;
 			}
-			throw new \Exception( "No binding found in SlotNova Container for: {$abstract}" );
+			throw new \Exception( esc_html( sprintf( 'No binding found in SlotNova Container for: %s', $abstract ) ) );
 		}
 
 		$binding  = $this->bindings[ $abstract ];
@@ -107,7 +107,7 @@ final class Container implements ContainerInterface {
 		} elseif ( is_object( $concrete ) ) {
 			$object = $concrete;
 		} else {
-			throw new \Exception( "Invalid binding concrete for: {$abstract}" );
+			throw new \Exception( esc_html( sprintf( 'Invalid binding concrete for: %s', $abstract ) ) );
 		}
 
 		if ( $binding['singleton'] ) {
@@ -127,7 +127,7 @@ final class Container implements ContainerInterface {
 	private function buildClass( string $className ) {
 		$reflector = new \ReflectionClass( $className );
 		if ( ! $reflector->isInstantiable() ) {
-			throw new \Exception( "Class {$className} is not instantiable." );
+			throw new \Exception( esc_html( sprintf( 'Class %s is not instantiable.', $className ) ) );
 		}
 
 		$constructor = $reflector->getConstructor();
@@ -146,7 +146,7 @@ final class Container implements ContainerInterface {
 			} elseif ( $parameter->isDefaultValueAvailable() ) {
 				$dependencies[] = $parameter->getDefaultValue();
 			} else {
-				throw new \Exception( "Cannot resolve parameter '{$parameter->getName()}' in {$className}" );
+				throw new \Exception( esc_html( sprintf( "Cannot resolve parameter '%s' in %s", $parameter->getName(), $className ) ) );
 			}
 		}
 
