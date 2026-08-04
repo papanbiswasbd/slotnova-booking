@@ -1,0 +1,37 @@
+name: Deploy SlotNova Booking Plugin
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  web-deploy:
+    name: Deploy via FTP
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Sync files via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
+          server-dir: ./
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            .ftpquota
+            .ftp-deploy-sync-state.json
+
+      - name: Cleanup hidden files and removed markdown docs on remote server
+        if: always()
+        run: |
+          curl -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" -Q "DELE DEVELOPERS.md" "ftp://${{ secrets.FTP_SERVER }}:21/" || true
+          curl -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" -Q "DELE docs/DEVELOPERS.md" "ftp://${{ secrets.FTP_SERVER }}:21/" || true
+          curl -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" -Q "RMD docs" "ftp://${{ secrets.FTP_SERVER }}:21/" || true
+          curl -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" -Q "DELE .ftpquota" "ftp://${{ secrets.FTP_SERVER }}:21/" || true
+          curl -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" -Q "DELE .ftp-deploy-sync-state.json" "ftp://${{ secrets.FTP_SERVER }}:21/" || true
