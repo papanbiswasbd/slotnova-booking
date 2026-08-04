@@ -138,7 +138,7 @@ class FreemiusValidator {
 				'customer_name'  => $body['name'] ?? ( $body['user_name'] ?? ( $body['customer_name'] ?? '' ) ),
 				'customer_email' => $body['email'] ?? ( $body['user_email'] ?? ( $body['customer_email'] ?? '' ) ),
 				'plan_name'      => $body['plan_name'] ?? ( $body['plan'] ?? 'Pro' ),
-				'expires_at'     => ! empty( $body['expires_at'] ) ? $body['expires_at'] : ( ! empty( $body['expires'] ) ? $body['expires'] : 'Renews Monthly' ),
+				'expires_at'     => $body['expires_at'] ?? ( $body['expires'] ?? 'Active Subscription' ),
 				'activated_at'   => current_time( 'mysql' ),
 			);
 			update_option( 'slotnova_fs_license_' . $extensionId, $licenseData );
