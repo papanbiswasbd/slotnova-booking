@@ -346,6 +346,7 @@ class Cart {
 
 			if ( ! empty( $booking['service_name'] ) ) {
 				$item->add_meta_data( $service_label, $booking['service_name'] );
+				$item->add_meta_data( '_slotnova_service_name', $booking['service_name'] );
 			}
 
 			if ( ! empty( $booking['service_id'] ) ) {
@@ -354,6 +355,7 @@ class Cart {
 
 			if ( ! empty( $booking['employee_name'] ) ) {
 				$item->add_meta_data( $employee_label, $booking['employee_name'] );
+				$item->add_meta_data( '_slotnova_employee_name', $booking['employee_name'] );
 			}
 
 			if ( ! empty( $booking['employee_id'] ) ) {

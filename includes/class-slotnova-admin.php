@@ -799,6 +799,7 @@ class Admin {
 		$new_columns = array();
 		foreach ( $columns as $key => $column ) {
 			if ( 'order_total' === $key ) {
+				$new_columns['slotnova_title']    = __( 'Title', 'slotnova-booking' );
 				$new_columns['slotnova_service']  = __( 'Service', 'slotnova-booking' );
 				$new_columns['slotnova_staff']    = __( 'Staff', 'slotnova-booking' );
 				$new_columns['slotnova_datetime'] = __( 'Booking Date & Time', 'slotnova-booking' );
@@ -809,6 +810,7 @@ class Admin {
 		}
 
 		if ( ! isset( $new_columns['slotnova_service'] ) ) {
+			$new_columns['slotnova_title']    = __( 'Title', 'slotnova-booking' );
 			$new_columns['slotnova_service']  = __( 'Service', 'slotnova-booking' );
 			$new_columns['slotnova_staff']    = __( 'Staff', 'slotnova-booking' );
 			$new_columns['slotnova_datetime'] = __( 'Booking Date & Time', 'slotnova-booking' );
@@ -835,7 +837,7 @@ class Admin {
 	}
 
 	/**
-	 * Render content for custom WooCommerce Admin Orders Table columns (Service, Staff, Booking Date & Time, Amount).
+	 * Render content for custom WooCommerce Admin Orders Table columns (Title, Service, Staff, Booking Date & Time, Amount).
 	 *
 	 * @param string          $column Column identifier.
 	 * @param \WC_Order|mixed $order  Order object.
@@ -850,11 +852,17 @@ class Admin {
 			return;
 		}
 
+		$titles    = array();
 		$services  = array();
 		$employees = array();
 		$datetimes = array();
 
 		foreach ( $order->get_items() as $item ) {
+			$product_name = $item->get_name();
+			if ( $product_name && ! in_array( $product_name, $titles, true ) ) {
+				$titles[] = $product_name;
+			}
+
 			$service  = $item->get_meta( 'Service' );
 			$employee = $item->get_meta( 'Employee' );
 			$date     = $item->get_meta( 'Date' );
@@ -901,7 +909,17 @@ class Admin {
 			}
 		}
 
-		if ( 'slotnova_service' === $column ) {
+		if ( 'slotnova_title' === $column ) {
+			if ( ! empty( $titles ) ) {
+				$out = array();
+				foreach ( $titles as $t ) {
+					$out[] = '<strong style="color: #0f172a; font-size: 13px; font-weight: 700;">' . esc_html( $t ) . '</strong>';
+				}
+				echo wp_kses_post( implode( '<br>', $out ) );
+			} else {
+				echo '<span style="color: #94a3b8;">—</span>';
+			}
+		} elseif ( 'slotnova_service' === $column ) {
 			if ( ! empty( $services ) ) {
 				$out = array();
 				foreach ( $services as $s ) {
@@ -1846,9 +1864,53 @@ class Admin {
 				$booking_date = $item->get_meta( 'Date' );
 
 				if ( ! empty( $booking_date ) ) {
-					$time          = $item->get_meta( 'Time' );
-					$service       = $item->get_meta( 'Service' );
-					$employee      = $item->get_meta( 'Employee' );
+					$product_id = $item->get_product_id();
+					$time       = $item->get_meta( 'Time' );
+
+					// 1. Dynamic Service Meta Resolution
+					$service = $item->get_meta( '_slotnova_service_name' );
+					if ( empty( $service ) ) {
+						$service = $item->get_meta( 'Service' );
+					}
+					if ( empty( $service ) && $product_id ) {
+						$service_label = get_post_meta( $product_id, '_slotnova_service_title', true );
+						if ( ! empty( $service_label ) ) {
+							$service_label = rtrim( str_replace( array( 'Select ', 'Choose ' ), '', $service_label ), ':' );
+							$service       = $item->get_meta( $service_label );
+						}
+					}
+					if ( empty( $service ) ) {
+						$svc_id = $item->get_meta( '_slotnova_service_id' );
+						if ( $svc_id ) {
+							$term = get_term( intval( $svc_id ), 'slotnova_service' );
+							if ( $term && ! is_wp_error( $term ) ) {
+								$service = $term->name;
+							}
+						}
+					}
+
+					// 2. Dynamic Employee / Staff Meta Resolution
+					$employee = $item->get_meta( '_slotnova_employee_name' );
+					if ( empty( $employee ) ) {
+						$employee = $item->get_meta( 'Employee' );
+					}
+					if ( empty( $employee ) && $product_id ) {
+						$employee_label = get_post_meta( $product_id, '_slotnova_employee_title', true );
+						if ( ! empty( $employee_label ) ) {
+							$employee_label = rtrim( str_replace( array( 'Select ', 'Choose ' ), '', $employee_label ), ':' );
+							$employee       = $item->get_meta( $employee_label );
+						}
+					}
+					if ( empty( $employee ) ) {
+						$emp_id = $item->get_meta( '_slotnova_employee_id' );
+						if ( $emp_id ) {
+							$term = get_term( intval( $emp_id ), 'slotnova_employee' );
+							if ( $term && ! is_wp_error( $term ) ) {
+								$employee = $term->name;
+							}
+						}
+					}
+
 					$customer_name = $order->get_formatted_billing_full_name();
 					if ( empty( $customer_name ) ) {
 						$customer_name = __( 'Guest', 'slotnova-booking' );
@@ -1863,13 +1925,17 @@ class Admin {
 						continue;
 					}
 
+					$product_title = $item->get_name();
+
 					if ( ! empty( $search ) ) {
 						$search_lc = strtolower( $search );
 						$match     = ( strpos( strtolower( $customer_name ), $search_lc ) !== false ) ||
 						             ( strpos( strtolower( $email ), $search_lc ) !== false ) ||
 						             ( strpos( strtolower( $phone ), $search_lc ) !== false ) ||
 						             ( strpos( (string) $order->get_id(), $search_lc ) !== false ) ||
-						             ( strpos( strtolower( $service ), $search_lc ) !== false );
+						             ( strpos( strtolower( (string) $product_title ), $search_lc ) !== false ) ||
+						             ( strpos( strtolower( (string) $service ), $search_lc ) !== false ) ||
+						             ( strpos( strtolower( (string) $employee ), $search_lc ) !== false );
 						if ( ! $match ) {
 							continue;
 						}
@@ -1887,8 +1953,9 @@ class Admin {
 						'email'           => $email,
 						'phone'           => $phone,
 						'address'         => str_replace( '<br/>', ', ', $order->get_formatted_billing_address() ),
-						'service'         => ! empty( $service ) ? $service : __( 'General Service', 'slotnova-booking' ),
-						'employee'        => ! empty( $employee ) ? $employee : __( 'Any Staff', 'slotnova-booking' ),
+						'product_title'   => ! empty( $product_title ) ? $product_title : '-',
+						'service'         => ! empty( $service ) ? $service : '-',
+						'employee'        => ! empty( $employee ) ? $employee : '-',
 						'date'            => $booking_date,
 						'time'            => ! empty( $time ) ? $time : __( 'All Day', 'slotnova-booking' ),
 						'status'          => wc_get_order_status_name( $order_status ),
@@ -2043,6 +2110,7 @@ class Admin {
 							<tr>
 								<th style="width: 100px;"><?php esc_html_e( 'Order ID', 'slotnova-booking' ); ?></th>
 								<th><?php esc_html_e( 'Customer', 'slotnova-booking' ); ?></th>
+								<th><?php esc_html_e( 'Title', 'slotnova-booking' ); ?></th>
 								<th><?php esc_html_e( 'Service', 'slotnova-booking' ); ?></th>
 								<th><?php esc_html_e( 'Assigned Staff', 'slotnova-booking' ); ?></th>
 								<th><?php esc_html_e( 'Booking Date & Time', 'slotnova-booking' ); ?></th>
@@ -2054,7 +2122,7 @@ class Admin {
 						<tbody>
 							<?php if ( empty( $data['list'] ) ) : ?>
 								<tr>
-									<td colspan="8" class="slotnova-empty-table-cell">
+									<td colspan="9" class="slotnova-empty-table-cell">
 										<div class="slotnova-empty-state">
 											<div class="slotnova-empty-icon"><span class="dashicons dashicons-calendar-alt"></span></div>
 											<p><?php esc_html_e( 'No bookings matching your criteria.', 'slotnova-booking' ); ?></p>
@@ -2088,12 +2156,25 @@ class Admin {
 											</div>
 										</td>
 										<td>
-											<span class="slotnova-badge-service"><?php echo esc_html( $booking['service'] ); ?></span>
+											<strong style="font-weight: 700; color: #0f172a; font-size: 13.5px;">
+												<?php echo esc_html( ! empty( $booking['product_title'] ) ? $booking['product_title'] : '-' ); ?>
+											</strong>
 										</td>
 										<td>
-											<span class="slotnova-staff-tag">
-												<span class="dashicons dashicons-admin-users"></span> <?php echo esc_html( $booking['employee'] ); ?>
-											</span>
+											<?php if ( '-' !== $booking['service'] && ! empty( $booking['service'] ) ) : ?>
+												<span class="slotnova-badge-service"><?php echo esc_html( $booking['service'] ); ?></span>
+											<?php else : ?>
+												<span style="color: #94a3b8; font-weight: 500;">-</span>
+											<?php endif; ?>
+										</td>
+										<td>
+											<?php if ( '-' !== $booking['employee'] && ! empty( $booking['employee'] ) ) : ?>
+												<span class="slotnova-staff-tag">
+													<span class="dashicons dashicons-admin-users"></span> <?php echo esc_html( $booking['employee'] ); ?>
+												</span>
+											<?php else : ?>
+												<span style="color: #94a3b8; font-weight: 500;">-</span>
+											<?php endif; ?>
 										</td>
 										<td>
 											<div class="slotnova-datetime-cell">
