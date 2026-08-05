@@ -38,7 +38,7 @@ class Frontend {
 		add_action( 'wp_ajax_slotnova_get_booked_slots', array( $this, 'ajax_get_booked_slots' ) );
 		add_action( 'wp_ajax_nopriv_slotnova_get_booked_slots', array( $this, 'ajax_get_booked_slots' ) );
 
-		// WooCommerce My Account Orders Table Column Enhancement (Core Plugin Feature)
+		// WooCommerce My Account Orders Table Column (Row by Row under Order ID)
 		add_action( 'woocommerce_my_account_my_orders_column_order-number', array( $this, 'render_account_order_number_column' ) );
 	}
 
@@ -612,9 +612,14 @@ class Frontend {
 
 			<?php do_action( 'slotnova_after_time_slots', $product ); ?>
 
-			<div id="slotnova-summary" class="slotnova-summary-box" style="display: none;">
-				<h4 class="slotnova-summary-title"><?php esc_html_e( 'Booking Summary', 'slotnova-booking' ); ?></h4>
-				<div class="slotnova-summary-content">
+			<div id="slotnova-summary" class="slotnova-summary-box slotnova-is-hidden" style="display: none;">
+				<div class="slotnova-summary-header">
+					<div class="slotnova-summary-icon">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+					</div>
+					<h4 class="slotnova-summary-title"><?php esc_html_e( 'Booking Summary', 'slotnova-booking' ); ?></h4>
+				</div>
+				<div class="slotnova-summary-body">
 					<div class="slotnova-summary-row" id="summary-service-row">
 						<span class="slotnova-summary-label"><?php esc_html_e( 'Service:', 'slotnova-booking' ); ?></span>
 						<span class="slotnova-summary-value" id="summary-service-name">-</span>
@@ -635,6 +640,14 @@ class Frontend {
 					<div class="slotnova-summary-row slotnova-summary-total">
 						<span class="slotnova-summary-label"><?php esc_html_e( 'Total Price:', 'slotnova-booking' ); ?></span>
 						<span class="slotnova-summary-value" id="summary-service-price">-</span>
+					</div>
+					<div class="slotnova-summary-row slotnova-is-hidden" id="summary-payable-row" style="display: none;">
+						<span class="slotnova-summary-label"><?php esc_html_e( 'Deposit Amount:', 'slotnova-booking' ); ?></span>
+						<span class="slotnova-summary-value" id="summary-payable-amount" style="color: #15803d; font-weight: 700;">-</span>
+					</div>
+					<div class="slotnova-summary-row slotnova-is-hidden" id="summary-due-row" style="display: none;">
+						<span class="slotnova-summary-label"><?php esc_html_e( 'Remaining Amount:', 'slotnova-booking' ); ?></span>
+						<span class="slotnova-summary-value" id="summary-due-amount" style="color: #dc2626; font-weight: 700;">-</span>
 					</div>
 				</div>
 			</div>
@@ -662,9 +675,77 @@ class Frontend {
 
 		$order_id = $order->get_id();
 		?>
-		<a href="<?php echo esc_url( $order->get_view_order_url() ); ?>">
+		<a href="<?php echo esc_url( $order->get_view_order_url() ); ?>" style="font-weight: 700;">
 			#<?php echo esc_html( $order->get_order_number() ); ?>
 		</a>
 		<?php
+		$booking_items = array();
+
+		foreach ( $order->get_items() as $item ) {
+			$service  = $item->get_meta( 'Service' );
+			$employee = $item->get_meta( 'Employee' );
+			$date     = $item->get_meta( 'Date' );
+			$time     = $item->get_meta( 'Time' );
+
+			if ( ! $employee ) {
+				$employee = $item->get_meta( 'Staff' );
+			}
+
+			if ( ! $service ) {
+				$svc_id = $item->get_meta( '_slotnova_service_id' );
+				if ( $svc_id ) {
+					$term = get_term( (int) $svc_id, 'slotnova_service' );
+					if ( $term && ! is_wp_error( $term ) ) {
+						$service = $term->name;
+					}
+				}
+			}
+
+			if ( ! $employee ) {
+				$emp_id = $item->get_meta( '_slotnova_employee_id' );
+				if ( $emp_id ) {
+					$term = get_term( (int) $emp_id, 'slotnova_employee' );
+					if ( $term && ! is_wp_error( $term ) ) {
+						$employee = $term->name;
+					}
+				}
+			}
+
+			if ( $service || $employee || $date ) {
+				$booking_items[] = array(
+					'service'  => $service,
+					'employee' => $employee,
+					'date'     => $date,
+					'time'     => $time,
+				);
+			}
+		}
+
+		if ( ! empty( $booking_items ) ) :
+			?>
+			<div class="slotnova-account-order-meta" style="margin-top: 6px; font-size: 12px; line-height: 1.5; color: #475569;">
+				<?php foreach ( $booking_items as $b ) : ?>
+					<div class="slotnova-account-order-meta-item" style="margin-bottom: 4px;">
+						<?php if ( ! empty( $b['service'] ) ) : ?>
+							<div><strong><?php esc_html_e( 'Service:', 'slotnova-booking' ); ?></strong> <?php echo esc_html( $b['service'] ); ?></div>
+						<?php endif; ?>
+						<?php if ( ! empty( $b['employee'] ) ) : ?>
+							<div><strong><?php esc_html_e( 'Staff:', 'slotnova-booking' ); ?></strong> <?php echo esc_html( $b['employee'] ); ?></div>
+						<?php endif; ?>
+						<?php if ( ! empty( $b['date'] ) ) : ?>
+							<?php
+							$formatted_date = function_exists( 'wp_date' ) ? wp_date( 'M j, Y', strtotime( $b['date'] ) ) : gmdate( 'M j, Y', strtotime( $b['date'] ) );
+							$dt_str         = $formatted_date;
+							if ( ! empty( $b['time'] ) ) {
+								$dt_str .= ' (' . $b['time'] . ')';
+							}
+							?>
+							<div><strong><?php esc_html_e( 'Date & Time:', 'slotnova-booking' ); ?></strong> <?php echo esc_html( $dt_str ); ?></div>
+						<?php endif; ?>
+					</div>
+				<?php endforeach; ?>
+			</div>
+			<?php
+		endif;
 	}
 }

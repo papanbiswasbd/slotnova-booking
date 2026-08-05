@@ -518,12 +518,21 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (!summaryBox) return;
 		var serviceInput = document.getElementById('slotnova_service');
 		var dateInput = document.getElementById('slotnova_booking_date');
-		if (serviceInput && serviceInput.value && dateInput && dateInput.value) {
+		var timeInput = document.getElementById('slotnova_booking_time');
+
+		var hasSelection = (serviceInput && serviceInput.value) || (dateInput && dateInput.value) || (timeInput && timeInput.value);
+
+		if (hasSelection) {
 			summaryBox.classList.remove('slotnova-is-hidden');
+			summaryBox.style.display = 'block';
 		} else {
 			summaryBox.classList.add('slotnova-is-hidden');
+			summaryBox.style.display = 'none';
 		}
 	}
+
+	// Run initial summary visibility check
+	checkSummaryVisibility();
 
 	// Close dropdowns when clicking outside
 	document.addEventListener('click', function() {

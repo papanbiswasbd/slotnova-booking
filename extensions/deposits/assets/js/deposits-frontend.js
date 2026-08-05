@@ -106,12 +106,24 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (valPayable) valPayable.textContent = currencySymbol + depositVal.toFixed(2);
 			if (valDue)     valDue.textContent     = currencySymbol + dueVal.toFixed(2);
 
-			if (rowPayable) rowPayable.classList.remove('slotnova-is-hidden');
-			if (rowDue)     rowDue.classList.remove('slotnova-is-hidden');
+			if (rowPayable) {
+				rowPayable.classList.remove('slotnova-is-hidden');
+				rowPayable.style.display = 'flex';
+			}
+			if (rowDue) {
+				rowDue.classList.remove('slotnova-is-hidden');
+				rowDue.style.display = 'flex';
+			}
 		} else {
 			// Hide breakdown rows for Full Payment
-			if (rowPayable) rowPayable.classList.add('slotnova-is-hidden');
-			if (rowDue)     rowDue.classList.add('slotnova-is-hidden');
+			if (rowPayable) {
+				rowPayable.classList.add('slotnova-is-hidden');
+				rowPayable.style.display = 'none';
+			}
+			if (rowDue) {
+				rowDue.classList.add('slotnova-is-hidden');
+				rowDue.style.display = 'none';
+			}
 		}
 	}
 
