@@ -1,6 +1,6 @@
 === SlotNova Booking for WooCommerce ===
 Contributors: papanbiswasbd
-Tags: booking, spa, appointments, reservations, salon
+Tags: woocommerce booking, appointment booking, time slot booking, service booking, booking calendar
 Requires at least: 5.3
 Tested up to: 7.0
 Requires PHP: 7.4
@@ -8,22 +8,30 @@ Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-SlotNova Booking for WooCommerce transforms your WooCommerce store into a powerful booking system for SPA centers, salons, and service businesses.
+SlotNova Booking for WooCommerce transforms your WooCommerce store into a powerful booking system for SPA centers, salons, photographers, yacht rentals, and service businesses.
 
 == Description ==
 
-**SlotNova Booking for WooCommerce** is an all-in-one booking and appointment management solution built natively for WooCommerce. Whether you run a SPA center, hair salon, wellness clinic, or appointment-based service business, SlotNova allows your customers to select services, pick staff members, choose dates on an inline calendar, and select real-time available time slots.
+**SlotNova Booking for WooCommerce** is an all-in-one booking and appointment management solution built natively for WooCommerce. Whether you run a SPA center, hair salon, photography business, yacht rental service, wellness clinic, or appointment-based service business, SlotNova allows your customers to select services, pick staff members, choose dates on an inline calendar, and select real-time available time slots.
 
 = Live Demos =
 Explore our live booking demonstrations:
+* [Photographer Booking Demo](https://livelang.pro/slotnova/product/photographer-booking/)
+* [Yacht Booking Demo](https://livelang.pro/slotnova/product/yacht-booking/)
 * [Wellness Therapy Demo (Free)](https://livelang.pro/slotnova/product/wellness-therapy/)
 * [Massage Packages Demo (Free)](https://livelang.pro/slotnova/product/massage-packages/)
 * [Partial Deposit Demo (Pro Addon)](https://livelang.pro/slotnova/product/massage-therapy-with-partial-deposit/)
 
 ### Key Features
 * **Custom Product Type**: Seamlessly creates a new 'SlotNova Booking' WooCommerce product type.
-* **Staff-Based Time Slot Availability**: Each booking is assigned to a specific staff member. If a slot is booked for that staff member, it automatically becomes visually disabled for that staff member while remaining available for other staff members.
-* **Inline Calendar & Real-Time Availability**: Customer selects date and available time slots update dynamically via AJAX.
+* **Whole Day & Time-Slot Bookings**: Support both time-slot based bookings (e.g., 2-hour slots) and full-day bookings when time slots are disabled on the product level.
+* **Fully Booked Dates & "Already Booked" Tooltips**: Automatically disables booked calendar dates with strikethrough styling and a sleek hover tooltip ("Already Booked").
+* **Dynamic Time Slot Generator**: Computes precise time slot start times dynamically between custom Opening Time and Closing Time based on Slot Duration (e.g., 10:00 AM to 04:00 PM with 120-minute slots).
+* **Interactive Quick Status Change**: Change booking order status directly from the All Bookings Management table via AJAX dropdown badges.
+* **Product Title Column**: Displays product titles across both the All Bookings Management table and WooCommerce Admin Orders table.
+* **Staff-Based Time Slot Availability**: Each booking is assigned to a specific staff member. If a slot is booked for that staff member, it automatically becomes visually disabled for that staff member while remaining available for others.
+* **Custom Staff & Service Labels**: Support frontend custom labels (e.g., "Photographer", "Doctor") while keeping core taxonomy terms intact in administrative areas.
+* **Inline Calendar & Real-Time Availability**: Customers select dates and available time slots update dynamically via AJAX.
 * **Instant Double-Booking Prevention**: Strict server-side and client-side validation prevents double-booking the same staff member or service at the same time.
 * **Automatic Slot Release**: Trashing, cancelling, refunding, or failing an order automatically re-enables its booked slot instantly.
 * **Partial Deposits & Flexible Payments (Pro Addon)**: Offer deposit options (percentage or fixed amount) with a seamless Payment Option switcher on single product pages, cart totals, and checkout order tables.
@@ -32,8 +40,6 @@ Explore our live booking demonstrations:
 * **Flexible Operating Hours & Off-Days**: Set global or product-level business opening/closing hours, slot durations, and weekly/specific off-days.
 * **Timezone Precision**: Built-in UTC timestamp calculation eliminates timezone offset shifts across international users.
 * **Developer-Friendly API**: Exposes global accessor `slotnova_booking()` and extensive action/filter hooks for third-party add-on development.
-* **Admin Manual Booking**: Create manual bookings directly from the WordPress Admin with an interactive modal dialog.
-* **Dashboard Analytics**: Track total bookings, revenue, upcoming appointments, and staff performance from the admin panel.
 
 == Installation ==
 
@@ -41,27 +47,29 @@ Explore our live booking demonstrations:
 2. Activate the plugin through the 'Plugins' menu in WordPress.
 3. Go to **SlotNova Booking > Settings** to configure your business opening/closing hours and off-days.
 4. Create a new WooCommerce product and set its Product Type to **SlotNova Booking**.
-5. Configure services, staff members, and slot durations on the product edit screen.
+5. Configure services, staff members, opening/closing hours, and slot durations on the product edit screen.
 
 == Frequently Asked Questions ==
 
 = Does SlotNova require WooCommerce? =
 Yes, SlotNova Booking is built natively on top of WooCommerce and requires WooCommerce to be activated.
 
-= How does real-time slot validation work? =
-When a customer picks a date or changes their selected service/employee, an AJAX query checks active orders and cart sessions. If a staff member or service slot is already booked for that specific date and time, the slot button is immediately disabled on the UI.
+= How does Whole Day booking work? =
+When "Enable Time Slots" is set to "No (Disable)" on the product edit screen, time slots are hidden on the frontend. Customers select a date, and the order is automatically booked for the whole day.
 
-= What happens if an order is cancelled or trashed? =
-When an order status changes to `trash`, `cancelled`, `refunded`, or `failed`, SlotNova automatically excludes it from the active bookings query and releases the time slot immediately so other customers can book it.
+= What happens when a date is fully booked? =
+Fully booked dates automatically become disabled in the inline and popup calendar with a strikethrough appearance and a hover tooltip saying "Already Booked".
+
+= Can I change order statuses directly from the All Bookings management table? =
+Yes! The All Bookings Management table features interactive status dropdown badges that update order status instantly via AJAX.
 
 = How does the Partial Deposit Pro Addon work? =
 The Partial Deposit addon allows store owners to collect an upfront deposit (e.g. 20% or $50) at checkout while deferring the remaining balance to be paid at the appointment. It adds an interactive "Full Payment vs Pay Deposit" switcher to product pages, cart totals, and checkout pages.
 
-= Can developers extend SlotNova with custom hooks? =
-Yes! SlotNova is built developer-friendly. Access the core plugin instance via `slotnova_booking()` and filter or hook into lifecycle points including cart validation, price calculations, and admin modal actions.
-
 = Where can I try a live demonstration? =
 You can explore our live booking experiences here:
+* [Photographer Booking Demo](https://livelang.pro/slotnova/product/photographer-booking/)
+* [Yacht Booking Demo](https://livelang.pro/slotnova/product/yacht-booking/)
 * [Wellness Therapy Demo (Free)](https://livelang.pro/slotnova/product/wellness-therapy/)
 * [Massage Packages Demo (Free)](https://livelang.pro/slotnova/product/massage-packages/)
 * [Partial Deposit Demo (Pro Addon)](https://livelang.pro/slotnova/product/massage-therapy-with-partial-deposit/)
@@ -79,13 +87,19 @@ SlotNova Booking exposes standard WordPress action and filter hooks:
 == Changelog ==
 
 = 1.2.0 =
+* Added Whole Day Booking mode when time slots are disabled on product level (automatically assigns Time: All Day).
+* Added Fully Booked Date disabling on Flatpickr calendar with strikethrough styling and "Already Booked" hover tooltip.
+* Added dynamic product time slot generation between Opening Time and Closing Time based on custom Slot Duration (e.g. 10:00 AM to 04:00 PM with 120-min slots).
+* Added interactive quick status change dropdown select badges in the All Bookings Management table with real-time AJAX updates.
+* Added Product Title ("Title") column across both All Bookings Management table and WooCommerce Admin Orders list table.
+* Added custom staff & service label resolution (e.g. Photographer, Doctor) across admin booking tables and emails.
 * Added Pro Addon support for Partial Deposits & Flexible Payment Plans (fixed amount or percentage deposit with remaining balance due at appointment).
 * Added dynamic Payment Plan selector on single product pages, WooCommerce cart totals table, and checkout review table.
 * Added clean "Due at Appointment" breakdown in cart & checkout, replacing negative fee lines for a polished user experience.
 * Added staff-specific time slot availability validation, ensuring booked slots auto-disable for the selected staff member while remaining available for others.
 * Added automatic time slot re-enabling when orders are moved to `trash`, `cancelled`, `refunded`, `failed`, or `draft` status.
 * Added modular Extension Manager architecture supporting pro add-on installation, activation status persistence, and license verification.
-* Updated live demo showcase links distinguishing Free and Pro Addon features.
+* Updated live demo showcase links including Photographer Booking and Yacht Booking demos.
 
 = 1.1.1 =
 * Added streamlined SlotNova Overview Dashboard Analytics Widget with dynamic Chart.js timeline and metrics summary.
@@ -108,7 +122,7 @@ SlotNova Booking exposes standard WordPress action and filter hooks:
 == Upgrade Notice ==
 
 = 1.2.0 =
-Upgrade to 1.2.0 for Pro Addon Partial Deposit payment support, staff-specific slot availability, automatic trashed order slot release, and modular extension management.
+Upgrade to 1.2.0 for Whole Day bookings, "Already Booked" hover tooltips, dynamic time slot calculations, quick status change dropdowns, and Pro Addon Partial Deposit support.
 
 = 1.1.1 =
 Upgrade to 1.1.1 for streamlined dashboard overview analytics, quick date range filter presets, and interactive booking schedule calendar.
