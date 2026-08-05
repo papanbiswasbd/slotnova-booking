@@ -8,7 +8,7 @@ Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-SlotNova Booking for WooCommerce transforms your WooCommerce store into a powerful booking system for SPA centers, salons, photographers, yacht rentals, and service businesses.
+Complete booking and appointment system for WooCommerce to handle services, staff, calendar dates, and real-time available time slots.
 
 == Description ==
 
