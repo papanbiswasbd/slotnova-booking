@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		var passedHint  = (typeof slotnova_params !== 'undefined' && slotnova_params.passed_hint) ? slotnova_params.passed_hint : 'This time slot has already passed for today. Please select another date or time.';
 		var bookedHint  = (typeof slotnova_params !== 'undefined' && slotnova_params.booked_hint) ? slotnova_params.booked_hint : 'This time slot is already booked. Please try selecting a different date, employee, or service.';
 
-		var disablePast = (typeof slotnova_params !== 'undefined' && slotnova_params.disable_past_slots === false) ? false : true;
+		var disablePast = (typeof slotnova_params !== 'undefined' && slotnova_params.disable_past_slots === true) ? true : false;
 
 		// INSTANT UI RESET: Un-disable all time slots immediately upon changing date/service/employee
 		timePills.forEach(function(pill) {

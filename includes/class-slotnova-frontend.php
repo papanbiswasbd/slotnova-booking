@@ -411,7 +411,7 @@ class Frontend {
 			'passed_hint'       => __( 'This time slot has already passed for today. Please select another date or time.', 'slotnova-booking' ),
 			'site_current_date'  => wp_date( 'Y-m-d' ),
 			'site_current_time'  => wp_date( 'H:i' ),
-			'disable_past_slots' => apply_filters( 'slotnova_disable_past_slots', true ),
+			'disable_past_slots' => apply_filters( 'slotnova_disable_past_slots', false ),
 			'i18n'              => array(
 				'select_service'  => __( 'Please select a service before booking.', 'slotnova-booking' ),
 				'select_employee' => __( 'Please select an employee before booking.', 'slotnova-booking' ),
@@ -642,7 +642,8 @@ class Frontend {
 
 			<?php do_action( 'slotnova_before_add_to_cart_button', $product ); ?>
 
-			<button type="submit" class="single_add_to_cart_button button alt"><?php echo esc_html( $product->single_add_to_cart_text() ); ?></button>
+			<input type="hidden" name="add-to-cart" value="<?php echo esc_attr( $product_id ); ?>" />
+			<button type="submit" name="add-to-cart" value="<?php echo esc_attr( $product_id ); ?>" class="single_add_to_cart_button button alt"><?php echo esc_html( $product->single_add_to_cart_text() ); ?></button>
 
 			<?php do_action( 'slotnova_after_add_to_cart_button', $product ); ?>
 		</form>
