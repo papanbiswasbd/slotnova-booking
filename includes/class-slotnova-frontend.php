@@ -177,14 +177,24 @@ class Frontend {
 
 		$booked_slots = array();
 
-		// Check active orders
+		// Check active orders only (exclude cancelled, refunded, failed, and trashed orders)
 		$args = array(
-			'status' => array( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-pending' ),
+			'status' => array( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-pending', 'completed', 'processing', 'on-hold', 'pending' ),
 			'limit'  => -1,
 		);
 
 		$orders = wc_get_orders( $args );
 		foreach ( $orders as $order ) {
+			if ( ! $order || ! is_a( $order, 'WC_Order' ) ) {
+				continue;
+			}
+
+			$st = strtolower( (string) $order->get_status() );
+			// Explicitly skip cancelled, refunded, failed, draft, or trashed orders
+			if ( in_array( $st, array( 'cancelled', 'refunded', 'failed', 'trash', 'draft', 'wc-cancelled', 'wc-refunded', 'wc-failed', 'wc-trash' ), true ) ) {
+				continue;
+			}
+
 			foreach ( $order->get_items() as $item ) {
 				$item_prod_id = (int) $item->get_product_id();
 				if ( $product_id > 0 && $item_prod_id > 0 && $item_prod_id !== (int) $product_id ) {
