@@ -272,6 +272,7 @@ class Frontend {
 				}
 			}
 		}
+	}
 
 		// Check active WC cart session
 		if ( function_exists( 'WC' ) && WC()->cart ) {
