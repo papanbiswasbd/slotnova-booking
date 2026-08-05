@@ -1326,8 +1326,10 @@ class Admin {
 	 * @return array
 	 */
 	private function get_dashboard_data( $filter = 'last_7_days' ) {
-		$args = array(
-			'status' => array( 'wc-completed', 'wc-processing', 'wc-on-hold' ),
+		$default_statuses = array( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-pending', 'wc-partial-deposit', 'partial-deposit' );
+		$statuses         = apply_filters( 'slotnova_dashboard_query_statuses', $default_statuses );
+		$args             = array(
+			'status' => $statuses,
 			'limit'  => -1,
 		);
 
@@ -1413,7 +1415,7 @@ class Admin {
 			if ( 'completed' === $order_status ) {
 				$completed_count++;
 			}
-			if ( 'processing' === $order_status || 'on-hold' === $order_status ) {
+			if ( 'processing' === $order_status || 'on-hold' === $order_status || 'partial-deposit' === $order_status || 'wc-partial-deposit' === $order_status ) {
 				$pending_bookings++;
 			}
 
@@ -3349,7 +3351,7 @@ class Admin {
 		$report_field = ! empty( $params['report_field'] ) ? sanitize_text_field( $params['report_field'] ) : 'service';
 
 		$orders = wc_get_orders( array(
-			'status' => array( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-pending', 'wc-cancelled', 'wc-refunded' ),
+			'status' => array( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-pending', 'wc-cancelled', 'wc-refunded', 'wc-partial-deposit', 'partial-deposit' ),
 			'limit'  => -1,
 		) );
 

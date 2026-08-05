@@ -134,9 +134,6 @@ class DepositOrderStatusManager {
 				$result['list'][ $key ]['deposit_due']            = $due;
 				$result['list'][ $key ]['deposit_paid_formatted'] = function_exists( 'wc_price' ) ? wc_price( $paid ) : '$' . number_format( $paid, 2 );
 				$result['list'][ $key ]['deposit_due_formatted']  = function_exists( 'wc_price' ) ? wc_price( $due ) : '$' . number_format( $due, 2 );
-
-				$result['list'][ $key ]['status']     = __( 'Partial Deposit', 'slotnova-booking' );
-				$result['list'][ $key ]['status_raw'] = 'partial-deposit';
 			}
 		}
 
@@ -153,13 +150,6 @@ class DepositOrderStatusManager {
 
 		if ( $post_id > 0 && function_exists( 'wc_get_order' ) ) {
 			$is_deposit = ( 'yes' === get_post_meta( $post_id, '_slotnova_is_deposit', true ) );
-			$due        = (float) get_post_meta( $post_id, '_slotnova_deposit_due', true );
-			if ( $is_deposit && $due > 0 ) {
-				$order = wc_get_order( $post_id );
-				if ( $order && ! in_array( $order->get_status(), array( 'partial-deposit', 'wc-partial-deposit' ), true ) ) {
-					$order->update_status( 'partial-deposit', __( 'Updated status to Partial Deposit.', 'slotnova-booking' ) );
-				}
-			}
 		}
 
 		$paid_html = ( $is_deposit && function_exists( 'wc_price' ) ) ? wc_price( get_post_meta( $post_id, '_slotnova_deposit_paid', true ) ) : '';
