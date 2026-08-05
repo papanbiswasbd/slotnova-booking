@@ -2,7 +2,7 @@
  * SlotNova Booking Admin JavaScript
  *
  * @package SlotNova\Booking
- * @version 1.1.1
+ * @version 1.2.0
  */
 
 jQuery(document).ready(function($) {

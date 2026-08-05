@@ -5,7 +5,7 @@
  * Dynamically loads extension catalog live from Cloudflare Worker & R2.
  *
  * @package SlotNova\Booking
- * @version 1.1.1
+ * @version 1.2.0
  */
 
 namespace SlotNova\Booking;
