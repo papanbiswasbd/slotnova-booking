@@ -34,6 +34,13 @@ class Admin {
 		add_action( 'woocommerce_product_data_panels', array( $this, 'render_slotnova_product_tab_content' ) );
 		add_action( 'woocommerce_process_product_meta', array( $this, 'save_slotnova_product_tab_data' ) );
 
+		// WooCommerce Admin Orders Table Custom Columns (Service, Staff, Date & Time, Amount)
+		add_filter( 'manage_edit-shop_order_columns', array( $this, 'add_wc_order_columns' ), 20 );
+		add_filter( 'woocommerce_shop_order_list_table_columns', array( $this, 'add_wc_order_columns' ), 20 );
+		add_action( 'manage_shop_order_posts_custom_column', array( $this, 'render_wc_order_column_cpt' ), 10, 2 );
+		add_action( 'woocommerce_shop_order_list_table_custom_column', array( $this, 'render_wc_order_column' ), 10, 2 );
+		add_action( 'admin_head', array( $this, 'print_wc_orders_table_styles' ) );
+
 		// AJAX Handlers for Smart Features
 		add_action( 'wp_ajax_slotnova_export_bookings_csv', array( $this, 'ajax_export_bookings_csv' ) );
 		add_action( 'wp_ajax_slotnova_create_manual_booking', array( $this, 'ajax_create_manual_booking' ) );
@@ -736,6 +743,232 @@ class Admin {
 	}
 
 	/**
+	 * Print CSS styles for WooCommerce Admin Orders Table custom columns spacing and badges.
+	 *
+	 * @return void
+	 */
+	public function print_wc_orders_table_styles(): void {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen ) {
+			return;
+		}
+
+		if ( 'edit-shop_order' === $screen->id || 'woocommerce_page_wc-orders' === $screen->id || 'shop_order' === $screen->post_type ) {
+			?>
+			<style>
+			/* SlotNova WooCommerce Admin Orders Table Column Widths & Spacing */
+			.wp-list-table.orders th.column-slotnova_service,
+			.wp-list-table.orders td.column-slotnova_service,
+			.wp-list-table.wc-orders th.column-slotnova_service,
+			.wp-list-table.wc-orders td.column-slotnova_service {
+				width: 11%;
+			}
+			.wp-list-table.orders th.column-slotnova_staff,
+			.wp-list-table.orders td.column-slotnova_staff,
+			.wp-list-table.wc-orders th.column-slotnova_staff,
+			.wp-list-table.wc-orders td.column-slotnova_staff {
+				width: 12%;
+			}
+			.wp-list-table.orders th.column-slotnova_datetime,
+			.wp-list-table.orders td.column-slotnova_datetime,
+			.wp-list-table.wc-orders th.column-slotnova_datetime,
+			.wp-list-table.wc-orders td.column-slotnova_datetime {
+				width: 17%;
+				min-width: 140px;
+			}
+			.wp-list-table.orders th.column-slotnova_amount,
+			.wp-list-table.orders td.column-slotnova_amount,
+			.wp-list-table.wc-orders th.column-slotnova_amount,
+			.wp-list-table.wc-orders td.column-slotnova_amount {
+				width: 16%;
+				min-width: 135px;
+			}
+			</style>
+			<?php
+		}
+	}
+
+	/**
+	 * Register custom columns for WooCommerce Admin Orders List Table (CPT & HPOS).
+	 * Replaces native Order Total with clean SlotNova Amount breakdown column.
+	 *
+	 * @param array $columns Existing table columns.
+	 * @return array
+	 */
+	public function add_wc_order_columns( array $columns ): array {
+		$new_columns = array();
+		foreach ( $columns as $key => $column ) {
+			if ( 'order_total' === $key ) {
+				$new_columns['slotnova_service']  = __( 'Service', 'slotnova-booking' );
+				$new_columns['slotnova_staff']    = __( 'Staff', 'slotnova-booking' );
+				$new_columns['slotnova_datetime'] = __( 'Booking Date & Time', 'slotnova-booking' );
+				$new_columns['slotnova_amount']   = __( 'Amount', 'slotnova-booking' );
+				continue; // Replace native order_total with custom SlotNova Amount column
+			}
+			$new_columns[ $key ] = $column;
+		}
+
+		if ( ! isset( $new_columns['slotnova_service'] ) ) {
+			$new_columns['slotnova_service']  = __( 'Service', 'slotnova-booking' );
+			$new_columns['slotnova_staff']    = __( 'Staff', 'slotnova-booking' );
+			$new_columns['slotnova_datetime'] = __( 'Booking Date & Time', 'slotnova-booking' );
+			$new_columns['slotnova_amount']   = __( 'Amount', 'slotnova-booking' );
+		}
+
+		return $new_columns;
+	}
+
+	/**
+	 * CPT Fallback renderer for WooCommerce Admin Orders Table columns.
+	 *
+	 * @param string $column  Column identifier.
+	 * @param int    $post_id Order CPT Post ID.
+	 * @return void
+	 */
+	public function render_wc_order_column_cpt( string $column, int $post_id ): void {
+		if ( 0 === strpos( $column, 'slotnova_' ) && function_exists( 'wc_get_order' ) ) {
+			$order = wc_get_order( $post_id );
+			if ( $order ) {
+				$this->render_wc_order_column( $column, $order );
+			}
+		}
+	}
+
+	/**
+	 * Render content for custom WooCommerce Admin Orders Table columns (Service, Staff, Booking Date & Time, Amount).
+	 *
+	 * @param string          $column Column identifier.
+	 * @param \WC_Order|mixed $order  Order object.
+	 * @return void
+	 */
+	public function render_wc_order_column( string $column, $order ): void {
+		if ( ! $order || ! is_a( $order, 'WC_Order' ) ) {
+			return;
+		}
+
+		if ( 0 !== strpos( $column, 'slotnova_' ) ) {
+			return;
+		}
+
+		$services  = array();
+		$employees = array();
+		$datetimes = array();
+
+		foreach ( $order->get_items() as $item ) {
+			$service  = $item->get_meta( 'Service' );
+			$employee = $item->get_meta( 'Employee' );
+			$date     = $item->get_meta( 'Date' );
+			$time     = $item->get_meta( 'Time' );
+
+			if ( ! $employee ) {
+				$employee = $item->get_meta( 'Staff' );
+			}
+
+			if ( ! $service ) {
+				$svc_id = $item->get_meta( '_slotnova_service_id' );
+				if ( $svc_id ) {
+					$term = get_term( (int) $svc_id, 'slotnova_service' );
+					if ( $term && ! is_wp_error( $term ) ) {
+						$service = $term->name;
+					}
+				}
+			}
+
+			if ( ! $employee ) {
+				$emp_id = $item->get_meta( '_slotnova_employee_id' );
+				if ( $emp_id ) {
+					$term = get_term( (int) $emp_id, 'slotnova_employee' );
+					if ( $term && ! is_wp_error( $term ) ) {
+						$employee = $term->name;
+					}
+				}
+			}
+
+			if ( $service && ! in_array( $service, $services, true ) ) {
+				$services[] = $service;
+			}
+			if ( $employee && ! in_array( $employee, $employees, true ) ) {
+				$employees[] = $employee;
+			}
+			if ( $date ) {
+				$dt_key = $date . '|' . $time;
+				if ( ! isset( $datetimes[ $dt_key ] ) ) {
+					$datetimes[ $dt_key ] = array(
+						'date' => $date,
+						'time' => $time,
+					);
+				}
+			}
+		}
+
+		if ( 'slotnova_service' === $column ) {
+			if ( ! empty( $services ) ) {
+				$out = array();
+				foreach ( $services as $s ) {
+					$out[] = '<span style="background: #e0e7ff; color: #4338ca; border-radius: 12px; padding: 3px 9px; font-size: 11px; font-weight: 700; display: inline-block; margin: 1px 0;">' . esc_html( $s ) . '</span>';
+				}
+				echo implode( ' ', $out );
+			} else {
+				echo '<span style="color: #94a3b8;">—</span>';
+			}
+		} elseif ( 'slotnova_staff' === $column ) {
+			if ( ! empty( $employees ) ) {
+				$out = array();
+				foreach ( $employees as $e ) {
+					$out[] = '<span style="display: inline-flex; align-items: center; gap: 4px; color: #0f172a; font-weight: 600; font-size: 12px;"><span class="dashicons dashicons-admin-users" style="font-size: 14px; width: 14px; height: 14px; color: #64748b;"></span>' . esc_html( $e ) . '</span>';
+				}
+				echo implode( '<br>', $out );
+			} else {
+				echo '<span style="color: #94a3b8;">—</span>';
+			}
+		} elseif ( 'slotnova_datetime' === $column ) {
+			if ( ! empty( $datetimes ) ) {
+				$out = array();
+				foreach ( $datetimes as $dt ) {
+					$formatted_date = function_exists( 'wp_date' ) ? wp_date( 'M j, Y', strtotime( $dt['date'] ) ) : date( 'M j, Y', strtotime( $dt['date'] ) );
+					$str            = '<div style="display: flex; flex-direction: column; gap: 3px; line-height: 1.3;">';
+					$str           .= '<strong style="color: #0f172a; font-size: 13px; font-weight: 700; white-space: nowrap;">' . esc_html( $formatted_date ) . '</strong>';
+					if ( ! empty( $dt['time'] ) ) {
+						$str .= '<span style="color: #475569; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; background: #f1f5f9; padding: 2px 7px; border-radius: 6px; width: fit-content; border: 1px solid #e2e8f0; white-space: nowrap;"><span class="dashicons dashicons-clock" style="font-size: 12px; width: 12px; height: 12px; color: #64748b; line-height: 12px;"></span>' . esc_html( $dt['time'] ) . '</span>';
+					}
+					$str  .= '</div>';
+					$out[] = $str;
+				}
+				echo implode( '<br>', $out );
+			} else {
+				echo '<span style="color: #94a3b8;">—</span>';
+			}
+		} elseif ( 'slotnova_amount' === $column ) {
+			$is_deposit   = get_post_meta( $order->get_id(), '_slotnova_is_deposit', true );
+			$deposit_paid = (float) get_post_meta( $order->get_id(), '_slotnova_deposit_paid', true );
+			$deposit_due  = (float) get_post_meta( $order->get_id(), '_slotnova_deposit_due', true );
+			$due_paid     = get_post_meta( $order->get_id(), '_slotnova_due_paid', true );
+
+			if ( 'yes' === $is_deposit && function_exists( 'wc_price' ) ) {
+				if ( 'yes' === $due_paid || $deposit_due <= 0 ) {
+					$full_total = $deposit_paid > 0 ? $deposit_paid : $order->get_total();
+					echo '<div style="display: flex; flex-direction: column; gap: 3px; line-height: 1.3;">';
+					echo '<strong style="color: #166534; font-size: 13px; font-weight: 700;">' . wp_kses_post( wc_price( $full_total, array( 'currency' => $order->get_currency() ) ) ) . '</strong>';
+					echo '<span style="background: #dcfce7; color: #15803d; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 10px; text-transform: uppercase; width: fit-content; letter-spacing: 0.3px;">Paid Full</span>';
+					echo '</div>';
+				} else {
+					echo '<div style="display: flex; flex-direction: column; gap: 3px; line-height: 1.3;">';
+					echo '<span style="display: flex; align-items: center; gap: 5px;"><strong style="color: #166534; font-size: 13px; font-weight: 700;">' . wp_kses_post( wc_price( $deposit_paid, array( 'currency' => $order->get_currency() ) ) ) . '</strong> <span style="background: #dcfce7; color: #15803d; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 8px; text-transform: uppercase;">Paid</span></span>';
+					echo '<span style="background: #fef2f2; color: #dc2626; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 6px; width: fit-content; border: 1px solid #fecaca; white-space: nowrap;">' . wp_kses_post( wc_price( $deposit_due, array( 'currency' => $order->get_currency() ) ) ) . ' Due</span>';
+					echo '</div>';
+				}
+			} else {
+				$total = (float) $order->get_total();
+				if ( function_exists( 'wc_price' ) ) {
+					echo '<strong style="color: #0f172a; font-size: 13px; font-weight: 700;">' . wp_kses_post( wc_price( $total, array( 'currency' => $order->get_currency() ) ) ) . '</strong>';
+				} else {
+					echo esc_html( '$' . number_format( $total, 2 ) );
+				}
+			}
+		}
+	}
+
+	/**
 	 * Register global plugin options.
 	 *
 	 * @return void
@@ -883,7 +1116,7 @@ class Admin {
 
 		if ( $is_dashboard || strpos( $hook, 'slotnova-dashboard' ) !== false ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$current_filter = isset( $_GET['date_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['date_filter'] ) ) : 'last_7_days';
+			$current_filter = isset( $_GET['date_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['date_filter'] ) ) : 'this_month';
 			$data           = $this->get_dashboard_data( $current_filter );
 
 			$localized_data['chart'] = array(
@@ -1220,13 +1453,13 @@ class Admin {
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$current_filter = isset( $_GET['date_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['date_filter'] ) ) : 'last_7_days';
+		$current_filter = isset( $_GET['date_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['date_filter'] ) ) : 'this_month';
 		$data           = $this->get_dashboard_data( $current_filter );
 
 		$filter_options = array(
+			'this_month'  => __( 'This Month', 'slotnova-booking' ),
 			'this_week'   => __( 'This Week', 'slotnova-booking' ),
 			'last_7_days' => __( 'Last 7 Days', 'slotnova-booking' ),
-			'this_month'  => __( 'This Month', 'slotnova-booking' ),
 			'last_month'  => __( 'Last Month', 'slotnova-booking' ),
 			'this_year'   => __( 'This Year', 'slotnova-booking' ),
 			'last_year'   => __( 'Last Year', 'slotnova-booking' ),
@@ -1255,7 +1488,7 @@ class Admin {
 					<form method="get" action="" class="slotnova-inline-form">
 						<input type="hidden" name="page" value="slotnova-dashboard" />
 						<div class="slotnova-select-wrapper">
-							<select name="date_filter" class="slotnova-filter-select">
+							<select name="date_filter" class="slotnova-filter-select" onchange="this.form.submit()">
 								<?php foreach ( $filter_options as $value => $label ) : ?>
 									<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $current_filter, $value ); ?>><?php echo esc_html( $label ); ?></option>
 								<?php endforeach; ?>
@@ -3081,7 +3314,7 @@ class Admin {
 			'formatted_total_revenue' => html_entity_decode( wp_strip_all_tags( wc_price( $total_range_revenue ) ), ENT_QUOTES, 'UTF-8' ),
 			'peak_hour_display'       => $peak_hour_str,
 			'top_service_display'     => $top_service_str,
-			'recent_bookings'         => array_slice( $all_bookings['list'], 0, 20 ),
+			'recent_bookings'         => array_slice( $all_bookings['list'], 0, 10 ),
 			'calendar_events'         => $all_bookings['events'],
 			'day_distribution'        => array(
 				'labels' => array_keys( $day_counts ),
