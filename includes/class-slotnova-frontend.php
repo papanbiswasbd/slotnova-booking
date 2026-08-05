@@ -34,9 +34,11 @@ class Frontend {
 		// Display custom price HTML (single price or price range) for SlotNova products
 		add_filter( 'woocommerce_get_price_html', array( $this, 'filter_product_price_html' ), 10, 2 );
 
-		// AJAX endpoint for fetching booked time slots
+		// AJAX endpoint for fetching booked time slots & fully booked dates
 		add_action( 'wp_ajax_slotnova_get_booked_slots', array( $this, 'ajax_get_booked_slots' ) );
 		add_action( 'wp_ajax_nopriv_slotnova_get_booked_slots', array( $this, 'ajax_get_booked_slots' ) );
+		add_action( 'wp_ajax_slotnova_get_fully_booked_dates', array( $this, 'ajax_get_fully_booked_dates' ) );
+		add_action( 'wp_ajax_nopriv_slotnova_get_fully_booked_dates', array( $this, 'ajax_get_fully_booked_dates' ) );
 
 		// WooCommerce My Account Orders Table Column (Row by Row under Order ID)
 		add_action( 'woocommerce_my_account_my_orders_column_order-number', array( $this, 'render_account_order_number_column' ) );
@@ -329,6 +331,121 @@ class Frontend {
 		}
 
 		return apply_filters( 'slotnova_get_booked_slots', $booked_slots, $product_id, $target_date, $service_id, $employee_id );
+	}
+
+	/**
+	 * Get list of dates that are fully booked for a product (whole day or all slots reserved).
+	 *
+	 * @param int $product_id Product ID.
+	 * @param int $service_id Selected service term ID.
+	 * @param int $employee_id Selected employee term ID.
+	 * @return array
+	 */
+	public function get_fully_booked_dates( $product_id, $service_id = 0, $employee_id = 0 ) {
+		$enable_time_slots = get_post_meta( $product_id, '_slotnova_enable_time_slots', true );
+		if ( empty( $enable_time_slots ) || 'global' === $enable_time_slots ) {
+			$enable_time_slots = get_option( 'slotnova_enable_time_slots', 'yes' );
+		}
+
+		$default_statuses = array( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-pending', 'wc-partial-deposit', 'partial-deposit' );
+		$statuses         = apply_filters( 'slotnova_bookings_query_statuses', $default_statuses );
+		$orders           = wc_get_orders( array( 'status' => $statuses, 'limit' => -1 ) );
+
+		$date_counts  = array();
+		$fully_booked = array();
+
+		$total_slots_per_day = 1;
+		if ( 'yes' === $enable_time_slots ) {
+			$opening_time = get_post_meta( $product_id, '_slotnova_opening_time', true );
+			$closing_time = get_post_meta( $product_id, '_slotnova_closing_time', true );
+			$duration     = get_post_meta( $product_id, '_slotnova_slot_duration', true );
+			$all_slots    = function_exists( 'slotnova_generate_time_slots' ) ? slotnova_generate_time_slots( $opening_time, $closing_time, $duration ) : array();
+			$total_slots_per_day = count( $all_slots );
+			if ( $total_slots_per_day <= 0 ) {
+				$total_slots_per_day = 9;
+			}
+		}
+
+		foreach ( $orders as $order ) {
+			foreach ( $order->get_items() as $item ) {
+				$item_prod_id = $item->get_product_id();
+				if ( $product_id > 0 && $item_prod_id > 0 && $item_prod_id !== (int) $product_id ) {
+					continue;
+				}
+
+				$booking_date = $item->get_meta( 'Date' );
+				if ( empty( $booking_date ) ) {
+					continue;
+				}
+				$parsed_date = function_exists( 'slotnova_parse_date' ) ? slotnova_parse_date( $booking_date ) : $booking_date;
+				if ( ! $parsed_date ) {
+					continue;
+				}
+
+				$item_emp_id = (int) $item->get_meta( '_slotnova_employee_id' );
+				$item_svc_id = (int) $item->get_meta( '_slotnova_service_id' );
+
+				$is_match = true;
+				if ( $employee_id > 0 && $item_emp_id > 0 && $item_emp_id !== $employee_id ) {
+					$is_match = false;
+				}
+				if ( $service_id > 0 && $item_svc_id > 0 && $item_svc_id !== $service_id ) {
+					$is_match = false;
+				}
+
+				if ( $is_match ) {
+					if ( ! isset( $date_counts[ $parsed_date ] ) ) {
+						$date_counts[ $parsed_date ] = 0;
+					}
+					$date_counts[ $parsed_date ]++;
+				}
+			}
+		}
+
+		if ( function_exists( 'WC' ) && WC()->cart ) {
+			foreach ( WC()->cart->get_cart() as $cart_item ) {
+				$cart_prod_id = isset( $cart_item['product_id'] ) ? (int) $cart_item['product_id'] : 0;
+				if ( $product_id > 0 && $cart_prod_id > 0 && $cart_prod_id !== (int) $product_id ) {
+					continue;
+				}
+				$cart_raw_date = isset( $cart_item['slotnova_booking']['date'] ) ? $cart_item['slotnova_booking']['date'] : '';
+				$cart_date     = function_exists( 'slotnova_parse_date' ) ? slotnova_parse_date( $cart_raw_date ) : $cart_raw_date;
+				if ( $cart_date ) {
+					if ( ! isset( $date_counts[ $cart_date ] ) ) {
+						$date_counts[ $cart_date ] = 0;
+					}
+					$date_counts[ $cart_date ]++;
+				}
+			}
+		}
+
+		foreach ( $date_counts as $date => $count ) {
+			if ( $count >= $total_slots_per_day ) {
+				$fully_booked[] = $date;
+			}
+		}
+
+		return array_values( array_unique( $fully_booked ) );
+	}
+
+	/**
+	 * AJAX endpoint for fetching fully booked dates.
+	 *
+	 * @return void
+	 */
+	public function ajax_get_fully_booked_dates() {
+		check_ajax_referer( 'slotnova_cart_nonce', 'nonce' );
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$product_id  = isset( $_POST['product_id'] ) ? intval( $_POST['product_id'] ) : 0;
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$service_id  = isset( $_POST['service_id'] ) ? intval( $_POST['service_id'] ) : 0;
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$employee_id = isset( $_POST['employee_id'] ) ? intval( $_POST['employee_id'] ) : 0;
+
+		$fully_booked = $this->get_fully_booked_dates( $product_id, $service_id, $employee_id );
+
+		wp_send_json_success( array( 'fully_booked_dates' => $fully_booked ) );
 	}
 
 	/**
@@ -652,22 +769,31 @@ class Frontend {
 				$closing_time = get_option( 'slotnova_closing_time', '' );
 			}
 			$calendar_mode = get_option( 'slotnova_calendar_mode', 'inline' );
+
+			$enable_time_slots = get_post_meta( $product_id, '_slotnova_enable_time_slots', true );
+			if ( empty( $enable_time_slots ) || 'global' === $enable_time_slots ) {
+				$enable_time_slots = get_option( 'slotnova_enable_time_slots', 'yes' );
+			}
+
+			$fully_booked_dates = $this->get_fully_booked_dates( $product_id );
+			$fully_booked_json  = wp_json_encode( $fully_booked_dates );
 			?>
 
 			<div class="form-row form-row-wide slotnova-date-wrapper" data-calendar-mode="<?php echo esc_attr( $calendar_mode ); ?>">
 				<label for="slotnova_booking_date"><?php esc_html_e( 'Select Date', 'slotnova-booking' ); ?></label>
 				<?php if ( 'popup' === $calendar_mode ) : ?>
 					<div class="slotnova-date-input-container">
-						<input type="text" id="slotnova_booking_date" name="slotnova_booking_date" class="slotnova-date-picker slotnova-date-picker-popup" placeholder="<?php esc_attr_e( 'Click to select date...', 'slotnova-booking' ); ?>" data-off-days="<?php echo esc_attr( $off_days_str ); ?>" data-closing-time="<?php echo esc_attr( $closing_time ); ?>" required readonly>
+						<input type="text" id="slotnova_booking_date" name="slotnova_booking_date" class="slotnova-date-picker slotnova-date-picker-popup" placeholder="<?php esc_attr_e( 'Click to select date...', 'slotnova-booking' ); ?>" data-off-days="<?php echo esc_attr( $off_days_str ); ?>" data-closing-time="<?php echo esc_attr( $closing_time ); ?>" data-enable-time-slots="<?php echo esc_attr( $enable_time_slots ); ?>" data-booked-dates="<?php echo esc_attr( $fully_booked_json ); ?>" required readonly>
 						<span class="slotnova-date-picker-icon">
 							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
 						</span>
 					</div>
 				<?php else : ?>
-					<input type="text" id="slotnova_booking_date" name="slotnova_booking_date" class="slotnova-date-picker" placeholder="<?php esc_attr_e( 'Select Date', 'slotnova-booking' ); ?>" data-off-days="<?php echo esc_attr( $off_days_str ); ?>" data-closing-time="<?php echo esc_attr( $closing_time ); ?>" required readonly style="display:none;">
+					<input type="text" id="slotnova_booking_date" name="slotnova_booking_date" class="slotnova-date-picker" placeholder="<?php esc_attr_e( 'Select Date', 'slotnova-booking' ); ?>" data-off-days="<?php echo esc_attr( $off_days_str ); ?>" data-closing-time="<?php echo esc_attr( $closing_time ); ?>" data-enable-time-slots="<?php echo esc_attr( $enable_time_slots ); ?>" data-booked-dates="<?php echo esc_attr( $fully_booked_json ); ?>" required readonly style="display:none;">
 				<?php endif; ?>
 			</div>
 
+			<?php if ( 'yes' === $enable_time_slots ) : ?>
 			<div class="form-row form-row-wide slotnova-time-slots-wrapper slotnova-is-hidden" style="display: none;" data-time-picker-style="pills">
 				<label for="slotnova_booking_time_trigger"><?php esc_html_e( 'Select Time', 'slotnova-booking' ); ?></label>
 				<div class="slotnova-time-slots-container">
@@ -712,6 +838,9 @@ class Frontend {
 				</div>
 				<input type="hidden" id="slotnova_booking_time" name="slotnova_booking_time" required>
 			</div>
+			<?php else : ?>
+				<input type="hidden" id="slotnova_booking_time" name="slotnova_booking_time" value="All Day">
+			<?php endif; ?>
 
 			<?php do_action( 'slotnova_after_time_slots', $product ); ?>
 

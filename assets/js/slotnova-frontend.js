@@ -138,6 +138,18 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		}
 
+		// Disable fully booked dates
+		var enableTimeSlots = dateInput.getAttribute('data-enable-time-slots') || 'yes';
+		var bookedDatesRaw = dateInput.getAttribute('data-booked-dates') || '[]';
+		var bookedDates = [];
+		try { bookedDates = JSON.parse(bookedDatesRaw); } catch(e) { bookedDates = []; }
+
+		bookedDates.forEach(function(bDate) {
+			if (bDate && disableArr.indexOf(bDate) === -1) {
+				disableArr.push(bDate);
+			}
+		});
+
 		var calendarMode = (typeof slotnova_params !== 'undefined' && slotnova_params.calendar_mode) ? slotnova_params.calendar_mode : 'inline';
 		var isInlineMode = (calendarMode !== 'popup');
 
@@ -146,28 +158,45 @@ document.addEventListener('DOMContentLoaded', function() {
 			minDate: 'today',
 			inline: isInlineMode,
 			disable: disableArr,
+			onDayCreate: function(dObj, dStr, fp, dayElement) {
+				if (!dayElement || !dayElement.dateObj) return;
+				var yyyy = dayElement.dateObj.getFullYear();
+				var mm = String(dayElement.dateObj.getMonth() + 1).padStart(2, '0');
+				var dd = String(dayElement.dateObj.getDate()).padStart(2, '0');
+				var formattedDate = yyyy + '-' + mm + '-' + dd;
+
+				if (bookedDates.indexOf(formattedDate) !== -1) {
+					dayElement.classList.add('slotnova-fully-booked-day', 'flatpickr-disabled');
+					dayElement.setAttribute('title', 'Already Booked');
+					dayElement.setAttribute('data-tooltip', 'Already Booked');
+				}
+			},
 			onChange: function(selectedDates, dateStr) {
 				if (dateStr) {
 					if (dateInput) dateInput.value = dateStr;
 					if (summaryDate) summaryDate.textContent = dateStr;
 
-					// Clear selected time slot on date change
-					var tInput = document.getElementById('slotnova_booking_time');
-					if (tInput) {
-						tInput.value = '';
-					}
-					var activePill = document.querySelector('.slotnova-time-pill.active');
-					if (activePill) activePill.classList.remove('active');
+					if (enableTimeSlots === 'no') {
+						var tInput = document.getElementById('slotnova_booking_time');
+						if (tInput) tInput.value = 'All Day';
+						if (summaryTime) summaryTime.textContent = 'All Day';
+					} else {
+						// Clear selected time slot on date change
+						var tInput = document.getElementById('slotnova_booking_time');
+						if (tInput) tInput.value = '';
+						var activePill = document.querySelector('.slotnova-time-pill.active');
+						if (activePill) activePill.classList.remove('active');
 
-					if (summaryTime) summaryTime.textContent = '-';
+						if (summaryTime) summaryTime.textContent = '-';
 
-					// Reveal time slots grid and fetch availability for selected date
-					var tSlotsWrapper = document.querySelector('.slotnova-time-slots-wrapper');
-					if (tSlotsWrapper) {
-						tSlotsWrapper.classList.remove('slotnova-is-hidden');
-						tSlotsWrapper.style.display = 'block';
+						// Reveal time slots grid and fetch availability for selected date
+						var tSlotsWrapper = document.querySelector('.slotnova-time-slots-wrapper');
+						if (tSlotsWrapper) {
+							tSlotsWrapper.classList.remove('slotnova-is-hidden');
+							tSlotsWrapper.style.display = 'block';
+						}
+						fetchBookedSlots(dateStr);
 					}
-					fetchBookedSlots(dateStr);
 
 					checkSummaryVisibility();
 				}
