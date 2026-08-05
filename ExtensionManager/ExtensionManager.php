@@ -174,11 +174,11 @@ class ExtensionManager implements ExtensionManagerInterface {
 
 	public function activate( string $extensionId ): bool {
 		$cleanId = ( 0 === strpos( $extensionId, 'slotnova-' ) ) ? substr( $extensionId, 9 ) : $extensionId;
-		if ( isset( $this->loadedExtensions[ $cleanId ] ) ) {
-			return true;
-		}
 
 		$success = $this->lifecycle->activate( $extensionId );
+		$this->lifecycle->activate( $cleanId );
+		$this->lifecycle->activate( 'slotnova-' . $cleanId );
+
 		if ( $success ) {
 			$manifests = $this->scan();
 			$targetId  = $extensionId;

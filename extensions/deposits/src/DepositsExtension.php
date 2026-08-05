@@ -19,24 +19,65 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Class DepositsExtension
+ */
 class DepositsExtension implements ExtensionInterface {
 
-	private string $id      = 'deposits';
-	private string $name    = 'SlotNova Deposits & Partial Payments';
+	/**
+	 * Extension unique ID.
+	 *
+	 * @var string
+	 */
+	private string $id = 'deposits';
+
+	/**
+	 * Extension human-readable name.
+	 *
+	 * @var string
+	 */
+	private string $name = 'SlotNova Deposits & Partial Payments';
+
+	/**
+	 * Extension semver version string.
+	 *
+	 * @var string
+	 */
 	private string $version = '1.0.0';
 
+	/**
+	 * Get extension unique ID.
+	 *
+	 * @return string
+	 */
 	public function getId(): string {
 		return $this->id;
 	}
 
+	/**
+	 * Get extension name.
+	 *
+	 * @return string
+	 */
 	public function getName(): string {
 		return $this->name;
 	}
 
+	/**
+	 * Get extension version string.
+	 *
+	 * @return string
+	 */
 	public function getVersion(): string {
 		return $this->version;
 	}
 
+	/**
+	 * Boot the extension when core is initializing active extensions.
+	 *
+	 * @param SlotNovaApi $api Main public API facade.
+	 * @return void
+	 */
 	public function boot( SlotNovaApi $api ): void {
 		$renderer     = new DepositSettingsRenderer();
 		$calculator   = new DepositCartCalculator();
@@ -60,10 +101,11 @@ class DepositsExtension implements ExtensionInterface {
 
 			// WooCommerce Cart & Checkout Deposit Hooks
 			add_filter( 'woocommerce_order_button_text', array( $calculator, 'filterOrderButtonText' ) );
-			add_filter( 'woocommerce_cart_totals_order_total_html', array( $calculator, 'filterCheckoutOrderTotalHtml' ), 10, 2 );
-			add_action( 'woocommerce_review_order_after_order_total', array( $calculator, 'renderCheckoutPaymentPlanSelector' ), 5 );
-			add_action( 'woocommerce_review_order_after_order_total', array( $calculator, 'displayDepositBreakdownOnCheckout' ), 10 );
+			add_action( 'woocommerce_review_order_before_order_total', array( $calculator, 'renderCheckoutPaymentPlanSelector' ), 5 );
+			add_action( 'woocommerce_cart_totals_before_order_total', array( $calculator, 'renderCheckoutPaymentPlanSelector' ), 5 );
 			add_action( 'woocommerce_checkout_update_order_review', array( $calculator, 'updatePaymentTypeFromCheckout' ) );
+			add_action( 'wp_ajax_slotnova_update_cart_payment_type', array( $calculator, 'ajaxUpdateCartPaymentType' ) );
+			add_action( 'wp_ajax_nopriv_slotnova_update_cart_payment_type', array( $calculator, 'ajaxUpdateCartPaymentType' ) );
 			add_action( 'woocommerce_cart_calculate_fees', array( $calculator, 'calculateDeposit' ) );
 			add_action( 'woocommerce_checkout_update_order_meta', array( $calculator, 'saveOrderDepositMeta' ) );
 			add_action( 'woocommerce_order_details_after_order_table', array( $calculator, 'addOrderDetailsDepositInfo' ) );
@@ -110,6 +152,8 @@ class DepositsExtension implements ExtensionInterface {
 
 	/**
 	 * Get dynamic assets URL whether extension is in plugins/ or uploads/ directory.
+	 *
+	 * @return string
 	 */
 	public function getAssetsUrl(): string {
 		$extensionDir = wp_normalize_path( dirname( __DIR__ ) );
@@ -126,6 +170,8 @@ class DepositsExtension implements ExtensionInterface {
 
 	/**
 	 * Enqueue Deposits extension admin assets.
+	 *
+	 * @return void
 	 */
 	public function enqueueAdminAssets(): void {
 		$assets_url = $this->getAssetsUrl();
@@ -135,6 +181,8 @@ class DepositsExtension implements ExtensionInterface {
 
 	/**
 	 * Enqueue Deposits extension frontend assets.
+	 *
+	 * @return void
 	 */
 	public function enqueueFrontendAssets(): void {
 		$assets_url = $this->getAssetsUrl();
@@ -142,6 +190,11 @@ class DepositsExtension implements ExtensionInterface {
 		wp_enqueue_script( 'slotnova-deposits-frontend-js', $assets_url . 'js/deposits-frontend.js', array( 'jquery' ), '1.0.0', true );
 	}
 
+	/**
+	 * Triggered when extension is activated by the user.
+	 *
+	 * @return void
+	 */
 	public function activate(): void {
 		if ( function_exists( 'get_option' ) && false === get_option( 'slotnova_deposit_enabled' ) ) {
 			if ( function_exists( 'update_option' ) ) {
@@ -155,12 +208,22 @@ class DepositsExtension implements ExtensionInterface {
 		}
 	}
 
+	/**
+	 * Triggered when extension is deactivated by the user.
+	 *
+	 * @return void
+	 */
 	public function deactivate(): void {
 		if ( function_exists( 'flush_rewrite_rules' ) ) {
 			flush_rewrite_rules();
 		}
 	}
 
+	/**
+	 * Triggered when extension is uninstalled/deleted.
+	 *
+	 * @return void
+	 */
 	public function uninstall(): void {
 		if ( function_exists( 'delete_option' ) ) {
 			delete_option( 'slotnova_deposit_enabled' );
@@ -169,3 +232,4 @@ class DepositsExtension implements ExtensionInterface {
 		}
 	}
 }
+

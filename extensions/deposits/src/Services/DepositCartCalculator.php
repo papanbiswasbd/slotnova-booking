@@ -34,6 +34,22 @@ class DepositCartCalculator {
 		}
 	}
 
+	public function ajaxUpdateCartPaymentType(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( isset( $_POST['payment_type'] ) && isset( WC()->cart ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$type = sanitize_text_field( wp_unslash( $_POST['payment_type'] ) );
+			if ( in_array( $type, array( 'full', 'deposit' ), true ) ) {
+				foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+					WC()->cart->cart_contents[ $cart_item_key ]['slotnova_payment_type'] = $type;
+				}
+				WC()->cart->set_session();
+				WC()->cart->calculate_totals();
+			}
+		}
+		wp_send_json_success();
+	}
+
 	/**
 	 * Get deposit configuration for a product (checks product-level override, falls back to global).
 	 *
@@ -282,6 +298,11 @@ class DepositCartCalculator {
 			<td><span class="woocommerce-Price-amount amount"><?php echo function_exists( 'wc_price' ) ? wp_kses_post( wc_price( max( 0, $subtotal - $deposit_amount ) ) ) : esc_html( $currency . number_format( max( 0, $subtotal - $deposit_amount ), 2 ) ); ?></span></td>
 		</tr>
 
+		<style>
+		tr.fee {
+			display: none !important;
+		}
+		</style>
 		<script>
 		if (typeof jQuery !== 'undefined') {
 			var slotnovaFullPrice    = <?php echo (float) $subtotal; ?>;
@@ -323,14 +344,22 @@ class DepositCartCalculator {
 			}
 
 			// On checkout updated (AJAX refresh), re-sync label styles
-			jQuery(document).on('updated_checkout updated_cart_totals', function() {
+			jQuery(document).on('updated_checkout updated_cart_totals updated_wc_div', function() {
 				hideSlotNovaFeeRows();
 				slotnovaUpdateCheckoutLabels();
 			});
 
 			jQuery(document).on('change', '.slotnova-checkout-pay-radio', function() {
 				slotnovaUpdateCheckoutLabels();
-				jQuery(document.body).trigger('update_checkout');
+				var newType = jQuery(this).val();
+				var ajaxUrl = (typeof slotnova_params !== 'undefined' && slotnova_params.ajax_url) ? slotnova_params.ajax_url : '/wp-admin/admin-ajax.php';
+				jQuery.post(ajaxUrl, {
+					action: 'slotnova_update_cart_payment_type',
+					payment_type: newType
+				}, function() {
+					jQuery(document.body).trigger('update_checkout');
+					jQuery(document.body).trigger('wc_update_cart');
+				});
 			});
 
 			// Init on load
