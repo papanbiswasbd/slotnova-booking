@@ -510,7 +510,12 @@ class Frontend {
 				<label for="slotnova_service"><?php echo esc_html( $service_label ); ?></label>
 				<div class="slotnova-custom-select" id="slotnova_service_dropdown">
 					<div class="slotnova-select-trigger">
-						<input type="text" class="slotnova-select-search-input" placeholder="<?php echo esc_attr( sprintf( __( 'Choose %s...', 'slotnova-booking' ), $service_label ) ); ?>" autocomplete="off" />
+						<?php
+						$service_clean_label = trim( str_replace( array( 'Select ', 'Choose ' ), '', $service_label ) );
+						/* translators: %s: Service selection field label */
+						$service_placeholder = sprintf( __( 'Choose %s...', 'slotnova-booking' ), $service_clean_label );
+						?>
+						<input type="text" class="slotnova-select-search-input" placeholder="<?php echo esc_attr( $service_placeholder ); ?>" autocomplete="off" />
 						<div class="slotnova-select-arrow"></div>
 					</div>
 					<div class="slotnova-select-options">
@@ -576,7 +581,12 @@ class Frontend {
 				<label for="slotnova_employee"><?php echo esc_html( $employee_label ); ?></label>
 				<div class="slotnova-custom-select" id="slotnova_employee_dropdown">
 					<div class="slotnova-select-trigger">
-						<input type="text" class="slotnova-select-search-input" placeholder="<?php echo esc_attr( sprintf( __( 'Choose %s...', 'slotnova-booking' ), $employee_label ) ); ?>" autocomplete="off" />
+						<?php
+						$employee_clean_label = trim( str_replace( array( 'Select ', 'Choose ' ), '', $employee_label ) );
+						/* translators: %s: Employee selection field label */
+						$employee_placeholder = sprintf( __( 'Choose %s...', 'slotnova-booking' ), $employee_clean_label );
+						?>
+						<input type="text" class="slotnova-select-search-input" placeholder="<?php echo esc_attr( $employee_placeholder ); ?>" autocomplete="off" />
 						<div class="slotnova-select-arrow"></div>
 					</div>
 					<div class="slotnova-select-options">
@@ -590,7 +600,7 @@ class Frontend {
 								$image_id  = get_term_meta( $employee->term_id, 'slotnova_image_id', true );
 								$image_url = $image_id ? wp_get_attachment_image_url( $image_id, 'thumbnail' ) : '';
 
-								$emp_desc = term_description( $employee->term_id, 'slotnova_employee' );
+								$emp_desc = term_description( $employee->term_id );
 								if ( empty( $emp_desc ) && ! empty( $employee->description ) ) {
 									$emp_desc = $employee->description;
 								}

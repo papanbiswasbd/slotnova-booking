@@ -1521,4 +1521,51 @@ jQuery(document).ready(function($) {
 		});
 	}
 
+	/* -------------------------------------------------------------------------
+	 * 10. Quick Change Booking Status from All Bookings Management Table
+	 * ------------------------------------------------------------------------- */
+	$(document).on('change', '.slotnova-status-quick-select', function() {
+		var $select = $(this);
+		var orderId = $select.data('order-id');
+		var newStatus = $select.val();
+
+		if (!orderId || !newStatus || typeof slotnova_admin_data === 'undefined') {
+			return;
+		}
+
+		$select.addClass('updating');
+
+		$.ajax({
+			url: slotnova_admin_data.ajax_url,
+			type: 'POST',
+			data: {
+				action: 'slotnova_update_booking_status',
+				nonce: slotnova_admin_data.nonce,
+				order_id: orderId,
+				status: newStatus
+			},
+			success: function(response) {
+				$select.removeClass('updating');
+				if (response.success && response.data) {
+					var cleanSlug = response.data.status_slug || newStatus;
+					$select.removeClass(function(index, className) {
+						return (className.match(/(^|\s)status-\S+/g) || []).join(' ');
+					});
+					$select.addClass('status-' + cleanSlug);
+
+					$select.css('transform', 'scale(1.06)');
+					setTimeout(function() {
+						$select.css('transform', 'none');
+					}, 200);
+				} else {
+					alert(response.data && response.data.message ? response.data.message : 'Failed to update order status.');
+				}
+			},
+			error: function() {
+				$select.removeClass('updating');
+				alert('Network error while updating status. Please try again.');
+			}
+		});
+	});
+
 });

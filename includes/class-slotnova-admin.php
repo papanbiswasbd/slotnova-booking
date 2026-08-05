@@ -45,6 +45,7 @@ class Admin {
 		add_action( 'wp_ajax_slotnova_export_bookings_csv', array( $this, 'ajax_export_bookings_csv' ) );
 		add_action( 'wp_ajax_slotnova_create_manual_booking', array( $this, 'ajax_create_manual_booking' ) );
 		add_action( 'wp_ajax_slotnova_get_widget_stats', array( $this, 'ajax_get_widget_stats' ) );
+		add_action( 'wp_ajax_slotnova_update_booking_status', array( $this, 'ajax_update_booking_status' ) );
 
 		// Native WP Admin Dashboard Widget Hook
 		add_action( 'wp_dashboard_setup', array( $this, 'register_wp_dashboard_widget' ) );
@@ -714,6 +715,44 @@ class Admin {
 		wp_send_json_success( array(
 			'message'  => __( 'Manual booking created successfully!', 'slotnova-booking' ),
 			'order_id' => $order->get_id(),
+		) );
+	}
+
+	/**
+	 * AJAX Handler to quick-update order booking status from All Bookings Management area.
+	 *
+	 * @return void
+	 */
+	public function ajax_update_booking_status() {
+		check_ajax_referer( 'slotnova_admin_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'slotnova-booking' ) ) );
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$order_id   = isset( $_POST['order_id'] ) ? intval( $_POST['order_id'] ) : 0;
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$new_status = isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '';
+
+		if ( ! $order_id || empty( $new_status ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid parameters.', 'slotnova-booking' ) ) );
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			wp_send_json_error( array( 'message' => __( 'Order not found.', 'slotnova-booking' ) ) );
+		}
+
+		$clean_status = str_replace( 'wc-', '', $new_status );
+		$order->update_status( $clean_status, __( 'Status updated via SlotNova All Bookings table.', 'slotnova-booking' ) );
+
+		$formatted_status = wc_get_order_status_name( $clean_status );
+
+		wp_send_json_success( array(
+			'order_id'     => $order_id,
+			'status_slug'  => $clean_status,
+			'status_label' => $formatted_status,
 		) );
 	}
 
@@ -2218,9 +2257,19 @@ class Admin {
 											<?php endif; ?>
 										</td>
 										<td>
-											<span class="slotnova-badge status-<?php echo sanitize_html_class( strtolower( str_replace( 'wc-', '', $booking['status_raw'] ) ) ); ?>">
-												<?php echo esc_html( $booking['status'] ); ?>
-											</span>
+											<?php
+											$curr_status_slug = sanitize_html_class( strtolower( str_replace( 'wc-', '', $booking['status_raw'] ) ) );
+											?>
+											<select class="slotnova-status-quick-select status-<?php echo esc_attr( $curr_status_slug ); ?>" data-order-id="<?php echo esc_attr( $booking['order_id'] ); ?>" title="<?php esc_attr_e( 'Click to change status', 'slotnova-booking' ); ?>">
+												<option value="processing" <?php selected( $curr_status_slug, 'processing' ); ?>><?php esc_html_e( 'Processing', 'slotnova-booking' ); ?></option>
+												<option value="completed" <?php selected( $curr_status_slug, 'completed' ); ?>><?php esc_html_e( 'Completed', 'slotnova-booking' ); ?></option>
+												<option value="partial-deposit" <?php selected( $curr_status_slug, 'partial-deposit' ); ?>><?php esc_html_e( 'Partial Deposit', 'slotnova-booking' ); ?></option>
+												<option value="on-hold" <?php selected( $curr_status_slug, 'on-hold' ); ?>><?php esc_html_e( 'On Hold', 'slotnova-booking' ); ?></option>
+												<option value="pending" <?php selected( $curr_status_slug, 'pending' ); ?>><?php esc_html_e( 'Pending Payment', 'slotnova-booking' ); ?></option>
+												<option value="cancelled" <?php selected( $curr_status_slug, 'cancelled' ); ?>><?php esc_html_e( 'Cancelled', 'slotnova-booking' ); ?></option>
+												<option value="refunded" <?php selected( $curr_status_slug, 'refunded' ); ?>><?php esc_html_e( 'Refunded', 'slotnova-booking' ); ?></option>
+												<option value="failed" <?php selected( $curr_status_slug, 'failed' ); ?>><?php esc_html_e( 'Failed', 'slotnova-booking' ); ?></option>
+											</select>
 										</td>
 										<td style="text-align: right;">
 											<div class="slotnova-action-cell-group">
