@@ -177,23 +177,30 @@ class Frontend {
 
 		$booked_slots = array();
 
-		// Check active orders only (exclude cancelled, refunded, failed, and trashed orders)
-		$args = array(
-			'status' => array( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-pending', 'completed', 'processing', 'on-hold', 'pending' ),
-			'limit'  => -1,
-		);
+		global $wpdb;
 
-		$orders = wc_get_orders( $args );
-		foreach ( $orders as $order ) {
-			if ( ! $order || ! is_a( $order, 'WC_Order' ) ) {
-				continue;
-			}
+		// Fast direct DB query: Find order IDs containing booking items for target date
+		$matching_order_ids = $wpdb->get_col( $wpdb->prepare(
+			"SELECT DISTINCT oi.order_id
+			FROM {$wpdb->prefix}woocommerce_order_itemmeta im
+			INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON im.order_item_id = oi.order_item_id
+			WHERE im.meta_key = 'Date' AND (im.meta_value = %s OR im.meta_value = %s)",
+			$target_date,
+			$date
+		) );
 
-			$st = strtolower( (string) $order->get_status() );
-			// Explicitly skip cancelled, refunded, failed, draft, or trashed orders
-			if ( in_array( $st, array( 'cancelled', 'refunded', 'failed', 'trash', 'draft', 'wc-cancelled', 'wc-refunded', 'wc-failed', 'wc-trash' ), true ) ) {
-				continue;
-			}
+		if ( ! empty( $matching_order_ids ) ) {
+			foreach ( $matching_order_ids as $order_id ) {
+				$order = wc_get_order( $order_id );
+				if ( ! $order || ! is_a( $order, 'WC_Order' ) ) {
+					continue;
+				}
+
+				$st = strtolower( (string) $order->get_status() );
+				// Explicitly skip cancelled, refunded, failed, draft, or trashed orders
+				if ( in_array( $st, array( 'cancelled', 'refunded', 'failed', 'trash', 'draft', 'wc-cancelled', 'wc-refunded', 'wc-failed', 'wc-trash' ), true ) ) {
+					continue;
+				}
 
 			foreach ( $order->get_items() as $item ) {
 				$item_prod_id = (int) $item->get_product_id();

@@ -210,58 +210,19 @@ document.addEventListener('DOMContentLoaded', function() {
 		var passedHint  = (typeof slotnova_params !== 'undefined' && slotnova_params.passed_hint) ? slotnova_params.passed_hint : 'This time slot has already passed for today. Please select another date or time.';
 		var bookedHint  = (typeof slotnova_params !== 'undefined' && slotnova_params.booked_hint) ? slotnova_params.booked_hint : 'This time slot is already booked. Please try selecting a different date, employee, or service.';
 
-		var disablePast = (typeof slotnova_params !== 'undefined' && slotnova_params.disable_past_slots === true) ? true : false;
+		var slotnovaBookedCache = window.slotnovaBookedCache || {};
+		window.slotnovaBookedCache = slotnovaBookedCache;
 
-		// INSTANT UI RESET: Un-disable all time slots immediately upon changing date/service/employee
-		timePills.forEach(function(pill) {
-			var slotVal = pill.getAttribute('data-value');
-			var isPassed = false;
-			if (disablePast && isToday && siteTime) {
-				var slot24h = timeTo24h(slotVal);
-				if (slot24h && slot24h <= siteTime) {
-					isPassed = true;
-				}
-			}
-			if (isPassed) {
-				pill.classList.add('disabled');
-				pill.disabled = true;
-				pill.setAttribute('title', passedLabel);
-				pill.setAttribute('data-tooltip', passedHint);
-			} else {
-				pill.classList.remove('disabled');
-				pill.disabled = false;
-				pill.removeAttribute('title');
-				pill.removeAttribute('data-tooltip');
-			}
-		});
+		var cacheKey = productId + '_' + dateStr + '_' + serviceId + '_' + employeeId;
 
-		var pillsGrid = document.getElementById('slotnova_time_pills');
-		if (pillsGrid) pillsGrid.classList.add('loading');
-
-		var formData = new FormData();
-		formData.append('action', 'slotnova_get_booked_slots');
-		formData.append('product_id', productId);
-		formData.append('date', dateStr);
-		formData.append('service_id', serviceId);
-		formData.append('employee_id', employeeId);
-		formData.append('nonce', slotnova_params.nonce);
-
-		fetch(slotnova_params.ajax_url, {
-			method: 'POST',
-			body: formData
-		})
-		.then(function(res) { return res.json(); })
-		.then(function(res) {
-			if (pillsGrid) pillsGrid.classList.remove('loading');
-			var booked = (res.success && res.data && res.data.booked_slots) ? res.data.booked_slots : [];
-
+		function applySlotsState(bookedList) {
 			timePills.forEach(function(pill) {
 				var slotVal = pill.getAttribute('data-value');
 				var slot24 = timeTo24h(slotVal);
 				var isBooked = false;
 
-				for (var b = 0; b < booked.length; b++) {
-					if (timeTo24h(booked[b]) === slot24) {
+				for (var b = 0; b < bookedList.length; b++) {
+					if (timeTo24h(bookedList[b]) === slot24) {
 						isBooked = true;
 						break;
 					}
@@ -295,6 +256,34 @@ document.addEventListener('DOMContentLoaded', function() {
 					pill.removeAttribute('data-tooltip');
 				}
 			});
+		}
+
+		// INSTANT RENDER: If cached, apply booked slots immediately with zero delay
+		if (typeof slotnovaBookedCache[cacheKey] !== 'undefined') {
+			applySlotsState(slotnovaBookedCache[cacheKey]);
+		}
+
+		var pillsGrid = document.getElementById('slotnova_time_pills');
+		if (pillsGrid) pillsGrid.classList.add('loading');
+
+		var formData = new FormData();
+		formData.append('action', 'slotnova_get_booked_slots');
+		formData.append('product_id', productId);
+		formData.append('date', dateStr);
+		formData.append('service_id', serviceId);
+		formData.append('employee_id', employeeId);
+		formData.append('nonce', slotnova_params.nonce);
+
+		fetch(slotnova_params.ajax_url, {
+			method: 'POST',
+			body: formData
+		})
+		.then(function(res) { return res.json(); })
+		.then(function(res) {
+			if (pillsGrid) pillsGrid.classList.remove('loading');
+			var booked = (res.success && res.data && res.data.booked_slots) ? res.data.booked_slots : [];
+			slotnovaBookedCache[cacheKey] = booked;
+			applySlotsState(booked);
 		})
 		.catch(function(err) {
 			if (pillsGrid) pillsGrid.classList.remove('loading');
