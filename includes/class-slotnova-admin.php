@@ -756,32 +756,50 @@ class Admin {
 		if ( 'edit-shop_order' === $screen->id || 'woocommerce_page_wc-orders' === $screen->id || 'shop_order' === $screen->post_type ) {
 			?>
 			<style>
-			/* SlotNova WooCommerce Admin Orders Table Column Widths & Spacing */
+			/* SlotNova WooCommerce Admin Orders Table Flexible Column Widths & Spacing */
+			.wp-list-table.orders,
+			.wp-list-table.wc-orders {
+				table-layout: auto !important;
+			}
+			.wp-list-table.orders th.column-slotnova_title,
+			.wp-list-table.orders td.column-slotnova_title,
+			.wp-list-table.wc-orders th.column-slotnova_title,
+			.wp-list-table.wc-orders td.column-slotnova_title {
+				width: 16%;
+				min-width: 140px;
+				padding-right: 12px;
+			}
 			.wp-list-table.orders th.column-slotnova_service,
 			.wp-list-table.orders td.column-slotnova_service,
 			.wp-list-table.wc-orders th.column-slotnova_service,
 			.wp-list-table.wc-orders td.column-slotnova_service {
-				width: 11%;
+				width: 12%;
+				min-width: 110px;
+				padding-right: 12px;
 			}
 			.wp-list-table.orders th.column-slotnova_staff,
 			.wp-list-table.orders td.column-slotnova_staff,
 			.wp-list-table.wc-orders th.column-slotnova_staff,
 			.wp-list-table.wc-orders td.column-slotnova_staff {
 				width: 12%;
+				min-width: 110px;
+				padding-right: 12px;
 			}
 			.wp-list-table.orders th.column-slotnova_datetime,
 			.wp-list-table.orders td.column-slotnova_datetime,
 			.wp-list-table.wc-orders th.column-slotnova_datetime,
 			.wp-list-table.wc-orders td.column-slotnova_datetime {
-				width: 17%;
-				min-width: 140px;
+				width: 14%;
+				min-width: 130px;
+				padding-right: 12px;
 			}
 			.wp-list-table.orders th.column-slotnova_amount,
 			.wp-list-table.orders td.column-slotnova_amount,
 			.wp-list-table.wc-orders th.column-slotnova_amount,
 			.wp-list-table.wc-orders td.column-slotnova_amount {
-				width: 16%;
-				min-width: 135px;
+				width: 9%;
+				min-width: 85px;
+				padding-right: 12px;
 			}
 			</style>
 			<?php
