@@ -907,7 +907,7 @@ class Admin {
 				foreach ( $services as $s ) {
 					$out[] = '<span style="background: #e0e7ff; color: #4338ca; border-radius: 12px; padding: 3px 9px; font-size: 11px; font-weight: 700; display: inline-block; margin: 1px 0;">' . esc_html( $s ) . '</span>';
 				}
-				echo implode( ' ', $out );
+				echo wp_kses_post( implode( ' ', $out ) );
 			} else {
 				echo '<span style="color: #94a3b8;">—</span>';
 			}
@@ -917,7 +917,7 @@ class Admin {
 				foreach ( $employees as $e ) {
 					$out[] = '<span style="display: inline-flex; align-items: center; gap: 4px; color: #0f172a; font-weight: 600; font-size: 12px;"><span class="dashicons dashicons-admin-users" style="font-size: 14px; width: 14px; height: 14px; color: #64748b;"></span>' . esc_html( $e ) . '</span>';
 				}
-				echo implode( '<br>', $out );
+				echo wp_kses_post( implode( '<br>', $out ) );
 			} else {
 				echo '<span style="color: #94a3b8;">—</span>';
 			}
@@ -925,7 +925,7 @@ class Admin {
 			if ( ! empty( $datetimes ) ) {
 				$out = array();
 				foreach ( $datetimes as $dt ) {
-					$formatted_date = function_exists( 'wp_date' ) ? wp_date( 'M j, Y', strtotime( $dt['date'] ) ) : date( 'M j, Y', strtotime( $dt['date'] ) );
+					$formatted_date = function_exists( 'wp_date' ) ? wp_date( 'M j, Y', strtotime( $dt['date'] ) ) : gmdate( 'M j, Y', strtotime( $dt['date'] ) );
 					$str            = '<div style="display: flex; flex-direction: column; gap: 3px; line-height: 1.3;">';
 					$str           .= '<strong style="color: #0f172a; font-size: 13px; font-weight: 700; white-space: nowrap;">' . esc_html( $formatted_date ) . '</strong>';
 					if ( ! empty( $dt['time'] ) ) {
@@ -934,7 +934,7 @@ class Admin {
 					$str  .= '</div>';
 					$out[] = $str;
 				}
-				echo implode( '<br>', $out );
+				echo wp_kses_post( implode( '<br>', $out ) );
 			} else {
 				echo '<span style="color: #94a3b8;">—</span>';
 			}
