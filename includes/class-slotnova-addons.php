@@ -339,7 +339,7 @@ class SlotNova_Addons {
 											<?php if ( $lic_key ) : ?>
 												<div style="border-top: 1px dashed #e2e8f0; padding-top: 6px; display: flex; justify-content: space-between; align-items: center;">
 													<span style="color: #64748b; font-size: 11px; font-weight: 500;"><?php esc_html_e( 'License Key', 'slotnova-booking' ); ?></span>
-													<code style="background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 7px; border-radius: 6px; font-size: 11px; font-family: monospace; color: #475569; font-weight: 600;" title="<?php echo esc_attr( $lic_key ); ?>"><?php echo esc_html( $masked_key ); ?></code>
+													<code style="background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 7px; border-radius: 6px; font-size: 11px; font-family: monospace; color: #475569; font-weight: 600;" title="<?php esc_attr_e( 'License Active & Protected', 'slotnova-booking' ); ?>"><?php echo esc_html( $masked_key ); ?></code>
 												</div>
 											<?php endif; ?>
 										</div>
