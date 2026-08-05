@@ -17,10 +17,13 @@ document.addEventListener('DOMContentLoaded', function() {
 	var summaryTime = document.getElementById('summary-booking-time');
 
 	var timeSlotsWrapper = document.querySelector('.slotnova-time-slots-wrapper');
-	// Helper function to convert 12-hour AM/PM time string ("10:00 AM", "01:30 PM") to 24-hour "HH:MM"
+	// Helper function to convert 12-hour AM/PM time string ("10:00 AM", "01:30 PM", "10:00 AM - 12:00 PM") to 24-hour "HH:MM"
 	function timeTo24h(timeStr) {
 		if (!timeStr) return '';
 		var str = timeStr.trim();
+		if (str.indexOf('-') !== -1) {
+			str = str.split('-')[0].trim();
+		}
 		var parts = str.split(' ');
 		if (parts.length < 2) return str;
 		var timeParts = parts[0].split(':');

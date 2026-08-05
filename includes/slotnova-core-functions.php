@@ -80,6 +80,7 @@ if ( ! function_exists( 'slotnova_parse_date' ) ) {
 if ( ! function_exists( 'slotnova_parse_time' ) ) {
 	/**
 	 * Parse time string and format to 12h AM/PM (h:i A) reliably.
+	 * Handles single start times ("10:00 AM") and time range strings ("10:00 AM - 12:00 PM").
 	 *
 	 * @param string $time_str Raw time string.
 	 * @return string|false Standardized h:i A string or false.
@@ -89,6 +90,13 @@ if ( ! function_exists( 'slotnova_parse_time' ) ) {
 			return false;
 		}
 		$clean = trim( (string) $time_str );
+
+		// If time string contains a range ("10:00 AM - 12:00 PM"), extract start time
+		if ( strpos( $clean, '-' ) !== false ) {
+			$parts = explode( '-', $clean );
+			$clean = trim( $parts[0] );
+		}
+
 		$ts = strtotime( '1970-01-01 ' . $clean . ' UTC' );
 		if ( false === $ts ) {
 			$ts = strtotime( $clean );

@@ -128,9 +128,14 @@ class Cart {
 			return true;
 		}
 
-		$formatted_time = gmdate( 'h:i A', strtotime( '1970-01-01 ' . $time . ' UTC' ) );
+		$formatted_time = function_exists( 'slotnova_parse_time' ) ? slotnova_parse_time( $time ) : $time;
+		if ( ! $formatted_time ) {
+			return false;
+		}
+
 		foreach ( $booked_slots as $bs ) {
-			if ( gmdate( 'h:i A', strtotime( '1970-01-01 ' . $bs . ' UTC' ) ) === $formatted_time ) {
+			$parsed_bs = function_exists( 'slotnova_parse_time' ) ? slotnova_parse_time( $bs ) : $bs;
+			if ( $parsed_bs && $parsed_bs === $formatted_time ) {
 				return true;
 			}
 		}
