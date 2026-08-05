@@ -409,8 +409,9 @@ class Frontend {
 			'passed_text'       => __( 'Time Passed', 'slotnova-booking' ),
 			'booked_hint'       => __( 'This time slot is already booked. Please try selecting a different date, employee, or service.', 'slotnova-booking' ),
 			'passed_hint'       => __( 'This time slot has already passed for today. Please select another date or time.', 'slotnova-booking' ),
-			'site_current_date' => wp_date( 'Y-m-d' ),
-			'site_current_time' => wp_date( 'H:i' ),
+			'site_current_date'  => wp_date( 'Y-m-d' ),
+			'site_current_time'  => wp_date( 'H:i' ),
+			'disable_past_slots' => apply_filters( 'slotnova_disable_past_slots', true ),
 			'i18n'              => array(
 				'select_service'  => __( 'Please select a service before booking.', 'slotnova-booking' ),
 				'select_employee' => __( 'Please select an employee before booking.', 'slotnova-booking' ),
