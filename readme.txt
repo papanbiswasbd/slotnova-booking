@@ -16,16 +16,18 @@ SlotNova Booking for WooCommerce transforms your WooCommerce store into a powerf
 
 = Live Demos =
 Explore our live booking demonstrations:
-* [Wellness Therapy Demo](https://livelang.pro/slotnova/product/wellness-therapy/)
-* [Partial Deposit Demo](https://livelang.pro/slotnova/product/massage-therapy-with-partial-deposit/)
-* [Massage Packages Demo](https://livelang.pro/slotnova/product/massage-packages/)
+* [Wellness Therapy Demo (Free)](https://livelang.pro/slotnova/product/wellness-therapy/)
+* [Massage Packages Demo (Free)](https://livelang.pro/slotnova/product/massage-packages/)
+* [Partial Deposit Demo (Pro Addon)](https://livelang.pro/slotnova/product/massage-therapy-with-partial-deposit/)
 
 ### Key Features
 * **Custom Product Type**: Seamlessly creates a new 'SlotNova Booking' WooCommerce product type.
-* **Service & Staff Assignment**: Assign specific services and staff members (employees) per product with custom pricing and images.
+* **Staff-Based Time Slot Availability**: Each booking is assigned to a specific staff member. If a slot is booked for that staff member, it automatically becomes visually disabled for that staff member while remaining available for other staff members.
 * **Inline Calendar & Real-Time Availability**: Customer selects date and available time slots update dynamically via AJAX.
 * **Instant Double-Booking Prevention**: Strict server-side and client-side validation prevents double-booking the same staff member or service at the same time.
-* **Partial Deposits & Flexible Payments (Pro Addon)**: Offer deposit options (percentage or fixed amount) with dynamic "Due at Appointment" balance breakdowns on checkout.
+* **Automatic Slot Release**: Trashing, cancelling, refunding, or failing an order automatically re-enables its booked slot instantly.
+* **Partial Deposits & Flexible Payments (Pro Addon)**: Offer deposit options (percentage or fixed amount) with a seamless Payment Option switcher on single product pages, cart totals, and checkout order tables.
+* **Dynamic Cart & Checkout Totals**: Clean "Due at Appointment" balance breakdown for deposit orders without confusing discount/negative fee lines.
 * **Modular Extension Manager**: Built-in extension architecture supporting pro add-ons, license key management, and automated update delivery.
 * **Flexible Operating Hours & Off-Days**: Set global or product-level business opening/closing hours, slot durations, and weekly/specific off-days.
 * **Timezone Precision**: Built-in UTC timestamp calculation eliminates timezone offset shifts across international users.
@@ -49,14 +51,20 @@ Yes, SlotNova Booking is built natively on top of WooCommerce and requires WooCo
 = How does real-time slot validation work? =
 When a customer picks a date or changes their selected service/employee, an AJAX query checks active orders and cart sessions. If a staff member or service slot is already booked for that specific date and time, the slot button is immediately disabled on the UI.
 
+= What happens if an order is cancelled or trashed? =
+When an order status changes to `trash`, `cancelled`, `refunded`, or `failed`, SlotNova automatically excludes it from the active bookings query and releases the time slot immediately so other customers can book it.
+
+= How does the Partial Deposit Pro Addon work? =
+The Partial Deposit addon allows store owners to collect an upfront deposit (e.g. 20% or $50) at checkout while deferring the remaining balance to be paid at the appointment. It adds an interactive "Full Payment vs Pay Deposit" switcher to product pages, cart totals, and checkout pages.
+
 = Can developers extend SlotNova with custom hooks? =
 Yes! SlotNova is built developer-friendly. Access the core plugin instance via `slotnova_booking()` and filter or hook into lifecycle points including cart validation, price calculations, and admin modal actions.
 
 = Where can I try a live demonstration? =
 You can explore our live booking experiences here:
-* [Wellness Therapy Demo](https://livelang.pro/slotnova/product/wellness-therapy/)
-* [Partial Deposit Demo](https://livelang.pro/slotnova/product/massage-therapy-with-partial-deposit/)
-* [Massage Packages Demo](https://livelang.pro/slotnova/product/massage-packages/)
+* [Wellness Therapy Demo (Free)](https://livelang.pro/slotnova/product/wellness-therapy/)
+* [Massage Packages Demo (Free)](https://livelang.pro/slotnova/product/massage-packages/)
+* [Partial Deposit Demo (Pro Addon)](https://livelang.pro/slotnova/product/massage-therapy-with-partial-deposit/)
 
 == Developer Hooks ==
 
@@ -72,10 +80,12 @@ SlotNova Booking exposes standard WordPress action and filter hooks:
 
 = 1.2.0 =
 * Added Pro Addon support for Partial Deposits & Flexible Payment Plans (fixed amount or percentage deposit with remaining balance due at appointment).
-* Added dynamic checkout balance breakdown displaying deposit paid and due at appointment amounts in WooCommerce cart & checkout.
-* Added modular Extension Manager architecture supporting pro add-on installations and license key updates.
-* Added live demo showcase links for Wellness Therapy and Partial Deposit products.
-* Enhanced security with nonce verification and input sanitization across admin and API endpoints.
+* Added dynamic Payment Plan selector on single product pages, WooCommerce cart totals table, and checkout review table.
+* Added clean "Due at Appointment" breakdown in cart & checkout, replacing negative fee lines for a polished user experience.
+* Added staff-specific time slot availability validation, ensuring booked slots auto-disable for the selected staff member while remaining available for others.
+* Added automatic time slot re-enabling when orders are moved to `trash`, `cancelled`, `refunded`, `failed`, or `draft` status.
+* Added modular Extension Manager architecture supporting pro add-on installation, activation status persistence, and license verification.
+* Updated live demo showcase links distinguishing Free and Pro Addon features.
 
 = 1.1.1 =
 * Added streamlined SlotNova Overview Dashboard Analytics Widget with dynamic Chart.js timeline and metrics summary.
@@ -98,7 +108,7 @@ SlotNova Booking exposes standard WordPress action and filter hooks:
 == Upgrade Notice ==
 
 = 1.2.0 =
-Upgrade to 1.2.0 for Pro Addon Partial Deposit payment support, dynamic WooCommerce checkout balance breakdown, and modular extension management.
+Upgrade to 1.2.0 for Pro Addon Partial Deposit payment support, staff-specific slot availability, automatic trashed order slot release, and modular extension management.
 
 = 1.1.1 =
 Upgrade to 1.1.1 for streamlined dashboard overview analytics, quick date range filter presets, and interactive booking schedule calendar.
