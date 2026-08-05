@@ -672,18 +672,28 @@ class Frontend {
 				<label for="slotnova_booking_time_trigger"><?php esc_html_e( 'Select Time', 'slotnova-booking' ); ?></label>
 				<div class="slotnova-time-slots-container">
 					<?php
-					$product_time_slots = get_post_meta( $product_id, '_slotnova_product_time_slots', true );
-					if ( empty( $product_time_slots ) || ! is_array( $product_time_slots ) ) {
-						$product_time_slots = get_option( 'slotnova_time_slots', array( '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM' ) );
-					}
-					if ( ! is_array( $product_time_slots ) ) {
-						$product_time_slots = array();
-					}
-					?>
-					<?php
 					$product_duration = get_post_meta( $product_id, '_slotnova_slot_duration', true );
 					if ( empty( $product_duration ) || ! is_numeric( $product_duration ) ) {
 						$product_duration = (int) get_option( 'slotnova_slot_duration', 60 );
+					}
+
+					$opening_time = get_post_meta( $product_id, '_slotnova_opening_time', true );
+					if ( empty( $opening_time ) ) {
+						$opening_time = get_option( 'slotnova_opening_time', '09:00 AM' );
+					}
+					$closing_time = get_post_meta( $product_id, '_slotnova_closing_time', true );
+					if ( empty( $closing_time ) ) {
+						$closing_time = get_option( 'slotnova_closing_time', '05:00 PM' );
+					}
+
+					$product_time_slots = get_post_meta( $product_id, '_slotnova_product_time_slots', true );
+					if ( empty( $product_time_slots ) || ! is_array( $product_time_slots ) ) {
+						if ( function_exists( 'slotnova_generate_time_slots' ) ) {
+							$product_time_slots = slotnova_generate_time_slots( $opening_time, $closing_time, $product_duration );
+						}
+					}
+					if ( empty( $product_time_slots ) || ! is_array( $product_time_slots ) ) {
+						$product_time_slots = get_option( 'slotnova_time_slots', array( '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM' ) );
 					}
 					?>
 					<?php if ( ! empty( $product_time_slots ) ) : ?>

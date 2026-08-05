@@ -184,3 +184,49 @@ if ( ! function_exists( 'slotnova_get_product_base_price' ) ) {
 		return 0.0;
 	}
 }
+
+if ( ! function_exists( 'slotnova_generate_time_slots' ) ) {
+	/**
+	 * Generate array of time slot start strings (e.g. ['10:00 AM', '12:00 PM', '02:00 PM'])
+	 * between opening_time and closing_time based on duration_minutes.
+	 *
+	 * @param string $opening_time e.g. "10:00 AM" or "10:00"
+	 * @param string $closing_time e.g. "04:00 PM" or "16:00"
+	 * @param int    $duration_minutes e.g. 120
+	 * @return array
+	 */
+	function slotnova_generate_time_slots( $opening_time, $closing_time, $duration_minutes ) {
+		if ( empty( $opening_time ) ) {
+			$opening_time = get_option( 'slotnova_opening_time', '09:00 AM' );
+		}
+		if ( empty( $closing_time ) ) {
+			$closing_time = get_option( 'slotnova_closing_time', '05:00 PM' );
+		}
+
+		$duration = (int) $duration_minutes;
+		if ( $duration <= 0 ) {
+			$duration = (int) get_option( 'slotnova_slot_duration', 60 );
+		}
+		if ( $duration <= 0 ) {
+			$duration = 60;
+		}
+
+		$start_ts = strtotime( '1970-01-01 ' . $opening_time . ' UTC' );
+		$end_ts   = strtotime( '1970-01-01 ' . $closing_time . ' UTC' );
+
+		if ( false === $start_ts || false === $end_ts || $start_ts >= $end_ts ) {
+			return array();
+		}
+
+		$slots        = array();
+		$duration_sec = $duration * 60;
+
+		$curr = $start_ts;
+		while ( ( $curr + $duration_sec ) <= $end_ts ) {
+			$slots[] = gmdate( 'h:i A', $curr );
+			$curr   += $duration_sec;
+		}
+
+		return $slots;
+	}
+}
