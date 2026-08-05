@@ -138,12 +138,13 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		}
 
-		var initialDateYMD = getFirstAvailableDate(new Date(), closingTime, disableArr);
+		var calendarMode = (typeof slotnova_params !== 'undefined' && slotnova_params.calendar_mode) ? slotnova_params.calendar_mode : 'inline';
+		var isInlineMode = (calendarMode !== 'popup');
 
-		flatpickr(dateInput, {
+		var fpInstance = flatpickr(dateInput, {
 			dateFormat: 'Y-m-d',
 			minDate: 'today',
-			inline: true,
+			inline: isInlineMode,
 			disable: disableArr,
 			onChange: function(selectedDates, dateStr) {
 				if (dateStr) {
@@ -172,6 +173,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			}
 		});
+
+		if (!isInlineMode) {
+			var pickerIcon = document.querySelector('.slotnova-date-picker-icon');
+			if (pickerIcon) {
+				pickerIcon.addEventListener('click', function() {
+					if (fpInstance) fpInstance.open();
+				});
+			}
+		}
 	}
 
 	function fetchBookedSlots(dateStr) {
@@ -338,11 +348,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		var isServiceDropdown = hiddenInput && hiddenInput.id === 'slotnova_service';
 		var isEmployeeDropdown = hiddenInput && hiddenInput.id === 'slotnova_employee';
+		var isTimeDropdown = (hiddenInput && hiddenInput.id === 'slotnova_booking_time') || (dropdown.id === 'slotnova_time_dropdown');
 		var selectedName = '';
 
 		function showAllOptions() {
 			var options = optionsContainer.querySelectorAll('.slotnova-select-option');
-			options.forEach(function(opt) { opt.style.display = ''; });
+			options.forEach(function(opt) {
+				opt.classList.remove('slotnova-is-hidden');
+				opt.style.removeProperty('display');
+			});
 			if (noResults) noResults.classList.add('slotnova-is-hidden');
 		}
 
@@ -352,12 +366,15 @@ document.addEventListener('DOMContentLoaded', function() {
 			var visibleCount = 0;
 
 			options.forEach(function(option) {
-				var name = (option.getAttribute('data-name') || option.textContent || '').toLowerCase();
-				if (!query || name.indexOf(query) !== -1) {
-					option.style.display = '';
+				var name = (option.getAttribute('data-name') || '').toLowerCase();
+				var fullText = (option.textContent || '').toLowerCase();
+				if (!query || name.indexOf(query) !== -1 || fullText.indexOf(query) !== -1) {
+					option.classList.remove('slotnova-is-hidden');
+					option.style.removeProperty('display');
 					visibleCount++;
 				} else {
-					option.style.display = 'none';
+					option.classList.add('slotnova-is-hidden');
+					option.style.setProperty('display', 'none', 'important');
 				}
 			});
 
@@ -378,16 +395,30 @@ document.addEventListener('DOMContentLoaded', function() {
 			document.querySelectorAll('.slotnova-select-trigger').forEach(function(other) {
 				if (other !== trigger) other.classList.remove('active');
 			});
+			document.querySelectorAll('.slotnova-dropdown-open').forEach(function(el) {
+				el.classList.remove('slotnova-dropdown-open');
+			});
 
 			showAllOptions();
 			optionsContainer.classList.add('open');
 			trigger.classList.add('active');
-			if (searchInput) searchInput.select();
+			dropdown.classList.add('slotnova-dropdown-open');
+			var parentWrapper = dropdown.closest('.form-row, .slotnova-custom-select-wrapper, .slotnova-time-slots-wrapper');
+			if (parentWrapper) parentWrapper.classList.add('slotnova-dropdown-open');
+
+			if (searchInput) {
+				showAllOptions();
+				searchInput.select();
+			}
 		}
 
 		function closeDropdown() {
 			optionsContainer.classList.remove('open');
 			trigger.classList.remove('active');
+			dropdown.classList.remove('slotnova-dropdown-open');
+			var parentWrapper = dropdown.closest('.form-row, .slotnova-custom-select-wrapper, .slotnova-time-slots-wrapper');
+			if (parentWrapper) parentWrapper.classList.remove('slotnova-dropdown-open');
+
 			if (searchInput) {
 				searchInput.value = selectedName;
 			}
@@ -412,12 +443,14 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				});
 
-				searchInput.addEventListener('input', function(e) {
-					e.stopPropagation();
-					if (!optionsContainer.classList.contains('open')) {
-						openDropdown();
-					}
-					filterOptions(this.value);
+				['input', 'keyup', 'change'].forEach(function(evtName) {
+					searchInput.addEventListener(evtName, function(e) {
+						e.stopPropagation();
+						if (!optionsContainer.classList.contains('open')) {
+							openDropdown();
+						}
+						filterOptions(this.value);
+					});
 				});
 			}
 
@@ -429,6 +462,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					var value = this.getAttribute('data-value');
 					var name = this.getAttribute('data-name');
 					var displayName = name;
+
+					options.forEach(function(opt) { opt.classList.remove('active', 'selected'); });
+					this.classList.add('active', 'selected');
 
 					// Handle Service Selection Summary & Display Price in Trigger
 					if (isServiceDropdown) {
@@ -478,18 +514,36 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (summaryEmployeeRow) {
 							if (value) {
 								summaryEmployeeRow.classList.remove('slotnova-is-hidden');
+								summaryEmployeeRow.style.display = 'flex';
 							} else {
 								summaryEmployeeRow.classList.add('slotnova-is-hidden');
+								summaryEmployeeRow.style.display = 'none';
 							}
 						}
 					}
 
+					// Handle Time Selection Summary
+					if (isTimeDropdown) {
+						if (summaryTime) summaryTime.textContent = value || name || '-';
+						var tInput = document.getElementById('slotnova_booking_time');
+						if (tInput) tInput.value = value;
+
+						var allTimePills = document.querySelectorAll('.slotnova-time-pill');
+						allTimePills.forEach(function(p) { p.classList.remove('active'); });
+						option.classList.add('active');
+					}
+
 					// Reset active time slot selection on service/employee change
-					var tInput = document.getElementById('slotnova_booking_time');
-					if (tInput) tInput.value = '';
-					var activePill = document.querySelector('.slotnova-time-pill.active');
-					if (activePill) activePill.classList.remove('active');
-					if (summaryTime) summaryTime.textContent = '-';
+					if (isServiceDropdown || isEmployeeDropdown) {
+						var tInput = document.getElementById('slotnova_booking_time');
+						if (tInput) tInput.value = '';
+						var activePill = document.querySelector('.slotnova-time-pill.active');
+						if (activePill) activePill.classList.remove('active');
+						if (summaryTime) summaryTime.textContent = '-';
+
+						var timeSearchInput = document.getElementById('slotnova_booking_time_trigger');
+						if (timeSearchInput) timeSearchInput.value = '';
+					}
 
 					// Re-evaluate time slot availability for the selected Service or Employee
 					var dInput = document.getElementById('slotnova_booking_date');
@@ -514,17 +568,40 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	});
 
+	function formatSummaryTotalPrice() {
+		var summaryPrice = document.getElementById('summary-service-price');
+		if (!summaryPrice) return;
+
+		var selectedServiceOption = document.querySelector('#slotnova_service_dropdown .slotnova-select-option.active, #slotnova_service_dropdown .slotnova-select-option.selected');
+		if (selectedServiceOption) {
+			var priceVal = parseFloat(selectedServiceOption.getAttribute('data-price'));
+			if (!isNaN(priceVal) && priceVal >= 0) {
+				var symbol = (typeof slotnova_params !== 'undefined' && slotnova_params.currency_symbol) ? slotnova_params.currency_symbol : '$';
+				summaryPrice.innerHTML = (priceVal > 0) ? (symbol + priceVal.toFixed(2)) : ((typeof slotnova_params !== 'undefined') ? slotnova_params.free_text : 'Free');
+				return;
+			}
+		}
+
+		var defaultPrice = parseFloat(summaryPrice.getAttribute('data-default-price'));
+		if (!isNaN(defaultPrice) && defaultPrice >= 0) {
+			var symbol = (typeof slotnova_params !== 'undefined' && slotnova_params.currency_symbol) ? slotnova_params.currency_symbol : '$';
+			summaryPrice.innerHTML = (defaultPrice > 0) ? (symbol + defaultPrice.toFixed(2)) : ((typeof slotnova_params !== 'undefined') ? slotnova_params.free_text : 'Free');
+		}
+	}
+
 	function checkSummaryVisibility() {
 		if (!summaryBox) return;
 		var serviceInput = document.getElementById('slotnova_service');
+		var employeeInput = document.getElementById('slotnova_employee');
 		var dateInput = document.getElementById('slotnova_booking_date');
 		var timeInput = document.getElementById('slotnova_booking_time');
 
-		var hasSelection = (serviceInput && serviceInput.value) || (dateInput && dateInput.value) || (timeInput && timeInput.value);
+		var hasSelection = (serviceInput && serviceInput.value) || (employeeInput && employeeInput.value) || (dateInput && dateInput.value) || (timeInput && timeInput.value);
 
 		if (hasSelection) {
 			summaryBox.classList.remove('slotnova-is-hidden');
 			summaryBox.style.display = 'block';
+			formatSummaryTotalPrice();
 		} else {
 			summaryBox.classList.add('slotnova-is-hidden');
 			summaryBox.style.display = 'none';

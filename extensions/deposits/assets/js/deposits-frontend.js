@@ -17,22 +17,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	function getSelectedServicePrice() {
 		var serviceInput = document.getElementById('slotnova_service');
-		if (!serviceInput) return 0;
-
-		// Primary: price stored on the hidden input by slotnova-frontend.js on service selection
-		var inputPrice = parseFloat(serviceInput.getAttribute('data-price'));
-		if (!isNaN(inputPrice) && inputPrice > 0) {
-			return inputPrice;
+		if (serviceInput) {
+			var inputPrice = parseFloat(serviceInput.getAttribute('data-price'));
+			if (!isNaN(inputPrice) && inputPrice > 0) {
+				return inputPrice;
+			}
 		}
 
-		// Fallback 1: currently highlighted/selected custom dropdown option
-		var selectedOpt = document.querySelector('.slotnova-select-option.selected');
+		var selectedOpt = document.querySelector('.slotnova-select-option.selected, .slotnova-select-option.active');
 		if (selectedOpt && selectedOpt.getAttribute('data-price')) {
 			var optPrice = parseFloat(selectedOpt.getAttribute('data-price'));
-			if (!isNaN(optPrice)) return optPrice;
+			if (!isNaN(optPrice) && optPrice > 0) return optPrice;
 		}
 
-		// Fallback 2: a calculated price hidden input
+		var summaryPriceEl = document.getElementById('summary-service-price');
+		if (summaryPriceEl && summaryPriceEl.getAttribute('data-default-price')) {
+			var defPrice = parseFloat(summaryPriceEl.getAttribute('data-default-price'));
+			if (!isNaN(defPrice) && defPrice > 0) return defPrice;
+		}
+
 		var priceInput = document.getElementById('slotnova_calculated_price');
 		if (priceInput && priceInput.value) {
 			return parseFloat(priceInput.value) || 0;
@@ -129,7 +132,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	function checkRevealPaymentBox() {
 		var serviceInput = document.getElementById('slotnova_service');
-		if (serviceInput && serviceInput.value) {
+		var employeeInput = document.getElementById('slotnova_employee');
+		var dateInput = document.getElementById('slotnova_booking_date');
+		var timeInput = document.getElementById('slotnova_booking_time');
+		var summaryBox = document.getElementById('slotnova-summary');
+
+		var hasSelection = (serviceInput && serviceInput.value) || (employeeInput && employeeInput.value) || (dateInput && dateInput.value) || (timeInput && timeInput.value) || (summaryBox && summaryBox.style.display === 'block' && !summaryBox.classList.contains('slotnova-is-hidden'));
+
+		if (hasSelection) {
 			box.style.display = 'block';
 			box.classList.remove('slotnova-is-hidden');
 		}
@@ -141,8 +151,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	});
 
-	document.querySelectorAll('.slotnova-select-option').forEach(function(opt) {
-		opt.addEventListener('click', function() {
+	document.querySelectorAll('.slotnova-select-option, .slotnova-time-pill').forEach(function(el) {
+		el.addEventListener('click', function() {
 			setTimeout(function() {
 				checkRevealPaymentBox();
 				updateDepositSummary();
@@ -150,13 +160,22 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	});
 
-	var serviceInput = document.getElementById('slotnova_service');
-	if (serviceInput) {
+	var summaryBox = document.getElementById('slotnova-summary');
+	if (summaryBox) {
 		var observer = new MutationObserver(function() {
 			checkRevealPaymentBox();
 			updateDepositSummary();
 		});
-		observer.observe(serviceInput, { attributes: true, attributeFilter: ['value', 'data-price'] });
+		observer.observe(summaryBox, { attributes: true, attributeFilter: ['style', 'class'] });
+	}
+
+	var serviceInput = document.getElementById('slotnova_service');
+	if (serviceInput) {
+		var serviceObserver = new MutationObserver(function() {
+			checkRevealPaymentBox();
+			updateDepositSummary();
+		});
+		serviceObserver.observe(serviceInput, { attributes: true, attributeFilter: ['value', 'data-price'] });
 	}
 
 	checkRevealPaymentBox();

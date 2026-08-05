@@ -99,3 +99,88 @@ if ( ! function_exists( 'slotnova_parse_time' ) ) {
 		return gmdate( 'h:i A', $ts );
 	}
 }
+
+if ( ! function_exists( 'slotnova_format_time' ) ) {
+	/**
+	 * Format time slot display according to global SlotNova time_slot_format setting.
+	 *
+	 * Supports:
+	 * - 'start_only': "09:00 AM"
+	 * - 'range': "09:00 AM - 10:00 AM"
+	 *
+	 * @param string $slot_time Start time string (e.g., "09:00 AM").
+	 * @param int    $duration_minutes Duration in minutes (0 to use global option).
+	 * @return string Formatted time slot string.
+	 */
+	function slotnova_format_time( $slot_time, $duration_minutes = 0 ) {
+		if ( empty( $slot_time ) ) {
+			return '';
+		}
+
+		$clean = trim( (string) $slot_time );
+		$format_mode = get_option( 'slotnova_time_slot_format', 'start_only' );
+
+		if ( 'range' !== $format_mode ) {
+			return $clean;
+		}
+
+		// If time slot already contains a range "-", return as is
+		if ( strpos( $clean, '-' ) !== false ) {
+			return $clean;
+		}
+
+		$ts = strtotime( '1970-01-01 ' . $clean . ' UTC' );
+		if ( false === $ts ) {
+			$ts = strtotime( $clean );
+		}
+		if ( false === $ts ) {
+			return $clean;
+		}
+
+		$duration = (int) $duration_minutes;
+		if ( $duration <= 0 ) {
+			$duration = (int) get_option( 'slotnova_slot_duration', 60 );
+		}
+		if ( $duration <= 0 ) {
+			$duration = 60;
+		}
+
+		$end_ts  = $ts + ( $duration * 60 );
+		$end_str = gmdate( 'h:i A', $end_ts );
+
+		return $clean . ' - ' . $end_str;
+	}
+}
+
+if ( ! function_exists( 'slotnova_get_product_base_price' ) ) {
+	/**
+	 * Get the global base booking price for a product.
+	 *
+	 * Falls back to _slotnova_base_price meta, then to WooCommerce regular/sale price.
+	 *
+	 * @param int|WC_Product $product Product object or ID.
+	 * @return float
+	 */
+	function slotnova_get_product_base_price( $product ) {
+		if ( is_numeric( $product ) ) {
+			$product_id  = intval( $product );
+			$product_obj = wc_get_product( $product_id );
+		} elseif ( $product instanceof WC_Product ) {
+			$product_id  = $product->get_id();
+			$product_obj = $product;
+		} else {
+			return 0.0;
+		}
+
+		$base_price = get_post_meta( $product_id, '_slotnova_base_price', true );
+		if ( '' !== $base_price && null !== $base_price && is_numeric( $base_price ) ) {
+			return floatval( $base_price );
+		}
+
+		if ( $product_obj ) {
+			return floatval( $product_obj->get_price() );
+		}
+
+		return 0.0;
+	}
+}

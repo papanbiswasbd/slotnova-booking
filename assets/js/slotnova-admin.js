@@ -1331,6 +1331,38 @@ jQuery(document).ready(function($) {
 	/* -------------------------------------------------------------------------
 	 * 6. Product Tab Repeaters (Services & Employees)
 	 * ------------------------------------------------------------------------- */
+	function toggleSlotNovaProductGroups() {
+		var basePriceCheck = $('#_slotnova_enable_base_price');
+		var servicesCheck = $('#_slotnova_enable_services');
+		var employeesCheck = $('#_slotnova_enable_employees');
+
+		if (basePriceCheck.length) {
+			if (basePriceCheck.is(':checked')) {
+				$('.slotnova-base-price-input-box').show();
+			} else {
+				$('.slotnova-base-price-input-box').hide();
+			}
+		}
+
+		if (servicesCheck.length) {
+			if (servicesCheck.is(':checked')) {
+				$('#slotnova-services-group, .slotnova-services-label-box').show();
+			} else {
+				$('#slotnova-services-group, .slotnova-services-label-box').hide();
+			}
+		}
+
+		if (employeesCheck.length) {
+			if (employeesCheck.is(':checked')) {
+				$('#slotnova-employees-group, .slotnova-employees-label-box').show();
+			} else {
+				$('#slotnova-employees-group, .slotnova-employees-label-box').hide();
+			}
+		}
+	}
+
+	$('body').on('change', '#_slotnova_enable_base_price, #_slotnova_enable_services, #_slotnova_enable_employees', toggleSlotNovaProductGroups);
+
 	var defaultServicePrices = (typeof slotnova_admin_data !== 'undefined' && slotnova_admin_data.default_service_prices) ? slotnova_admin_data.default_service_prices : {};
 
 	// Auto-fill price when a service is selected

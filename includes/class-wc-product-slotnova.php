@@ -84,6 +84,14 @@ class WC_Product extends \WC_Product {
 	 * @return string|float
 	 */
 	public function get_price( $context = 'view' ) {
+		$enable_base_price = get_post_meta( $this->get_id(), '_slotnova_enable_base_price', true );
+		if ( 'yes' === $enable_base_price ) {
+			$base_price = get_post_meta( $this->get_id(), '_slotnova_base_price', true );
+			if ( '' !== $base_price && null !== $base_price && is_numeric( $base_price ) ) {
+				return floatval( $base_price );
+			}
+		}
+
 		$price = parent::get_price( $context );
 		if ( '' === $price || null === $price || false === $price ) {
 			$saved_services = get_post_meta( $this->get_id(), '_slotnova_product_services', true );
@@ -103,6 +111,12 @@ class WC_Product extends \WC_Product {
 					return min( $prices );
 				}
 			}
+
+			$base_price = get_post_meta( $this->get_id(), '_slotnova_base_price', true );
+			if ( '' !== $base_price && null !== $base_price && is_numeric( $base_price ) && floatval( $base_price ) > 0 ) {
+				return floatval( $base_price );
+			}
+
 			return '0';
 		}
 		return $price;

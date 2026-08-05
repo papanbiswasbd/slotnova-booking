@@ -980,6 +980,9 @@ class Admin {
 		register_setting( 'slotnova_settings_group', 'slotnova_weekly_off_days', array( 'sanitize_callback' => array( $this, 'sanitize_array' ) ) );
 		register_setting( 'slotnova_settings_group', 'slotnova_specific_off_days', array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
 		register_setting( 'slotnova_settings_group', 'slotnova_enable_time_slots', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'slotnova_settings_group', 'slotnova_calendar_mode', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'slotnova_settings_group', 'slotnova_time_slot_format', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'slotnova_settings_group', 'slotnova_time_picker_style', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 
 		// Style & Color settings
 		register_setting( 'slotnova_settings_group', 'slotnova_primary_color', array( 'sanitize_callback' => 'sanitize_hex_color' ) );
@@ -2539,42 +2542,85 @@ class Admin {
 						?>
 
 						<!-- Panel 1: General & Schedule -->
-						<div class="slotnova-vtab-panel" id="slotnova-vtab-general" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-							<h2 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;"><?php esc_html_e( 'Smart Time Slot Generator', 'slotnova-booking' ); ?></h2>
+						<div class="slotnova-vtab-panel" id="slotnova-vtab-general" style="background: #ffffff; border: 1px solid #c3c4c7; border-radius: 8px; padding: 24px 28px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+							<h2 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 700; color: #1d2327; border-bottom: 1px solid #c3c4c7; padding-bottom: 12px;"><?php esc_html_e( 'General & Schedule Settings', 'slotnova-booking' ); ?></h2>
+
 							<table class="form-table" style="margin-top: 0;">
 								<tr valign="top">
-									<th scope="row"><?php esc_html_e( 'Enable Time Slots', 'slotnova-booking' ); ?></th>
-									<td>
+									<th scope="row" style="width: 220px; font-weight: 600; padding: 16px 10px 16px 0; color: #1d2327;"><?php esc_html_e( 'Enable Time Slots', 'slotnova-booking' ); ?></th>
+									<td style="padding: 16px 0;">
 										<fieldset>
-											<label>
+											<label style="font-weight: 600; color: #1d2327; cursor: pointer;">
 												<input type="checkbox" name="slotnova_enable_time_slots" value="yes" <?php checked( get_option( 'slotnova_enable_time_slots', 'yes' ), 'yes' ); ?> />
-												<strong><?php esc_html_e( 'Enable time slot selection for bookings', 'slotnova-booking' ); ?></strong>
+												<?php esc_html_e( 'Enable time slot selection for bookings', 'slotnova-booking' ); ?>
 											</label>
 										</fieldset>
-										<p class="description"><?php esc_html_e( 'If disabled, customers will only select a Date for their booking.', 'slotnova-booking' ); ?></p>
+										<p class="description" style="margin-top: 4px; color: #646970;"><?php esc_html_e( 'If disabled, customers will only select a Date for their booking.', 'slotnova-booking' ); ?></p>
 									</td>
 								</tr>
+
 								<tr valign="top">
-									<th scope="row"><?php esc_html_e( 'Opening Time', 'slotnova-booking' ); ?></th>
-									<td>
-										<input type="time" name="slotnova_opening_time" value="<?php echo esc_attr( $opening_time ); ?>" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1;" />
-										<p class="description"><?php esc_html_e( 'When does your business open? (e.g. 09:00 AM)', 'slotnova-booking' ); ?></p>
+									<th scope="row" style="width: 220px; font-weight: 600; padding: 16px 10px 16px 0; color: #1d2327;"><?php esc_html_e( 'Frontend Calendar Mode', 'slotnova-booking' ); ?></th>
+									<td style="padding: 16px 0;">
+										<fieldset>
+											<label style="display: block; margin-bottom: 10px; cursor: pointer;">
+												<input type="radio" name="slotnova_calendar_mode" value="inline" <?php checked( get_option( 'slotnova_calendar_mode', 'inline' ), 'inline' ); ?> />
+												<strong style="color: #1d2327;"><?php esc_html_e( 'Direct Calendar View (Inline)', 'slotnova-booking' ); ?></strong>
+												<span style="display: block; margin-left: 24px; font-size: 13px; color: #646970; margin-top: 2px;"><?php esc_html_e( 'Renders the expanded calendar widget directly on product details pages.', 'slotnova-booking' ); ?></span>
+											</label>
+											<label style="display: block; cursor: pointer;">
+												<input type="radio" name="slotnova_calendar_mode" value="popup" <?php checked( get_option( 'slotnova_calendar_mode', 'inline' ), 'popup' ); ?> />
+												<strong style="color: #1d2327;"><?php esc_html_e( 'Tooltip / Popup Picker (Click to Open)', 'slotnova-booking' ); ?></strong>
+												<span style="display: block; margin-left: 24px; font-size: 13px; color: #646970; margin-top: 2px;"><?php esc_html_e( 'Clickable date input box that triggers a popover calendar tooltip.', 'slotnova-booking' ); ?></span>
+											</label>
+										</fieldset>
 									</td>
 								</tr>
+
 								<tr valign="top">
-									<th scope="row"><?php esc_html_e( 'Closing Time', 'slotnova-booking' ); ?></th>
-									<td>
-										<input type="time" name="slotnova_closing_time" value="<?php echo esc_attr( $closing_time ); ?>" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1;" />
-										<p class="description"><?php esc_html_e( 'When does your business close? (e.g. 05:00 PM)', 'slotnova-booking' ); ?></p>
+									<th scope="row" style="width: 220px; font-weight: 600; padding: 16px 10px 16px 0; color: #1d2327;"><?php esc_html_e( 'Business Hours', 'slotnova-booking' ); ?></th>
+									<td style="padding: 16px 0;">
+										<div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+											<div>
+												<label style="display: block; font-size: 12px; font-weight: 600; color: #50575e; margin-bottom: 4px;"><?php esc_html_e( 'Opening Time', 'slotnova-booking' ); ?></label>
+												<input type="time" name="slotnova_opening_time" value="<?php echo esc_attr( $opening_time ); ?>" style="padding: 5px 10px; border-radius: 4px; border: 1px solid #8c8f94; font-size: 14px;" />
+											</div>
+											<div style="padding-top: 18px; font-weight: 600; color: #646970;"><?php esc_html_e( 'to', 'slotnova-booking' ); ?></div>
+											<div>
+												<label style="display: block; font-size: 12px; font-weight: 600; color: #50575e; margin-bottom: 4px;"><?php esc_html_e( 'Closing Time', 'slotnova-booking' ); ?></label>
+												<input type="time" name="slotnova_closing_time" value="<?php echo esc_attr( $closing_time ); ?>" style="padding: 5px 10px; border-radius: 4px; border: 1px solid #8c8f94; font-size: 14px;" />
+											</div>
+										</div>
+										<p class="description" style="margin-top: 6px; color: #646970;"><?php esc_html_e( 'Specify your daily business operating hours.', 'slotnova-booking' ); ?></p>
 									</td>
 								</tr>
-								<tr>
-									<th scope="row"><?php esc_html_e( 'Slot Duration (Minutes)', 'slotnova-booking' ); ?></th>
-									<td>
-										<input type="number" name="slotnova_slot_duration" value="<?php echo esc_attr( get_option( 'slotnova_slot_duration', '60' ) ); ?>" class="regular-text" step="5" min="5" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1;" />
-										<p class="description"><?php esc_html_e( 'Duration of each booking slot (e.g., 60 for 1 hour).', 'slotnova-booking' ); ?></p>
+
+								<tr valign="top">
+									<th scope="row" style="width: 220px; font-weight: 600; padding: 16px 10px 16px 0; color: #1d2327;"><?php esc_html_e( 'Slot Duration (Minutes)', 'slotnova-booking' ); ?></th>
+									<td style="padding: 16px 0;">
+										<input type="number" name="slotnova_slot_duration" value="<?php echo esc_attr( get_option( 'slotnova_slot_duration', '60' ) ); ?>" class="regular-text" step="5" min="5" style="padding: 5px 10px; border-radius: 4px; border: 1px solid #8c8f94; font-size: 14px; width: 120px;" />
+										<p class="description" style="margin-top: 4px; color: #646970;"><?php esc_html_e( 'Duration of each booking slot interval (e.g., 60 for 1 hour).', 'slotnova-booking' ); ?></p>
 									</td>
 								</tr>
+
+								<tr valign="top">
+									<th scope="row" style="width: 220px; font-weight: 600; padding: 16px 10px 16px 0; color: #1d2327;"><?php esc_html_e( 'Time Slot Display Format', 'slotnova-booking' ); ?></th>
+									<td style="padding: 16px 0;">
+										<fieldset>
+											<label style="display: block; margin-bottom: 10px; cursor: pointer;">
+												<input type="radio" name="slotnova_time_slot_format" value="start_only" <?php checked( get_option( 'slotnova_time_slot_format', 'start_only' ), 'start_only' ); ?> />
+												<strong style="color: #1d2327;"><?php esc_html_e( 'Start Time Only', 'slotnova-booking' ); ?></strong>
+												<span style="display: block; margin-left: 24px; font-size: 13px; color: #646970; margin-top: 2px;"><?php esc_html_e( 'Displays start time only on buttons (e.g. 09:00 AM, 10:00 AM).', 'slotnova-booking' ); ?></span>
+											</label>
+											<label style="display: block; cursor: pointer;">
+												<input type="radio" name="slotnova_time_slot_format" value="range" <?php checked( get_option( 'slotnova_time_slot_format', 'start_only' ), 'range' ); ?> />
+												<strong style="color: #1d2327;"><?php esc_html_e( 'Time Range', 'slotnova-booking' ); ?></strong>
+												<span style="display: block; margin-left: 24px; font-size: 13px; color: #646970; margin-top: 2px;"><?php esc_html_e( 'Displays full duration range (e.g. 09:00 AM - 10:00 AM).', 'slotnova-booking' ); ?></span>
+											</label>
+										</fieldset>
+									</td>
+								</tr>
+
 							</table>
 
 							<h2 style="margin: 24px 0 16px 0; font-size: 18px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;"><?php esc_html_e( 'Off-Days & Vacations', 'slotnova-booking' ); ?></h2>
@@ -2736,99 +2782,168 @@ class Admin {
 	public function render_slotnova_product_tab_content() {
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 		global $post;
+
+		$post_id = ( $post && isset( $post->ID ) ) ? $post->ID : get_the_ID();
+		if ( ! $post_id ) {
+			return;
+		}
+
+		$enable_services  = get_post_meta( $post_id, '_slotnova_enable_services', true );
+		if ( '' === $enable_services ) {
+			$enable_services = 'yes';
+		}
+
+		$enable_employees = get_post_meta( $post_id, '_slotnova_enable_employees', true );
+		if ( '' === $enable_employees ) {
+			$enable_employees = 'yes';
+		}
+
+		$base_price = get_post_meta( $post_id, '_slotnova_base_price', true );
+		$enable_base_price = get_post_meta( $post_id, '_slotnova_enable_base_price', true );
+		if ( '' === $enable_base_price ) {
+			$enable_base_price = ( '' !== $base_price && floatval( $base_price ) > 0 ) ? 'yes' : 'no';
+		}
 		?>
 		<div id="slotnova_booking_data" class="panel woocommerce_options_panel show_if_slotnova">
-			<div class="options_group">
-				<h3><?php esc_html_e( 'Services', 'slotnova-booking' ); ?></h3>
-				<p class="description"><?php esc_html_e( 'Add services, drag to reorder them, and set their price.', 'slotnova-booking' ); ?></p>
+
+			<!-- 1. Global Base Price Section Card -->
+			<div class="options_group slotnova-product-section" id="slotnova-base-price-section" style="padding: 16px 20px; border-bottom: 1px solid #f0f0f1;">
+				<div style="display: flex; align-items: center; justify-content: space-between; min-height: 34px;">
+					<label for="_slotnova_enable_base_price" style="font-size: 14px; font-weight: 700; color: #1d2327; cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 0; width: auto !important; float: none !important;">
+						<input type="checkbox" name="_slotnova_enable_base_price" id="_slotnova_enable_base_price" value="yes" <?php checked( $enable_base_price, 'yes' ); ?> style="width: 17px; height: 17px; margin: 0; float: none !important;" />
+						<?php esc_html_e( 'Global Base Price', 'slotnova-booking' ); ?>
+					</label>
+					<div class="slotnova-base-price-input-box" style="display: <?php echo ( 'yes' === $enable_base_price ) ? 'flex' : 'none'; ?>; align-items: center; gap: 8px; justify-content: flex-end;">
+						<span style="font-weight: 600; font-size: 12.5px; color: #50575e; white-space: nowrap; line-height: 1; margin: 0; float: none !important;"><?php esc_html_e( 'Base Price ($):', 'slotnova-booking' ); ?></span>
+						<input type="number" step="0.01" min="0" name="_slotnova_base_price" id="_slotnova_base_price" value="<?php echo esc_attr( $base_price ); ?>" placeholder="<?php esc_attr_e( 'e.g. 50.00', 'slotnova-booking' ); ?>" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #8c8f94; font-size: 13px; width: 130px; margin: 0; float: none !important; display: inline-block !important;">
+					</div>
+				</div>
+				<p class="description" style="margin-top: 6px; margin-bottom: 0; color: #646970; font-size: 12px; padding: 0;"><?php esc_html_e( 'Default booking price used when a service has no price or when services are disabled.', 'slotnova-booking' ); ?></p>
+			</div>
+
+			<!-- 2. Services Section Card -->
+			<div class="options_group slotnova-product-section" id="slotnova-services-section" style="padding: 16px 20px; border-bottom: 1px solid #f0f0f1;">
 				<?php
+				$service_title = get_post_meta( $post_id, '_slotnova_service_title', true );
 				$all_services   = get_terms( array( 'taxonomy' => 'slotnova_service', 'hide_empty' => false ) );
-				$saved_services = get_post_meta( $post->ID, '_slotnova_product_services', true );
+				$saved_services = get_post_meta( $post_id, '_slotnova_product_services', true );
 				if ( ! is_array( $saved_services ) ) {
 					$saved_services = array();
 				}
+				$header_service_title = ! empty( $service_title ) ? strtoupper( $service_title ) : __( 'SERVICE', 'slotnova-booking' );
 				?>
-				<table class="wp-list-table widefat fixed striped slotnova-repeater-table" id="slotnova-services-table">
-					<thead>
-						<tr>
-							<th width="5%" class="slotnova-align-center"></th>
-							<th width="45%"><?php esc_html_e( 'Service', 'slotnova-booking' ); ?></th>
-							<th width="40%"><?php esc_html_e( 'Price', 'slotnova-booking' ); ?></th>
-							<th width="10%" class="slotnova-align-center"></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php if ( ! is_wp_error( $all_services ) ) : ?>
-							<?php foreach ( $saved_services as $saved ) :
-								$price = $saved['price'];
-								if ( '' === $price || null === $price ) {
-									$price = get_term_meta( $saved['term_id'], 'slotnova_service_price', true );
-								}
-								?>
-								<tr>
-									<td class="slotnova-drag-handle">☰</td>
-									<td>
-										<select name="slotnova_repeater_service_id[]" class="slotnova-table-select slotnova-service-select">
-											<option value=""><?php esc_html_e( 'Select Service...', 'slotnova-booking' ); ?></option>
-											<?php foreach ( $all_services as $service ) : ?>
-												<option value="<?php echo esc_attr( $service->term_id ); ?>" <?php selected( $saved['term_id'], $service->term_id ); ?>><?php echo esc_html( $service->name ); ?></option>
-											<?php endforeach; ?>
-										</select>
-									</td>
-									<td>
-										<input type="number" name="slotnova_repeater_service_price[]" value="<?php echo esc_attr( $price ); ?>" step="0.01" min="0" class="slotnova-table-input-price slotnova-service-price-input">
-									</td>
-									<td class="slotnova-align-center"><a href="#" class="slotnova-remove-row" title="<?php esc_attr_e( 'Remove', 'slotnova-booking' ); ?>"><span class="dashicons dashicons-trash"></span></a></td>
-								</tr>
-							<?php endforeach; ?>
-						<?php endif; ?>
-					</tbody>
-				</table>
-				<p>
-					<button type="button" class="button button-primary" id="slotnova-add-service"><span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add Service', 'slotnova-booking' ); ?></button>
-				</p>
+				<div style="display: flex; align-items: center; justify-content: space-between; min-height: 34px;">
+					<label for="_slotnova_enable_services" style="font-size: 14px; font-weight: 700; color: #1d2327; cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 0; width: auto !important; float: none !important;">
+						<input type="checkbox" name="_slotnova_enable_services" id="_slotnova_enable_services" value="yes" <?php checked( $enable_services, 'yes' ); ?> style="width: 17px; height: 17px; margin: 0; float: none !important;" />
+						<?php esc_html_e( 'Services', 'slotnova-booking' ); ?>
+					</label>
+					<div class="slotnova-services-label-box" style="display: <?php echo ( 'yes' === $enable_services ) ? 'flex' : 'none'; ?>; align-items: center; gap: 8px; justify-content: flex-end;">
+						<span style="font-weight: 600; font-size: 12.5px; color: #50575e; white-space: nowrap; line-height: 1; margin: 0; float: none !important;"><?php esc_html_e( 'Custom Frontend Label:', 'slotnova-booking' ); ?></span>
+						<input type="text" name="_slotnova_service_title" id="_slotnova_service_title" value="<?php echo esc_attr( $service_title ); ?>" placeholder="<?php esc_attr_e( 'Service (e.g. Treatment)', 'slotnova-booking' ); ?>" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #8c8f94; font-size: 13px; width: 200px; margin: 0; float: none !important; display: inline-block !important;">
+					</div>
+				</div>
+
+				<div class="slotnova-services-body" id="slotnova-services-group" style="display: <?php echo ( 'yes' === $enable_services ) ? 'block' : 'none'; ?>; margin-top: 10px;">
+					<p class="description" style="margin-bottom: 10px; color: #646970; font-size: 12px; padding: 0;"><?php esc_html_e( 'Add services, set custom prices per product, drag to reorder, and set custom frontend labels.', 'slotnova-booking' ); ?></p>
+					
+					<table class="wp-list-table widefat fixed striped slotnova-repeater-table" id="slotnova-services-table">
+						<thead>
+							<tr>
+								<th width="5%" class="slotnova-align-center"></th>
+								<th width="45%"><?php echo esc_html( $header_service_title ); ?></th>
+								<th width="40%"><?php esc_html_e( 'PRICE', 'slotnova-booking' ); ?></th>
+								<th width="10%" class="slotnova-align-center"></th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php if ( ! is_wp_error( $all_services ) ) : ?>
+								<?php foreach ( $saved_services as $saved ) :
+									$price = $saved['price'];
+									if ( '' === $price || null === $price ) {
+										$price = get_term_meta( $saved['term_id'], 'slotnova_service_price', true );
+									}
+									?>
+									<tr>
+										<td class="slotnova-drag-handle">☰</td>
+										<td>
+											<select name="slotnova_repeater_service_id[]" class="slotnova-table-select slotnova-service-select">
+												<option value=""><?php esc_html_e( 'Select Service...', 'slotnova-booking' ); ?></option>
+												<?php foreach ( $all_services as $service ) : ?>
+													<option value="<?php echo esc_attr( $service->term_id ); ?>" <?php selected( $saved['term_id'], $service->term_id ); ?>><?php echo esc_html( $service->name ); ?></option>
+												<?php endforeach; ?>
+											</select>
+										</td>
+										<td>
+											<input type="number" name="slotnova_repeater_service_price[]" value="<?php echo esc_attr( $price ); ?>" step="0.01" min="0" class="slotnova-table-input-price slotnova-service-price-input">
+										</td>
+										<td class="slotnova-align-center"><a href="#" class="slotnova-remove-row" title="<?php esc_attr_e( 'Remove', 'slotnova-booking' ); ?>"><span class="dashicons dashicons-trash"></span></a></td>
+									</tr>
+								<?php endforeach; ?>
+							<?php endif; ?>
+						</tbody>
+					</table>
+					<p style="margin-top: 10px; margin-bottom: 0;">
+						<button type="button" class="button button-primary" id="slotnova-add-service"><span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add Service', 'slotnova-booking' ); ?></button>
+					</p>
+				</div>
 			</div>
 
-			<div class="options_group">
-				<h3><?php esc_html_e( 'Employees', 'slotnova-booking' ); ?></h3>
-				<p class="description"><?php esc_html_e( 'Add employees and drag to reorder them.', 'slotnova-booking' ); ?></p>
+			<!-- 3. Employees Section Card -->
+			<div class="options_group slotnova-product-section" id="slotnova-employees-section" style="padding: 16px 20px;">
 				<?php
+				$employee_title = get_post_meta( $post_id, '_slotnova_employee_title', true );
 				$all_employees   = get_terms( array( 'taxonomy' => 'slotnova_employee', 'hide_empty' => false ) );
-				$saved_employees = get_post_meta( $post->ID, '_slotnova_product_employees', true );
+				$saved_employees = get_post_meta( $post_id, '_slotnova_product_employees', true );
 				if ( ! is_array( $saved_employees ) ) {
 					$saved_employees = array();
 				}
+				$header_employee_title = ! empty( $employee_title ) ? strtoupper( $employee_title ) : __( 'EMPLOYEE', 'slotnova-booking' );
 				?>
-				<table class="wp-list-table widefat fixed striped slotnova-repeater-table" id="slotnova-employees-table">
-					<thead>
-						<tr>
-							<th width="5%" class="slotnova-align-center"></th>
-							<th width="85%"><?php esc_html_e( 'Employee', 'slotnova-booking' ); ?></th>
-							<th width="10%" class="slotnova-align-center"></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php if ( ! is_wp_error( $all_employees ) ) : ?>
-							<?php foreach ( $saved_employees as $saved ) : ?>
-								<tr>
-									<td class="slotnova-drag-handle">☰</td>
-									<td>
-										<select name="slotnova_repeater_employee_id[]" class="slotnova-table-select">
-											<option value=""><?php esc_html_e( 'Select Employee...', 'slotnova-booking' ); ?></option>
-											<?php foreach ( $all_employees as $employee ) : ?>
-												<option value="<?php echo esc_attr( $employee->term_id ); ?>" <?php selected( $saved['term_id'], $employee->term_id ); ?>><?php echo esc_html( $employee->name ); ?></option>
-											<?php endforeach; ?>
-										</select>
-									</td>
-									<td class="slotnova-align-center"><a href="#" class="slotnova-remove-row" title="<?php esc_attr_e( 'Remove', 'slotnova-booking' ); ?>"><span class="dashicons dashicons-trash"></span></a></td>
-								</tr>
-							<?php endforeach; ?>
-						<?php endif; ?>
-					</tbody>
-				</table>
-				<p>
-					<button type="button" class="button button-primary" id="slotnova-add-employee"><span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add Employee', 'slotnova-booking' ); ?></button>
-				</p>
+				<div style="display: flex; align-items: center; justify-content: space-between; min-height: 34px;">
+					<label for="_slotnova_enable_employees" style="font-size: 14px; font-weight: 700; color: #1d2327; cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 0; width: auto !important; float: none !important;">
+						<input type="checkbox" name="_slotnova_enable_employees" id="_slotnova_enable_employees" value="yes" <?php checked( $enable_employees, 'yes' ); ?> style="width: 17px; height: 17px; margin: 0; float: none !important;" />
+						<?php esc_html_e( 'Employees', 'slotnova-booking' ); ?>
+					</label>
+					<div class="slotnova-employees-label-box" style="display: <?php echo ( 'yes' === $enable_employees ) ? 'flex' : 'none'; ?>; align-items: center; gap: 8px; justify-content: flex-end;">
+						<span style="font-weight: 600; font-size: 12.5px; color: #50575e; white-space: nowrap; line-height: 1; margin: 0; float: none !important;"><?php esc_html_e( 'Custom Frontend Label:', 'slotnova-booking' ); ?></span>
+						<input type="text" name="_slotnova_employee_title" id="_slotnova_employee_title" value="<?php echo esc_attr( $employee_title ); ?>" placeholder="<?php esc_attr_e( 'Employee (e.g. Specialist)', 'slotnova-booking' ); ?>" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #8c8f94; font-size: 13px; width: 200px; margin: 0; float: none !important; display: inline-block !important;">
+					</div>
+				</div>
+
+				<div class="slotnova-employees-body" id="slotnova-employees-group" style="display: <?php echo ( 'yes' === $enable_employees ) ? 'block' : 'none'; ?>; margin-top: 10px;">
+					<p class="description" style="margin-bottom: 10px; color: #646970; font-size: 12px; padding: 0;"><?php esc_html_e( 'Add employees/staff for this product, drag to reorder, and set custom frontend labels.', 'slotnova-booking' ); ?></p>
+					
+					<table class="wp-list-table widefat fixed striped slotnova-repeater-table" id="slotnova-employees-table">
+						<thead>
+							<tr>
+								<th width="5%" class="slotnova-align-center"></th>
+								<th width="85%"><?php echo esc_html( $header_employee_title ); ?></th>
+								<th width="10%" class="slotnova-align-center"></th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php if ( ! is_wp_error( $all_employees ) ) : ?>
+								<?php foreach ( $saved_employees as $saved ) : ?>
+									<tr>
+										<td class="slotnova-drag-handle">☰</td>
+										<td>
+											<select name="slotnova_repeater_employee_id[]" class="slotnova-table-select">
+												<option value=""><?php esc_html_e( 'Select Employee...', 'slotnova-booking' ); ?></option>
+												<?php foreach ( $all_employees as $employee ) : ?>
+													<option value="<?php echo esc_attr( $employee->term_id ); ?>" <?php selected( $saved['term_id'], $employee->term_id ); ?>><?php echo esc_html( $employee->name ); ?></option>
+												<?php endforeach; ?>
+											</select>
+										</td>
+										<td class="slotnova-align-center"><a href="#" class="slotnova-remove-row" title="<?php esc_attr_e( 'Remove', 'slotnova-booking' ); ?>"><span class="dashicons dashicons-trash"></span></a></td>
+									</tr>
+								<?php endforeach; ?>
+							<?php endif; ?>
+						</tbody>
+					</table>
+					<p style="margin-top: 10px; margin-bottom: 0;">
+						<button type="button" class="button button-primary" id="slotnova-add-employee"><span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add Employee', 'slotnova-booking' ); ?></button>
+					</p>
+				</div>
 			</div>
 		</div>
 
@@ -2978,6 +3093,28 @@ class Admin {
 		}
 		update_post_meta( $post_id, '_slotnova_product_employees', $employees_meta );
 		wp_set_object_terms( $post_id, $employee_terms, 'slotnova_employee' );
+
+		// Save Global Base Booking Price & Enable State
+		$enable_base_price = isset( $_POST['_slotnova_enable_base_price'] ) ? 'yes' : 'no';
+		update_post_meta( $post_id, '_slotnova_enable_base_price', $enable_base_price );
+
+		if ( isset( $_POST['_slotnova_base_price'] ) ) {
+			update_post_meta( $post_id, '_slotnova_base_price', sanitize_text_field( wp_unslash( $_POST['_slotnova_base_price'] ) ) );
+		}
+
+		// Save Custom Service & Employee Section Enables & Titles
+		$enable_services = isset( $_POST['_slotnova_enable_services'] ) ? 'yes' : 'no';
+		update_post_meta( $post_id, '_slotnova_enable_services', $enable_services );
+
+		$enable_employees = isset( $_POST['_slotnova_enable_employees'] ) ? 'yes' : 'no';
+		update_post_meta( $post_id, '_slotnova_enable_employees', $enable_employees );
+
+		if ( isset( $_POST['_slotnova_service_title'] ) ) {
+			update_post_meta( $post_id, '_slotnova_service_title', sanitize_text_field( wp_unslash( $_POST['_slotnova_service_title'] ) ) );
+		}
+		if ( isset( $_POST['_slotnova_employee_title'] ) ) {
+			update_post_meta( $post_id, '_slotnova_employee_title', sanitize_text_field( wp_unslash( $_POST['_slotnova_employee_title'] ) ) );
+		}
 
 		// Save Slot Manager Data
 		$opening_time = isset( $_POST['_slotnova_opening_time'] ) ? sanitize_text_field( wp_unslash( $_POST['_slotnova_opening_time'] ) ) : '';

@@ -53,13 +53,24 @@ class Cart {
 			return false;
 		}
 
-		if ( empty( $_POST['slotnova_service'] ) ) {
+		$enable_services = get_post_meta( $product_id, '_slotnova_enable_services', true );
+		if ( '' === $enable_services ) {
+			$enable_services = 'yes';
+		}
+		$saved_services = get_post_meta( $product_id, '_slotnova_product_services', true );
+
+		if ( 'yes' === $enable_services && ! empty( $saved_services ) && empty( $_POST['slotnova_service'] ) ) {
 			wc_add_notice( __( 'Please select a service for your booking.', 'slotnova-booking' ), 'error' );
 			$passed = false;
 		}
 
+		$enable_employees = get_post_meta( $product_id, '_slotnova_enable_employees', true );
+		if ( '' === $enable_employees ) {
+			$enable_employees = 'yes';
+		}
 		$saved_employees = get_post_meta( $product_id, '_slotnova_product_employees', true );
-		if ( empty( $_POST['slotnova_employee'] ) && ! empty( $saved_employees ) ) {
+
+		if ( 'yes' === $enable_employees && ! empty( $saved_employees ) && empty( $_POST['slotnova_employee'] ) ) {
 			wc_add_notice( __( 'Please select an employee for your booking.', 'slotnova-booking' ), 'error' );
 			$passed = false;
 		}
@@ -136,17 +147,20 @@ class Cart {
 	 * @return array
 	 */
 	public function add_booking_data_to_cart( $cart_item_data, $product_id, $variation_id ) {
-		if ( isset( $_POST['slotnova_service'] ) && isset( $_POST['slotnova_booking_date'] ) ) {
+		if ( isset( $_POST['slotnova_booking_date'] ) ) {
 
 			if ( ! isset( $_POST['slotnova_cart_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['slotnova_cart_nonce'] ) ), 'slotnova_add_to_cart' ) ) {
 				return $cart_item_data;
 			}
 
-			$service_id  = intval( $_POST['slotnova_service'] );
-			$employee_id = isset( $_POST['slotnova_employee'] ) ? intval( $_POST['slotnova_employee'] ) : 0;
+			$service_id   = isset( $_POST['slotnova_service'] ) ? intval( $_POST['slotnova_service'] ) : 0;
+			$employee_id  = isset( $_POST['slotnova_employee'] ) ? intval( $_POST['slotnova_employee'] ) : 0;
 
-			$service_term = get_term( $service_id, 'slotnova_service' );
-			$service_name = ( $service_term && ! is_wp_error( $service_term ) ) ? $service_term->name : '';
+			$service_name = '';
+			if ( $service_id > 0 ) {
+				$service_term = get_term( $service_id, 'slotnova_service' );
+				$service_name = ( $service_term && ! is_wp_error( $service_term ) ) ? $service_term->name : '';
+			}
 
 			$employee_name = '';
 			if ( $employee_id > 0 ) {
@@ -157,27 +171,37 @@ class Cart {
 			$booking_date = sanitize_text_field( wp_unslash( $_POST['slotnova_booking_date'] ) );
 			$booking_time = isset( $_POST['slotnova_booking_time'] ) ? sanitize_text_field( wp_unslash( $_POST['slotnova_booking_time'] ) ) : '';
 
-			$price          = 0;
-			$saved_services = get_post_meta( $product_id, '_slotnova_product_services', true );
-			if ( is_array( $saved_services ) ) {
-				foreach ( $saved_services as $saved ) {
-					if ( (int) $saved['term_id'] === $service_id ) {
-						if ( isset( $saved['price'] ) && '' !== $saved['price'] && null !== $saved['price'] && floatval( $saved['price'] ) > 0 ) {
-							$price = floatval( $saved['price'] );
-						}
-						break;
-					}
+			$price             = 0;
+			$enable_base_price = get_post_meta( $product_id, '_slotnova_enable_base_price', true );
+			if ( 'yes' === $enable_base_price ) {
+				$base_price = get_post_meta( $product_id, '_slotnova_base_price', true );
+				if ( '' !== $base_price && null !== $base_price && is_numeric( $base_price ) ) {
+					$price = floatval( $base_price );
 				}
 			}
 
 			if ( $price <= 0 ) {
-				$price = floatval( get_term_meta( $service_id, 'slotnova_service_price', true ) );
-			}
+				$saved_services = get_post_meta( $product_id, '_slotnova_product_services', true );
+				if ( is_array( $saved_services ) ) {
+					foreach ( $saved_services as $saved ) {
+						if ( (int) $saved['term_id'] === $service_id ) {
+							if ( isset( $saved['price'] ) && '' !== $saved['price'] && null !== $saved['price'] && floatval( $saved['price'] ) > 0 ) {
+								$price = floatval( $saved['price'] );
+							}
+							break;
+						}
+					}
+				}
 
-			if ( $price <= 0 ) {
-				$product = wc_get_product( $product_id );
-				if ( $product ) {
-					$price = floatval( $product->get_price() );
+				if ( $price <= 0 ) {
+					$price = floatval( get_term_meta( $service_id, 'slotnova_service_price', true ) );
+				}
+
+				if ( $price <= 0 ) {
+					$product = wc_get_product( $product_id );
+					if ( $product ) {
+						$price = floatval( $product->get_price() );
+					}
 				}
 			}
 
@@ -242,18 +266,31 @@ class Cart {
 	 */
 	public function display_booking_data_in_cart( $item_data, $cart_item ) {
 		if ( isset( $cart_item['slotnova_booking'] ) ) {
-			$booking = $cart_item['slotnova_booking'];
+			$booking    = $cart_item['slotnova_booking'];
+			$product_id = isset( $cart_item['product_id'] ) ? $cart_item['product_id'] : 0;
+
+			$service_label = get_post_meta( $product_id, '_slotnova_service_title', true );
+			if ( empty( $service_label ) ) {
+				$service_label = __( 'Service', 'slotnova-booking' );
+			}
+			$service_label = rtrim( str_replace( array( 'Select ', 'Choose ' ), '', $service_label ), ':' );
+
+			$employee_label = get_post_meta( $product_id, '_slotnova_employee_title', true );
+			if ( empty( $employee_label ) ) {
+				$employee_label = __( 'Employee', 'slotnova-booking' );
+			}
+			$employee_label = rtrim( str_replace( array( 'Select ', 'Choose ' ), '', $employee_label ), ':' );
 
 			if ( ! empty( $booking['service_name'] ) ) {
 				$item_data[] = array(
-					'key'   => __( 'Service', 'slotnova-booking' ),
+					'key'   => $service_label,
 					'value' => $booking['service_name'],
 				);
 			}
 
 			if ( ! empty( $booking['employee_name'] ) ) {
 				$item_data[] = array(
-					'key'   => __( 'Employee', 'slotnova-booking' ),
+					'key'   => $employee_label,
 					'value' => $booking['employee_name'],
 				);
 			}
@@ -266,7 +303,7 @@ class Cart {
 			}
 
 			if ( ! empty( $booking['time'] ) ) {
-				$enable_time_slots = get_post_meta( $cart_item['product_id'], '_slotnova_enable_time_slots', true );
+				$enable_time_slots = get_post_meta( $product_id, '_slotnova_enable_time_slots', true );
 				if ( empty( $enable_time_slots ) || 'global' === $enable_time_slots ) {
 					$enable_time_slots = get_option( 'slotnova_enable_time_slots', 'yes' );
 				}
@@ -292,10 +329,23 @@ class Cart {
 	 */
 	public function save_booking_data_to_order( $item, $cart_item_key, $values, $order ) {
 		if ( isset( $values['slotnova_booking'] ) ) {
-			$booking = $values['slotnova_booking'];
+			$booking    = $values['slotnova_booking'];
+			$product_id = isset( $values['product_id'] ) ? $values['product_id'] : 0;
+
+			$service_label = get_post_meta( $product_id, '_slotnova_service_title', true );
+			if ( empty( $service_label ) ) {
+				$service_label = __( 'Service', 'slotnova-booking' );
+			}
+			$service_label = rtrim( str_replace( array( 'Select ', 'Choose ' ), '', $service_label ), ':' );
+
+			$employee_label = get_post_meta( $product_id, '_slotnova_employee_title', true );
+			if ( empty( $employee_label ) ) {
+				$employee_label = __( 'Employee', 'slotnova-booking' );
+			}
+			$employee_label = rtrim( str_replace( array( 'Select ', 'Choose ' ), '', $employee_label ), ':' );
 
 			if ( ! empty( $booking['service_name'] ) ) {
-				$item->add_meta_data( __( 'Service', 'slotnova-booking' ), $booking['service_name'] );
+				$item->add_meta_data( $service_label, $booking['service_name'] );
 			}
 
 			if ( ! empty( $booking['service_id'] ) ) {
@@ -303,7 +353,7 @@ class Cart {
 			}
 
 			if ( ! empty( $booking['employee_name'] ) ) {
-				$item->add_meta_data( __( 'Employee', 'slotnova-booking' ), $booking['employee_name'] );
+				$item->add_meta_data( $employee_label, $booking['employee_name'] );
 			}
 
 			if ( ! empty( $booking['employee_id'] ) ) {
