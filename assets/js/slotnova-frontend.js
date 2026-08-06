@@ -24,23 +24,28 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (str.indexOf('-') !== -1) {
 			str = str.split('-')[0].trim();
 		}
-		var parts = str.split(' ');
-		if (parts.length < 2) return str;
-		var timeParts = parts[0].split(':');
-		var hours = parseInt(timeParts[0], 10);
-		var minutes = parseInt(timeParts[1], 10);
-		var ampm = parts[1].toUpperCase();
+		var match = str.match(/^(\d{1,2})[:\.]?(\d{2})?\s*(AM|PM)?$/i);
+		if (match) {
+			var hours = parseInt(match[1], 10);
+			var minutes = match[2] ? parseInt(match[2], 10) : 0;
+			var ampm = match[3] ? match[3].toUpperCase() : '';
 
-		if (ampm === 'PM' && hours < 12) hours += 12;
-		if (ampm === 'AM' && hours === 12) hours = 0;
+			if (ampm === 'PM' && hours < 12) hours += 12;
+			if (ampm === 'AM' && hours === 12) hours = 0;
 
-		var hStr = hours < 10 ? '0' + hours : '' + hours;
-		var mStr = minutes < 10 ? '0' + minutes : '' + minutes;
-		return hStr + ':' + mStr;
+			var hStr = hours < 10 ? '0' + hours : '' + hours;
+			var mStr = minutes < 10 ? '0' + minutes : '' + minutes;
+			return hStr + ':' + mStr;
+		}
+		return str;
 	}
 
-	var siteDate = (typeof slotnova_params !== 'undefined' && slotnova_params.site_current_date) ? slotnova_params.site_current_date : '';
-	var siteTime = (typeof slotnova_params !== 'undefined' && slotnova_params.site_current_time) ? slotnova_params.site_current_time : '';
+	var nowObj = new Date();
+	var clientYMD = nowObj.getFullYear() + '-' + String(nowObj.getMonth() + 1).padStart(2, '0') + '-' + String(nowObj.getDate()).padStart(2, '0');
+	var clientTime = String(nowObj.getHours()).padStart(2, '0') + ':' + String(nowObj.getMinutes()).padStart(2, '0');
+
+	var siteDate = (typeof slotnova_params !== 'undefined' && slotnova_params.site_current_date) ? slotnova_params.site_current_date : clientYMD;
+	var siteTime = (typeof slotnova_params !== 'undefined' && slotnova_params.site_current_time) ? slotnova_params.site_current_time : clientTime;
 
 	function isDateDisabled(dateObj, disableArr) {
 		for (var i = 0; i < disableArr.length; i++) {
@@ -214,6 +219,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				});
 			}
 		}
+
+		if (dateInput && dateInput.value) {
+			fetchBookedSlots(dateInput.value);
+		}
 	}
 
 	function fetchBookedSlots(dateStr) {
@@ -246,21 +255,23 @@ document.addEventListener('DOMContentLoaded', function() {
 		var employeeId = employeeInput ? employeeInput.value : '';
 
 		var timePills = document.querySelectorAll('.slotnova-time-pill');
-		var isToday = (dateStr === siteDate);
+		var isToday = (!dateStr || dateStr === siteDate || dateStr === clientYMD);
+		var curTime = siteTime || clientTime;
+
 		var passedLabel = (typeof slotnova_params !== 'undefined' && slotnova_params.passed_text) ? slotnova_params.passed_text : 'Time Passed';
 		var bookedLabel = (typeof slotnova_params !== 'undefined' && slotnova_params.booked_text) ? slotnova_params.booked_text : 'Booked';
 		var passedHint  = (typeof slotnova_params !== 'undefined' && slotnova_params.passed_hint) ? slotnova_params.passed_hint : 'This time slot has already passed for today. Please select another date or time.';
 		var bookedHint  = (typeof slotnova_params !== 'undefined' && slotnova_params.booked_hint) ? slotnova_params.booked_hint : 'This time slot is already booked. Please try selecting a different date, employee, or service.';
 
-		var disablePast = (typeof slotnova_params !== 'undefined' && typeof slotnova_params.disable_past_slots !== 'undefined') ? (slotnova_params.disable_past_slots === true || slotnova_params.disable_past_slots === 'yes' || slotnova_params.disable_past_slots === '1') : false;
+		var disablePast = (typeof slotnova_params !== 'undefined' && typeof slotnova_params.disable_past_slots !== 'undefined') ? (slotnova_params.disable_past_slots === true || slotnova_params.disable_past_slots === 'yes' || slotnova_params.disable_past_slots === '1' || slotnova_params.disable_past_slots === 1) : true;
 
 		// INSTANT UI RESET: Clear disabled state unless past slots disabling is explicitly turned on
 		timePills.forEach(function(pill) {
 			var slotVal = pill.getAttribute('data-value');
 			var isPassed = false;
-			if (disablePast && isToday && siteTime) {
+			if (disablePast && isToday && curTime) {
 				var slot24h = timeTo24h(slotVal);
-				if (slot24h && slot24h <= siteTime) {
+				if (slot24h && slot24h <= curTime) {
 					isPassed = true;
 				}
 			}
@@ -310,9 +321,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				
 				var isPassed = false;
-				if (disablePast && isToday && siteTime) {
+				if (disablePast && isToday && curTime) {
 					var slot24h = timeTo24h(slotVal);
-					if (slot24h && slot24h <= siteTime) {
+					if (slot24h && slot24h <= curTime) {
 						isPassed = true;
 					}
 				}

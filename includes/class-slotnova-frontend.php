@@ -535,7 +535,7 @@ class Frontend {
 			'site_current_time'  => wp_date( 'H:i' ),
 			'calendar_mode'      => get_option( 'slotnova_calendar_mode', 'inline' ),
 			'time_picker_style'  => get_option( 'slotnova_time_picker_style', 'pills' ),
-			'disable_past_slots' => apply_filters( 'slotnova_disable_past_slots', false ),
+			'disable_past_slots' => apply_filters( 'slotnova_disable_past_slots', true ),
 			'i18n'              => array(
 				'select_service'  => __( 'Please select a service before booking.', 'slotnova-booking' ),
 				'select_employee' => __( 'Please select an employee before booking.', 'slotnova-booking' ),
@@ -807,11 +807,30 @@ class Frontend {
 					}
 					?>
 					<?php if ( ! empty( $product_time_slots ) ) : ?>
+						<?php
+						$current_date = wp_date( 'Y-m-d' );
+						$current_time = wp_date( 'H:i' );
+						$disable_past = apply_filters( 'slotnova_disable_past_slots', true );
+						?>
 						<div id="slotnova_time_pills" class="slotnova-time-pills-grid">
 							<?php foreach ( $product_time_slots as $slot ) :
 								$slot_formatted = function_exists( 'slotnova_format_time' ) ? slotnova_format_time( $slot, $product_duration ) : $slot;
+								$is_passed      = false;
+								if ( $disable_past ) {
+									$slot_start_str = $slot_formatted;
+									if ( false !== strpos( $slot_start_str, '-' ) ) {
+										$parts          = explode( '-', $slot_start_str );
+										$slot_start_str = trim( $parts[0] );
+									}
+									$slot_24h = date( 'H:i', strtotime( $slot_start_str ) );
+									if ( $slot_24h && $slot_24h <= $current_time ) {
+										$is_passed = true;
+									}
+								}
+								$pill_classes = 'slotnova-time-pill button' . ( $is_passed ? ' disabled' : '' );
+								$pill_attr    = $is_passed ? ' disabled="disabled" title="' . esc_attr__( 'Time Passed', 'slotnova-booking' ) . '" data-tooltip="' . esc_attr__( 'This time slot has already passed for today. Please select another date or time.', 'slotnova-booking' ) . '"' : '';
 								?>
-								<button type="button" class="slotnova-time-pill button" data-value="<?php echo esc_attr( $slot_formatted ); ?>">
+								<button type="button" class="<?php echo esc_attr( $pill_classes ); ?>" data-value="<?php echo esc_attr( $slot_formatted ); ?>"<?php echo $pill_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 									<?php echo esc_html( $slot_formatted ); ?>
 								</button>
 							<?php endforeach; ?>

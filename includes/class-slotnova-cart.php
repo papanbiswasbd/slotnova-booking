@@ -100,6 +100,28 @@ class Cart {
 		$service_id     = isset( $_POST['slotnova_service'] ) ? intval( $_POST['slotnova_service'] ) : 0;
 		$employee_id    = isset( $_POST['slotnova_employee'] ) ? intval( $_POST['slotnova_employee'] ) : 0;
 
+		// Past Date / Past Time Check
+		$current_date = wp_date( 'Y-m-d' );
+		$current_time = wp_date( 'H:i' );
+
+		if ( $requested_date < $current_date ) {
+			wc_add_notice( __( 'Selected booking date has already passed. Please select a future date.', 'slotnova-booking' ), 'error' );
+			return false;
+		}
+
+		if ( $requested_date === $current_date && ! empty( $requested_time ) && 'All Day' !== $requested_time ) {
+			$time_str = $requested_time;
+			if ( false !== strpos( $time_str, '-' ) ) {
+				$time_parts = explode( '-', $time_str );
+				$time_str   = trim( $time_parts[0] );
+			}
+			$time_24h = date( 'H:i', strtotime( $time_str ) );
+			if ( $time_24h && $time_24h <= $current_time ) {
+				wc_add_notice( __( 'This time slot has already passed for today. Please select another date or time.', 'slotnova-booking' ), 'error' );
+				return false;
+			}
+		}
+
 		if ( $this->is_slot_already_booked( $product_id, $requested_date, $requested_time, $service_id, $employee_id ) ) {
 			wc_add_notice( __( 'This time slot has already been booked for the selected employee/service. Please choose another date or time.', 'slotnova-booking' ), 'error' );
 			return false;
