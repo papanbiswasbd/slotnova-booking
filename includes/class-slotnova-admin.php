@@ -1236,6 +1236,11 @@ class Admin {
 
 		if ( $is_product_page ) {
 			wp_enqueue_script( 'jquery-ui-sortable' );
+			if ( function_exists( 'WC' ) ) {
+				wp_enqueue_script( 'selectWoo' );
+				wp_enqueue_style( 'select2' );
+			}
+			$admin_js_deps[] = 'selectWoo';
 
 			$all_services           = get_terms( array( 'taxonomy' => 'slotnova_service', 'hide_empty' => false ) );
 			$all_employees          = get_terms( array( 'taxonomy' => 'slotnova_employee', 'hide_empty' => false ) );
@@ -3077,7 +3082,7 @@ class Admin {
 									<tr>
 										<td class="slotnova-drag-handle">☰</td>
 										<td>
-											<select name="slotnova_repeater_employee_id[]" class="slotnova-table-select">
+											<select name="slotnova_repeater_employee_id[]" class="slotnova-table-select slotnova-employee-select">
 												<option value=""><?php esc_html_e( 'Select Employee...', 'slotnova-booking' ); ?></option>
 												<?php foreach ( $all_employees as $employee ) : ?>
 													<option value="<?php echo esc_attr( $employee->term_id ); ?>" <?php selected( $saved['term_id'], $employee->term_id ); ?>><?php echo esc_html( $employee->name ); ?></option>

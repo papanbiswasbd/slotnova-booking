@@ -1382,6 +1382,47 @@ jQuery(document).ready(function($) {
 		$('#slotnova-employees-table tbody').sortable({ handle: '.slotnova-drag-handle' });
 	}
 
+	function initSlotnovaSearchableSelects(context) {
+		var $selects;
+		if (context) {
+			$selects = $(context).find('.slotnova-service-select, .slotnova-employee-select');
+			if ($(context).is('.slotnova-service-select, .slotnova-employee-select')) {
+				$selects = $selects.add($(context));
+			}
+		} else {
+			$selects = $('.slotnova-service-select, .slotnova-employee-select');
+		}
+
+		$selects.each(function() {
+			var $s = $(this);
+			if ($s.data('select2') || $s.hasClass('select2-hidden-accessible')) {
+				return;
+			}
+			var placeholderText = $s.find('option:first-child').text() || 'Select...';
+			if ($.fn.selectWoo) {
+				$s.selectWoo({
+					width: '100%',
+					allowClear: false,
+					placeholder: placeholderText
+				});
+			} else if ($.fn.select2) {
+				$s.select2({
+					width: '100%',
+					allowClear: false,
+					placeholder: placeholderText
+				});
+			}
+		});
+	}
+
+	initSlotnovaSearchableSelects();
+
+	$(document).on('woocommerce_product_type_changed woocommerce_variations_loaded click', '.product_data_tabs a', function() {
+		setTimeout(function() {
+			initSlotnovaSearchableSelects();
+		}, 50);
+	});
+
 	// Remove row
 	$('body').on('click', '.slotnova-remove-row', function(e) {
 		e.preventDefault();
@@ -1398,14 +1439,15 @@ jQuery(document).ready(function($) {
 			optionsHtml += '<option value="' + id + '">' + name + '</option>';
 		});
 
-		var row = '<tr>' +
+		var $row = $('<tr>' +
 			'<td class="slotnova-drag-handle">☰</td>' +
 			'<td><select name="slotnova_repeater_service_id[]" class="slotnova-table-select slotnova-service-select">' + optionsHtml + '</select></td>' +
 			'<td><input type="number" name="slotnova_repeater_service_price[]" value="" step="0.01" min="0" class="slotnova-table-input-price slotnova-service-price-input"></td>' +
 			'<td class="slotnova-align-center"><a href="#" class="slotnova-remove-row" title="' + slotnova_admin_data.i18n.remove + '"><span class="dashicons dashicons-trash"></span></a></td>' +
-			'</tr>';
+			'</tr>');
 
-		$('#slotnova-services-table tbody').append(row);
+		$('#slotnova-services-table tbody').append($row);
+		initSlotnovaSearchableSelects($row);
 	});
 
 	// Add Employee Row
@@ -1418,13 +1460,14 @@ jQuery(document).ready(function($) {
 			optionsHtml += '<option value="' + id + '">' + name + '</option>';
 		});
 
-		var row = '<tr>' +
+		var $row = $('<tr>' +
 			'<td class="slotnova-drag-handle">☰</td>' +
-			'<td><select name="slotnova_repeater_employee_id[]" class="slotnova-table-select">' + optionsHtml + '</select></td>' +
+			'<td><select name="slotnova_repeater_employee_id[]" class="slotnova-table-select slotnova-employee-select">' + optionsHtml + '</select></td>' +
 			'<td class="slotnova-align-center"><a href="#" class="slotnova-remove-row" title="' + slotnova_admin_data.i18n.remove + '"><span class="dashicons dashicons-trash"></span></a></td>' +
-			'</tr>';
+			'</tr>');
 
-		$('#slotnova-employees-table tbody').append(row);
+		$('#slotnova-employees-table tbody').append($row);
+		initSlotnovaSearchableSelects($row);
 	});
 
 	/* -------------------------------------------------------------------------

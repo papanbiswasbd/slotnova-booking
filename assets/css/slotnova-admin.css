@@ -3926,3 +3926,41 @@ body.folded .slotnova-stats-dashboard-container.slotnova-fullscreen-active {
 .slotnova-hero-banner .error {
 	display: none !important;
 }
+
+/* Select2 / SelectWoo Searchable Select Overrides for Product Edit Repeater */
+.slotnova-repeater-table .select2-container {
+	width: 100% !important;
+	max-width: 100% !important;
+	box-sizing: border-box;
+}
+
+.slotnova-repeater-table .select2-container--default .select2-selection--single {
+	height: 32px;
+	line-height: 30px;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+	background-color: #fff;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07);
+}
+
+.slotnova-repeater-table .select2-container--default .select2-selection--single .select2-selection__rendered {
+	line-height: 30px;
+	padding-left: 8px;
+	padding-right: 24px;
+	color: #2c3338;
+	font-size: 13px;
+}
+
+.slotnova-repeater-table .select2-container--default .select2-selection--single .select2-selection__arrow {
+	height: 30px;
+	right: 4px;
+}
+
+.select2-container--default .select2-search--dropdown .select2-search__field {
+	border: 1px solid #8c8f94 !important;
+	border-radius: 4px !important;
+	padding: 5px 8px !important;
+	font-size: 13px !important;
+	outline: none !important;
+	box-shadow: none !important;
+}
