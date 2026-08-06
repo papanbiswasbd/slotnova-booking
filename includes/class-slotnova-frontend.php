@@ -487,14 +487,6 @@ class Frontend {
 		if ( empty( $border_radius ) ) { $border_radius = '12px'; }
 
 		$custom_css = "
-			.slotnova-custom-select .slotnova-select-trigger {
-				border-radius: {$border_radius} !important;
-			}
-			.slotnova-custom-select .slotnova-select-trigger.active,
-			.slotnova-custom-select .slotnova-select-trigger:focus-within {
-				border-color: {$primary_color} !important;
-				box-shadow: 0 0 0 3px {$primary_color}25 !important;
-			}
 			.slotnova-custom-select .slotnova-select-options {
 				background: {$bg_color} !important;
 				border-radius: {$border_radius} !important;
@@ -525,14 +517,6 @@ class Frontend {
 			}
 			.slotnova-summary-total .slotnova-summary-value {
 				color: {$primary_color} !important;
-			}
-			.slotnova-form button.single_add_to_cart_button {
-				background: linear-gradient(135deg, {$primary_color} 0%, {$accent_color} 100%) !important;
-				border-radius: {$border_radius} !important;
-				box-shadow: 0 4px 16px {$primary_color}40 !important;
-			}
-			.slotnova-form button.single_add_to_cart_button:hover {
-				background: linear-gradient(135deg, {$accent_color} 0%, {$primary_color} 100%) !important;
 			}
 		";
 		wp_add_inline_style( 'slotnova-frontend-css', $custom_css );
@@ -827,7 +811,7 @@ class Frontend {
 							<?php foreach ( $product_time_slots as $slot ) :
 								$slot_formatted = function_exists( 'slotnova_format_time' ) ? slotnova_format_time( $slot, $product_duration ) : $slot;
 								?>
-								<button type="button" class="slotnova-time-pill" data-value="<?php echo esc_attr( $slot_formatted ); ?>">
+								<button type="button" class="slotnova-time-pill button" data-value="<?php echo esc_attr( $slot_formatted ); ?>">
 									<?php echo esc_html( $slot_formatted ); ?>
 								</button>
 							<?php endforeach; ?>

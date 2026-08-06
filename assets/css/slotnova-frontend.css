@@ -48,34 +48,19 @@
 }
 
 .slotnova-custom-select .slotnova-select-trigger {
-	position: relative !important;
-	display: flex !important;
-	align-items: center !important;
-	justify-content: space-between !important;
-	width: 100% !important;
-	min-height: 48px !important;
-	height: 48px !important;
-	padding: 0 16px !important;
-	background: #ffffff !important;
-	border: 1.5px solid #cbd5e1 !important;
-	border-radius: 12px !important;
-	cursor: pointer !important;
-	transition: all 0.2s ease !important;
-	box-sizing: border-box !important;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
-}
-
-.slotnova-custom-select .slotnova-select-trigger:hover {
-	background: #ffffff !important;
-	border-color: #94a3b8 !important;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
-}
-
-.slotnova-custom-select .slotnova-select-trigger.active,
-.slotnova-custom-select .slotnova-select-trigger:focus-within {
-	background: #ffffff !important;
-	border-color: #2271b1 !important;
-	box-shadow: 0 0 0 3px rgba(34, 113, 177, 0.15) !important;
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	min-height: 42px;
+	padding: 8px 14px;
+	background: #ffffff;
+	border: 1px solid #cbd5e1;
+	border-radius: 6px;
+	cursor: pointer;
+	box-sizing: border-box;
+	transition: all 0.2s ease;
 }
 
 .slotnova-custom-select .slotnova-select-trigger input.slotnova-select-search-input {
@@ -83,39 +68,40 @@
 	width: 100% !important;
 	max-width: 100% !important;
 	min-width: 0 !important;
-	height: 100% !important;
 	border: none !important;
 	outline: none !important;
 	background: transparent !important;
 	box-shadow: none !important;
 	padding: 0 !important;
 	margin: 0 !important;
-	font-size: 14px !important;
-	font-weight: 500 !important;
-	color: #0f172a !important;
-	cursor: pointer !important;
+	font-size: inherit;
+	font-family: inherit;
+	font-weight: inherit;
+	color: inherit;
+	cursor: pointer;
 }
 
 .slotnova-custom-select .slotnova-select-trigger.active input.slotnova-select-search-input,
 .slotnova-custom-select .slotnova-select-trigger input.slotnova-select-search-input:focus {
-	cursor: text !important;
+	cursor: text;
 }
 
 .slotnova-custom-select .slotnova-select-arrow {
-	width: 8px !important;
-	height: 8px !important;
-	border-right: 2px solid #64748b !important;
-	border-bottom: 2px solid #64748b !important;
-	transform: rotate(45deg) !important;
-	transition: transform 0.2s ease !important;
-	margin-left: 10px !important;
-	margin-right: 2px !important;
-	flex-shrink: 0 !important;
-	pointer-events: none !important;
+	width: 8px;
+	height: 8px;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: rotate(45deg);
+	transition: transform 0.2s ease;
+	margin-left: 10px;
+	margin-right: 2px;
+	flex-shrink: 0;
+	pointer-events: none;
+	opacity: 0.7;
 }
 
 .slotnova-custom-select .slotnova-select-trigger.active .slotnova-select-arrow {
-	transform: rotate(-135deg) !important;
+	transform: rotate(-135deg);
 }
 
 .slotnova-custom-select .slotnova-select-options {
@@ -349,29 +335,26 @@
 	white-space: normal;
 }
 
-/* 100% Full-Width Flatpickr Calendar Styling */
-/* 100% Full-Width Flatpickr Calendar Styling (Inline & Popup) */
+/* Classic Theme Default Flatpickr Calendar Styling */
 .flatpickr-calendar.inline {
 	width: 100%;
 	max-width: 100%;
-	box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
-	border: 1.5px solid #e2e8f0;
-	border-radius: 14px;
-	padding: 16px;
+	border: 1px solid #cbd5e1;
+	border-radius: 6px;
+	padding: 12px;
 	background: #ffffff;
 	margin-top: 8px;
 	box-sizing: border-box;
 }
 
-/* Premium Popup / Tooltip Calendar Styling */
 .flatpickr-calendar:not(.inline) {
-	width: 320px;
+	width: 300px;
 	max-width: 95vw;
-	box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.18), 0 10px 15px -5px rgba(15, 23, 42, 0.08);
 	border: 1px solid #cbd5e1;
-	border-radius: 14px;
-	padding: 14px;
+	border-radius: 6px;
+	padding: 10px;
 	background: #ffffff;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 	margin-top: 6px;
 	box-sizing: border-box;
 	z-index: 99999;
@@ -386,25 +369,18 @@
 	max-width: 100%;
 	box-sizing: border-box;
 	border: none;
-	border-left: none;
-	border-right: none;
 }
 
 .flatpickr-days {
 	border: none;
-	border-left: none;
-	border-right: none;
 }
 
-/* Enhanced Calendar Header UI/UX (No reload blink) */
 .flatpickr-months,
 .flatpickr-months .flatpickr-month,
 .flatpickr-calendar .flatpickr-months,
 .flatpickr-calendar .flatpickr-month {
-	background: #f8fafc;
-	background-color: #f8fafc;
-	-webkit-transition: none;
-	transition: none;
+	background: transparent;
+	background-color: transparent;
 }
 
 .flatpickr-calendar .flatpickr-months {
@@ -413,21 +389,15 @@
 	justify-content: space-between;
 	width: 100%;
 	position: relative;
-	background: #f8fafc;
-	background-color: #f8fafc;
-	padding: 10px 14px;
-	border-radius: 10px 10px 0 0;
-	border-bottom: 1px solid #e2e8f0;
+	padding: 4px 0 8px 0;
 	box-sizing: border-box;
 }
 
 .flatpickr-calendar .flatpickr-month {
-	background: #f8fafc;
-	background-color: #f8fafc;
-	color: #0f172a;
-	fill: #0f172a;
-	height: 34px;
-	line-height: 34px;
+	color: inherit;
+	fill: currentColor;
+	height: 32px;
+	line-height: 32px;
 	flex-grow: 1;
 	display: flex;
 	align-items: center;
@@ -438,56 +408,38 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: 8px;
-	font-size: 15px;
-	font-weight: 700;
-	color: #0f172a;
+	gap: 6px;
+	font-size: 14px;
+	font-weight: 600;
+	color: inherit;
 	position: static;
 	width: auto;
-	left: auto;
 	padding: 0;
 	background: transparent;
 }
 
-/* Month Select Dropdown */
 .flatpickr-calendar .flatpickr-current-month select.flatpickr-monthDropdown-months {
-	font-weight: 700;
-	font-size: 14px;
-	color: #0f172a;
-	border: 1.5px solid #cbd5e1;
-	border-radius: 8px;
+	font-weight: 600;
+	font-size: 13px;
+	color: inherit;
+	border: 1px solid #cbd5e1;
+	border-radius: 4px;
 	background: #ffffff;
-	padding: 5px 24px 5px 12px;
+	padding: 3px 20px 3px 8px;
 	cursor: pointer;
 	outline: none;
 	appearance: none;
 	-webkit-appearance: none;
-	-moz-appearance: none;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23475569' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 10 6'%3E%3Cpath fill='%23475569' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
 	background-repeat: no-repeat;
-	background-position: right 8px center;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-	transition: all 0.2s ease;
-}
-
-.flatpickr-calendar .flatpickr-current-month select.flatpickr-monthDropdown-months:hover {
-	border-color: #94a3b8;
-	background-color: #f8fafc;
-}
-
-.flatpickr-calendar .flatpickr-current-month select.flatpickr-monthDropdown-months:focus {
-	border-color: #2271b1;
-	box-shadow: 0 0 0 3px rgba(34, 113, 177, 0.15);
+	background-position: right 6px center;
 }
 
 .flatpickr-calendar .flatpickr-current-month select.flatpickr-monthDropdown-months option {
 	background: #ffffff;
 	color: #0f172a;
-	font-weight: 600;
-	padding: 6px 10px;
 }
 
-/* Year Number Input Wrapper */
 .flatpickr-calendar .flatpickr-current-month .numInputWrapper {
 	position: relative;
 	width: auto;
@@ -496,29 +448,17 @@
 }
 
 .flatpickr-calendar .flatpickr-current-month input.cur-year {
-	font-weight: 700;
-	font-size: 14px;
-	color: #0f172a;
-	border: 1.5px solid #cbd5e1;
-	border-radius: 8px;
+	font-weight: 600;
+	font-size: 13px;
+	color: inherit;
+	border: 1px solid #cbd5e1;
+	border-radius: 4px;
 	background: #ffffff;
-	padding: 5px 8px;
-	width: 65px;
+	padding: 3px 6px;
+	width: 55px;
 	text-align: center;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 	outline: none;
-	transition: all 0.2s ease;
 	margin: 0;
-}
-
-.flatpickr-calendar .flatpickr-current-month input.cur-year:hover {
-	border-color: #94a3b8;
-	background-color: #f8fafc;
-}
-
-.flatpickr-calendar .flatpickr-current-month input.cur-year:focus {
-	border-color: #2271b1;
-	box-shadow: 0 0 0 3px rgba(34, 113, 177, 0.15);
 }
 
 .flatpickr-calendar .flatpickr-current-month .numInputWrapper span.arrowUp,
@@ -532,45 +472,36 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 32px;
-	height: 32px;
-	border-radius: 8px;
-	background: #ffffff;
+	width: 28px;
+	height: 28px;
+	border-radius: 4px;
+	background: transparent;
 	border: 1px solid #cbd5e1;
-	color: #334155;
-	fill: #334155;
+	color: inherit;
+	fill: currentColor;
 	cursor: pointer;
-	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	transition: background 0.15s ease;
 	z-index: 10;
 }
 
 .flatpickr-calendar .flatpickr-prev-month svg,
 .flatpickr-calendar .flatpickr-next-month svg {
-	width: 12px;
-	height: 12px;
-	fill: #334155;
-	transition: fill 0.2s ease;
+	width: 10px;
+	height: 10px;
+	fill: currentColor;
 }
 
 .flatpickr-calendar .flatpickr-prev-month:hover,
 .flatpickr-calendar .flatpickr-next-month:hover {
-	background: #2271b1;
-	border-color: #2271b1;
-	box-shadow: 0 2px 8px rgba(34, 113, 177, 0.25);
-}
-
-.flatpickr-calendar .flatpickr-prev-month:hover svg,
-.flatpickr-calendar .flatpickr-next-month:hover svg {
-	fill: #ffffff;
+	background: #f1f5f9;
 }
 
 .flatpickr-calendar .flatpickr-weekdays {
 	display: flex;
 	align-items: center;
 	width: 100%;
-	background: #f8fafc;
-	padding: 8px 0;
+	background: transparent;
+	padding: 6px 0;
 	height: auto;
 	border-bottom: 1px solid #f1f5f9;
 }
@@ -581,10 +512,9 @@
 	max-width: 14.2857%;
 	background: transparent;
 	color: #64748b;
-	font-weight: 700;
-	font-size: 11px;
+	font-weight: 600;
+	font-size: 12px;
 	text-transform: uppercase;
-	letter-spacing: 0.06em;
 	text-align: center;
 }
 
@@ -598,22 +528,22 @@
 	width: 14.2857%;
 	max-width: 14.2857%;
 	flex-basis: 14.2857%;
-	height: 42px;
-	line-height: 42px;
+	height: 36px;
+	line-height: 36px;
 	margin: 2px 0;
-	border-radius: 10px;
+	border-radius: 4px;
 	font-weight: 500;
-	font-size: 13.5px;
-	color: #334155;
-	border: 1.5px solid transparent;
-	transition: all 0.15s ease;
+	font-size: 13px;
+	color: inherit;
+	border: 1px solid transparent;
+	transition: background 0.15s ease;
 	box-sizing: border-box;
 	text-align: center;
 }
 
 .flatpickr-calendar .flatpickr-day:hover {
 	background: #f1f5f9;
-	color: #0f172a;
+	color: inherit;
 }
 
 .flatpickr-calendar .flatpickr-day.selected,
@@ -621,8 +551,7 @@
 	background: #2271b1;
 	border-color: #2271b1;
 	color: #ffffff;
-	font-weight: 700;
-	box-shadow: 0 4px 12px rgba(34, 113, 177, 0.3);
+	font-weight: 600;
 }
 
 .flatpickr-calendar .flatpickr-day.flatpickr-disabled,
@@ -634,7 +563,8 @@
 }
 
 .flatpickr-calendar .flatpickr-day.today:not(.selected) {
-	border-color: transparent;
+	border-color: #2271b1;
+	font-weight: 600;
 }
 
 /* Time Slots Pill Buttons Grid */
@@ -676,44 +606,25 @@
 }
 
 .slotnova-time-pill {
-	display: flex;
+	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	padding: 10px 14px;
-	background: #f8fafc;
-	border: 1.5px solid #cbd5e1;
-	border-radius: 10px;
-	font-size: 13px;
-	font-weight: 600;
-	color: #334155;
-	cursor: pointer;
-	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-	outline: none;
 	width: 100%;
+	cursor: pointer;
 	box-sizing: border-box;
-}
-
-.slotnova-time-pill:hover {
-	background: #ffffff;
-	border-color: #2271b1;
-	color: #2271b1;
-	box-shadow: 0 2px 8px rgba(34, 113, 177, 0.12);
+	text-align: center;
 }
 
 .slotnova-time-pill.active {
 	background: #2271b1;
 	border-color: #2271b1;
 	color: #ffffff;
-	box-shadow: 0 4px 12px rgba(34, 113, 177, 0.3);
 }
 
 .slotnova-time-pill.disabled,
 .slotnova-time-pill:disabled {
-	background: #f1f5f9;
-	border-color: #e2e8f0;
-	color: #94a3b8;
+	opacity: 0.5;
 	cursor: not-allowed;
-	opacity: 0.65;
 	text-decoration: line-through;
 	box-shadow: none;
 	pointer-events: auto !important;
@@ -780,29 +691,10 @@
 }
 
 .slotnova-form input.slotnova-date-picker-popup {
-	display: block !important;
-	width: 100% !important;
-	padding: 12px 42px 12px 16px !important;
-	background: #ffffff !important;
-	border: 1px solid #cbd5e1 !important;
-	border-radius: 10px !important;
-	font-size: 14px !important;
-	font-weight: 500 !important;
-	color: #0f172a !important;
-	cursor: pointer !important;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
-	transition: all 0.2s ease-in-out !important;
-	box-sizing: border-box !important;
-}
-
-.slotnova-form input.slotnova-date-picker-popup:hover {
-	border-color: #94a3b8 !important;
-}
-
-.slotnova-form input.slotnova-date-picker-popup:focus {
-	border-color: #6366f1 !important;
-	outline: none !important;
-	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+	display: block;
+	width: 100%;
+	cursor: pointer;
+	box-sizing: border-box;
 }
 
 .slotnova-date-picker-icon {
@@ -817,17 +709,15 @@
 	justify-content: center;
 }
 
-/* Receipt Style Booking Summary Card */
+/* Classic Theme Default Booking Summary Box */
 .slotnova-form #slotnova-summary,
 .slotnova-form .slotnova-summary-box {
-	margin-top: 24px;
-	margin-bottom: 24px;
+	margin-top: 20px;
+	margin-bottom: 20px;
 	background: #ffffff;
 	border: 1px solid #cbd5e1;
-	border-radius: 14px;
-	overflow: hidden;
-	box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
-	transition: all 0.25s ease-in-out;
+	border-radius: 6px;
+	padding: 16px;
 	box-sizing: border-box;
 	width: 100%;
 	max-width: 100%;
@@ -836,9 +726,9 @@
 .slotnova-form .slotnova-summary-header {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	padding: 14px 20px;
-	background: #f8fafc;
+	gap: 8px;
+	padding-bottom: 12px;
+	margin-bottom: 12px;
 	border-bottom: 1px solid #e2e8f0;
 	box-sizing: border-box;
 }
@@ -847,22 +737,21 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	color: #6366f1;
+	color: #64748b;
 }
 
 .slotnova-form h4.slotnova-summary-title {
 	margin: 0;
 	padding: 0;
-	font-size: 15px;
-	font-weight: 700;
-	color: #0f172a;
-	letter-spacing: -0.2px;
+	font-size: 14px;
+	font-weight: 600;
+	color: inherit;
 	line-height: 1.2;
 }
 
 .slotnova-form .slotnova-summary-body,
 .slotnova-form .slotnova-summary-content {
-	padding: 16px 20px;
+	padding: 0;
 	box-sizing: border-box;
 }
 
@@ -871,6 +760,7 @@
 	align-items: center;
 	justify-content: space-between;
 	font-size: 13.5px;
+	padding: 4px 0;
 	box-sizing: border-box;
 	gap: 12px;
 }
@@ -882,33 +772,32 @@
 }
 
 .slotnova-form .slotnova-summary-value {
-	color: #0f172a;
-	font-weight: 700;
+	color: inherit;
+	font-weight: 600;
 	text-align: right;
 	word-break: break-word;
 }
 
 .slotnova-form .slotnova-summary-divider {
 	height: 1px;
-	background: transparent;
-	border-top: 1px dashed #cbd5e1;
-	margin: 12px 0;
+	background: #e2e8f0;
+	margin: 10px 0;
 }
 
 .slotnova-form .slotnova-summary-total {
-	padding-top: 6px;
+	padding-top: 4px;
 }
 
 .slotnova-form .slotnova-summary-total .slotnova-summary-label {
-	font-weight: 700;
-	color: #0f172a;
-	font-size: 15px;
+	font-weight: 600;
+	color: inherit;
+	font-size: 14px;
 }
 
 .slotnova-form .slotnova-summary-total .slotnova-summary-value {
-	font-size: 18px;
-	font-weight: 800;
-	color: #4338ca;
+	font-size: 16px;
+	font-weight: 700;
+	color: #2271b1;
 }
 
 /* Submit Button CTA */
@@ -916,30 +805,6 @@
 	margin-top: 24px;
 }
 
-.slotnova-form button.single_add_to_cart_button {
-	width: 100%;
-	padding: 16px 28px;
-	font-size: 16px;
-	font-weight: 700;
-	border-radius: 12px;
-	background: linear-gradient(135deg, #2271b1 0%, #135e96 100%);
-	color: #ffffff;
-	border: none;
-	cursor: pointer;
-	transition: all 0.25s ease;
-	box-shadow: 0 4px 16px rgba(34, 113, 177, 0.35);
-	letter-spacing: 0.02em;
-}
-
-.slotnova-form button.single_add_to_cart_button:hover {
-	background: linear-gradient(135deg, #135e96 0%, #0a4b7c 100%);
-	transform: translateY(-2px);
-	box-shadow: 0 8px 24px rgba(34, 113, 177, 0.45);
-}
-
-.slotnova-form button.single_add_to_cart_button:active {
-	transform: translateY(0);
-}
 
 /* Animations & Smooth Reveal UX */
 @keyframes slotnovaSlideDown {
