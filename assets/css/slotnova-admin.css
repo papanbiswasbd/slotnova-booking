@@ -2502,7 +2502,7 @@ body[class*="page_slotnova"] #wpbody-content {
 /* Time Pills Grid */
 .slotnova-time-pills-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
 	gap: 8px;
 	margin-top: 8px;
 }

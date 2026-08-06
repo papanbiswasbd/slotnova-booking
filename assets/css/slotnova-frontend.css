@@ -249,6 +249,7 @@
 
 /* Responsive Grid Media Queries */
 @media (max-width: 768px) {
+
 	#slotnova_service_dropdown .slotnova-select-options-list,
 	#slotnova_employee_dropdown .slotnova-select-options-list {
 		grid-template-columns: 1fr !important;
@@ -669,7 +670,7 @@
 
 .slotnova-time-pills-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
 	gap: 10px;
 	margin-top: 10px;
 }
